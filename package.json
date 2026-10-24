@@ -7,7 +7,8 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "check": "node scripts/build.mjs && node --check dist/home-camera-card.js",
-    "screenshots": "node scripts/screenshots.mjs"
+    "screenshots": "node scripts/screenshots.mjs",
+    "test": "node --test \"test/*.test.mjs\""
   },
   "license": "MIT",
   "devDependencies": {

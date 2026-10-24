@@ -26,6 +26,9 @@ jobs:
       - name: Build and check the card
         run: npm run check
 
+      - name: Unit tests
+        run: npm test
+
       - name: Check hacs.json points to the built file
         run: |
           file=$(node -p "require('./hacs.json').filename")
