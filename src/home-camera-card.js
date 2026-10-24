@@ -101,15 +101,33 @@ const HC_DEFAULTS = {
 const HC_PTZ_DIRS = ['left', 'right', 'up', 'down'];
 
 // ── Entity discovery ─────────────────────────────────────────────────────────
+// The registry is indexed by device once per `hass.entities` object (it only changes with the registry).
+const hcDeviceIndex = new WeakMap();
+function hcDeviceEntities(reg, device) {
+  let index = hcDeviceIndex.get(reg);
+  if (!index) {
+    index = new Map();
+    for (const e of Object.values(reg)) {
+      if (!e.device_id) continue;
+      if (!index.has(e.device_id)) index.set(e.device_id, []);
+      index.get(e.device_id).push(e.entity_id);
+    }
+    hcDeviceIndex.set(reg, index);
+  }
+  return index.get(device) || [];
+}
+
 // An entity of the camera's device whose id ends with `suffix` (Tapo: switch.*_privacy, button.*_move_left).
 function hcSibling(hass, cameraId, domain, suffix) {
   const reg = hass?.entities;
   const device = reg?.[cameraId]?.device_id;
   if (!device) return undefined;
-  const hit = Object.values(reg).find(
-    (e) => e.device_id === device && e.entity_id.startsWith(`${domain}.`) && e.entity_id.endsWith(suffix),
-  );
-  return hit?.entity_id;
+  return hcDeviceEntities(reg, device).find((id) => id.startsWith(`${domain}.`) && id.endsWith(suffix));
+}
+
+// True when an event path goes through one of the card's own controls (privacy toggle, HD/SD switch).
+function hcOwnControl(path) {
+  return path.some((n) => n.dataset?.toggle || n.dataset?.quality);
 }
 
 // PTZ buttons as { left, right, up, down }: a prefix ("button.x_move" + "_left"…), an object, or found on the device.
@@ -175,10 +193,11 @@ class HomeCameraCard extends HTMLElement {
       this.shadowRoot.innerHTML = `${this._styles()}<ha-card><div class="head"></div><div class="view"></div></ha-card>`;
       this.shadowRoot.addEventListener('click', (ev) => this._onClick(ev));
       this.shadowRoot.addEventListener('keydown', (ev) => {
-        if (ev.key === 'Enter' || ev.key === ' ') {
-          ev.preventDefault();
-          this._onClick(ev);
-        }
+        if (ev.key !== 'Enter' && ev.key !== ' ') return;
+        // Only the card's own controls: keys bubbling up from the embedded cards keep their behaviour.
+        if (!hcOwnControl(ev.composedPath())) return;
+        ev.preventDefault();
+        this._onClick(ev);
       });
     }
     this._headSig = null;
