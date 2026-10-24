@@ -78,4 +78,8 @@ test("the local HD/SD choice is shared by every card of the page", () => {
   a._toggleQuality();
   assert.equal(updates, 1);
   assert.equal(b._hd(), true);
+
+  // Re-attached after missing the toggle: it catches up without waiting for the next hass update.
+  b.connectedCallback();
+  assert.equal(updates, 2);
 });

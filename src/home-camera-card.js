@@ -217,6 +217,9 @@ class HomeCameraCard extends HTMLElement {
     }
     window.addEventListener('storage', this._onQuality);
     window.addEventListener(HC_QUALITY_EVENT, this._onQuality);
+    // The HD/SD choice may have changed while detached (listeners removed): catch up. _update() is
+    // a no-op before setConfig/hass, and the signatures skip the render when nothing changed.
+    this._update();
   }
 
   disconnectedCallback() {
