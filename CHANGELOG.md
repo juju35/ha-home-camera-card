@@ -1,5 +1,24 @@
 # Changelog
 
+## 2.1.1
+
+### Fixes
+- A card shown again (e.g. back on its dashboard view) picks up the HD / SD choice made on another card in the meantime.
+
+### Maintenance
+- Screenshot script renders each capture in a fresh page; duplication checks no longer scan the tests. Nothing changes for users.
+
+## 2.1.0
+
+### Fixes
+- Keyboard: Enter / Space reach the buttons of the embedded camera card again (menu, fullscreen, PTZ) instead of being swallowed by the card.
+- Without `quality_entity`, the HD / SD choice made on the card is shared by every camera card of the page and by other browser tabs.
+- Lighter updates: the privacy switch and PTZ buttons are no longer looked up in the whole entity registry on every Home Assistant update.
+
+### Maintenance
+- CI hardening: actions pinned by commit SHA, read-only workflow token, monthly Dependabot updates, duplication findings annotated in pull requests.
+- Unit tests (`npm test`) run in CI. Nothing changes for users.
+
 ## 2.0.0
 
 No change since 1.2.1: this version groups the 1.x changes to the single-camera layout.
