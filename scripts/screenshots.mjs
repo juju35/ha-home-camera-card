@@ -124,8 +124,9 @@ const SHOTS = [
 ];
 
 const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
-const page = await browser.newPage({ deviceScaleFactor: 2, viewport: { width: 1000, height: 2000 } });
+// A fresh page per shot: re-running the scripts in the same realm would redeclare their globals.
 for (const s of SHOTS) {
+  const page = await browser.newPage({ deviceScaleFactor: 2, viewport: { width: 1000, height: 2000 } });
   await page.setContent(pageHtml(s.theme));
   await page.addScriptTag({ content: haElements });
   await page.addScriptTag({ content: cardJs });
@@ -138,5 +139,6 @@ for (const s of SHOTS) {
   await page.waitForTimeout(400);
   await page.locator("home-camera-card").screenshot({ path: `${root}screenshots/${s.file}.png`, animations: "disabled" });
   console.log(`screenshots/${s.file}.png`);
+  await page.close();
 }
 await browser.close();
