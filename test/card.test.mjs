@@ -40,3 +40,42 @@ test("only the card's own controls handle Enter/Space", () => {
   // A button inside the embedded advanced-camera-card: not ours, left alone.
   assert.equal(hcOwnControl([{ dataset: {} }, { tagName: "BUTTON" }, {}]), false);
 });
+
+test("the local HD/SD choice is shared by every card of the page", () => {
+  const store = new Map();
+  const listeners = new Map();
+  const { customElements } = loadCard("home-camera-card.js", [], {
+    localStorage: { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, String(v)) },
+    CustomEvent: class {
+      constructor(type) {
+        this.type = type;
+      }
+    },
+    addEventListener: (type, fn) => listeners.set(type, [...(listeners.get(type) || []), fn]),
+    removeEventListener: (type, fn) => listeners.set(type, (listeners.get(type) || []).filter((f) => f !== fn)),
+    dispatchEvent: (ev) => {
+      for (const fn of listeners.get(ev.type) || []) fn(ev);
+    },
+  });
+  const Card = customElements.get("home-camera-card");
+  const a = new Card();
+  const b = new Card();
+  a.setConfig({ cameras: [] });
+  b.setConfig({ cameras: [] });
+  a.connectedCallback();
+  b.connectedCallback();
+  let updates = 0;
+  b._update = () => updates++;
+
+  assert.equal(a._hd(), true);
+  assert.equal(b._hd(), true);
+  a._toggleQuality();
+  assert.equal(a._hd(), false);
+  assert.equal(b._hd(), false);
+  assert.equal(updates, 1);
+
+  b.disconnectedCallback();
+  a._toggleQuality();
+  assert.equal(updates, 1);
+  assert.equal(b._hd(), true);
+});
