@@ -4,11 +4,11 @@
 
 No change since 1.2.1: this version groups the 1.x changes to the single-camera layout.
 
-### Single camera
-- Its name is the card title, unless `title` is set.
-- A round icon button on the right of the header disables or enables it (*Disable* / *Enable* as tooltip); the HD / SD badge moves under the title.
-- No summary line while it films; *Camera disabled* while it is hidden.
-- It takes the full width: the grid never has more columns than cameras shown.
+### Changes
+- Single camera: its name is the card title, unless `title` is set.
+- Single camera: a round icon button on the right of the header disables or enables it (*Disable* / *Enable* as tooltip); the HD / SD badge moves under the title.
+- Single camera: no summary line while it films; *Camera disabled* while it is hidden.
+- Single camera: it takes the full width; the grid never has more columns than cameras shown.
 
 ## 1.2.1
 
