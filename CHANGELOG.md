@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1.1
+
+### Fixes
+- A card shown again (e.g. back on its dashboard view) picks up the HD / SD choice made on another card in the meantime.
+
+### Maintenance
+- Screenshot script renders each capture in a fresh page; duplication checks no longer scan the tests. Nothing changes for users.
+
 ## 2.1.0
 
 ### Fixes
