@@ -171,6 +171,10 @@ function hcCamera(hass, raw, index) {
   };
 }
 
+// HD / SD choice of the cards without quality_entity, shared by every card of the browser.
+const HC_QUALITY_KEY = 'home-camera-card-quality';
+const HC_QUALITY_EVENT = 'home-camera-card-quality';
+
 // ── home-camera-card ─────────────────────────────────────────────────────────
 class HomeCameraCard extends HTMLElement {
   static getConfigElement() {
@@ -205,6 +209,21 @@ class HomeCameraCard extends HTMLElement {
     this._update();
   }
 
+  connectedCallback() {
+    if (!this._onQuality) {
+      this._onQuality = (ev) => {
+        if (!ev.key || ev.key === HC_QUALITY_KEY) this._update();
+      };
+    }
+    window.addEventListener('storage', this._onQuality);
+    window.addEventListener(HC_QUALITY_EVENT, this._onQuality);
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener('storage', this._onQuality);
+    window.removeEventListener(HC_QUALITY_EVENT, this._onQuality);
+  }
+
   set hass(hass) {
     this._hass = hass;
     this._update();
@@ -237,17 +256,17 @@ class HomeCameraCard extends HTMLElement {
   }
 
   // HD unless the quality selector (or the card's own toggle) says SD.
+  // The local choice is read from storage each time, so every card of the dashboard agrees.
   _hd() {
     const c = this._config;
     if (c.quality_entity) return this._state(c.quality_entity) !== c.sd_option;
-    if (this._quality == null) {
-      try {
-        this._quality = localStorage.getItem('home-camera-card-quality') || 'hd';
-      } catch (_e) {
-        this._quality = 'hd';
-      }
+    let quality = this._quality;
+    try {
+      quality = localStorage.getItem(HC_QUALITY_KEY) || quality;
+    } catch (_e) {
+      // storage unavailable: the card's own choice
     }
-    return this._quality !== 'sd';
+    return quality !== 'sd';
   }
 
   // A camera is hidden when its privacy switch is on or its power switch is off.
@@ -518,11 +537,13 @@ class HomeCameraCard extends HTMLElement {
     }
     this._quality = next ? 'hd' : 'sd';
     try {
-      localStorage.setItem('home-camera-card-quality', this._quality);
+      localStorage.setItem(HC_QUALITY_KEY, this._quality);
     } catch (_e) {
       // storage unavailable: the choice lasts until the page reloads
     }
     this._update();
+    // The other cards of this page follow (the storage event only reaches the other tabs).
+    window.dispatchEvent(new CustomEvent(HC_QUALITY_EVENT));
   }
 }
 
