@@ -873,7 +873,10 @@ class HomeCameraCard extends HTMLElement {
       '.btn:active { transform: scale(0.94); }' +
       '.btn:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 1px; }' +
       '.btn ha-icon { --mdc-icon-size: 17px; }' +
-      '.tile.ptz-open .btn.ptz, .btn.sound.on, .move:active { background: var(--primary-color, #03a9f4); border-color: transparent; }' +
+      // On: the same glass, the icon in the accent colour (no fill, like the other ha-* cards), and a faint
+      // accent ring that keeps the state readable where light scenes turn the glass grey.
+      '.tile.ptz-open .btn.ptz, .btn.sound.on, .move:active { color: var(--primary-color, #03a9f4);' +
+      ' box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color, #03a9f4) 40%, transparent); }' +
       // Narrow tiles: the up arrow would run into the other buttons.
       '.tile.ptz-open .tools .btn:not(.ptz) { display: none; }' +
       // Pan & tilt: a round pad, its four arrows around a centre dot, in the bottom right corner (under the
@@ -888,7 +891,7 @@ class HomeCameraCard extends HTMLElement {
       '.move { --s: calc(var(--pad) * 0.32); position: absolute; width: var(--s); height: var(--s); touch-action: none;' +
       ' background: transparent; border-color: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }' +
       '.move:hover { background: rgba(255,255,255,0.12); }' +
-      '.move:active { background: var(--primary-color, #03a9f4); }' +
+      '.move:active { background: var(--hc-glass); }' +
       '.move ha-icon { --mdc-icon-size: calc(var(--s) * 0.62); filter: drop-shadow(0 1px 2px rgba(0,0,0,0.7)); }' +
       '.move.left { left: 2px; top: calc(50% - var(--s) / 2); }' +
       '.move.right { right: 2px; top: calc(50% - var(--s) / 2); }' +

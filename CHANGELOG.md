@@ -6,6 +6,7 @@
 - Header icon: a round badge drawn like the other ha-* cards (16 % tint of its colour, icon centred at 24 px).
 - Header spacing like the other cards: the camera badges and the camera view start 8 px under the header (were 10 px and 12 px). With a single camera, the header icon and the toggle sit 12 px from the top of the card instead of being pushed down by the HD / SD switch under the title.
 - Green badges and the single camera's green toggle use the shared 16 % tint, 24 % on hover.
+- Buttons and arrows on the images: when on (pan & tilt open, sound on) or pressed, they keep the smoked glass and show their icon in the accent colour with a faint accent ring, instead of a solid accent fill.
 
 ### Maintenance
 - Screenshots: 16 px frame on the theme background, shared theme tokens and card border, 460 px card (the fullscreen view stays a 1280 × 720 screen, now framed too), page errors logged. Nothing changes for users.
