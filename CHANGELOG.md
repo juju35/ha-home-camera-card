@@ -1,5 +1,21 @@
 # Changelog
 
+## 3.1.0
+
+Ergonomics pass: quicker to read, quicker to act on.
+
+### What's new
+- **Enlarge a camera**: tap it and it fills the card, the other cameras lined up underneath. Tap it again, tap *Back*, press Escape or click outside the card to go back to the grid; tap another camera to switch. No stream reloads on the way.
+- The camera dialog moves to a *Details* button on the enlarged camera. With a single camera, a tap still opens it.
+- **Pan & tilt**: hold an arrow to keep moving; arrow keys move the camera while its arrows are shown; the pressed arrow lights up.
+- A spinner shows on each tile until its first frame arrives.
+- The sound button only shows on streams that carry sound.
+- Privacy badges and the single-camera toggle spin until the switch answers, and ignore taps meanwhile (no more double toggles).
+
+### Changes
+- Mouse: the tile buttons show on hover, so the images stay clear. Touch: they stay shown, and buttons and arrows are larger.
+- Header icon and single-camera toggle are 40 px, like the other cards; more room between the summary and the badges.
+
 ## 3.0.0
 
 Advanced Camera Card is no longer used: the card plays the cameras itself with Home Assistant's own player.

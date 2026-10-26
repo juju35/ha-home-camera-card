@@ -48,6 +48,8 @@ window.mount = (cameras) => {
   window.streams = () => tiles().map((t) => t.querySelector("ha-camera-stream"));
   return el;
 };
+window.emit = (i, type, detail) =>
+  streams()[i].dispatchEvent(new CustomEvent(type, { detail, bubbles: true, composed: true }));
 window.CAMS = [{ camera: "camera.a_hd_stream", ptz: "button.a_move" }, "camera.b_hd_stream", "camera.c"];
 `;
 
@@ -133,33 +135,163 @@ test("PTZ: arrows press their button, unavailable ones are greyed out and ignore
   assert.equal(r.noPtzOnOthers, true);
 });
 
-test("a tap or Enter on the image opens the camera dialog; with the arrows shown it closes them", async () => {
+test("a tap enlarges a camera without reconnecting any player, a second tap shrinks it back", async () => {
   const r = await page.evaluate(() => {
     mount(CAMS);
+    const start = window.__connects;
+    tiles()[1].querySelector(".open").click();
+    const grid = el.shadowRoot.querySelector(".grid");
+    const focused = {
+      grid: grid.classList.contains("focus"),
+      tile: tiles().findIndex((t) => t.classList.contains("focused")),
+      cols: grid.style.gridTemplateColumns,
+      back: !!tiles()[1].querySelector('[data-action="back"]'),
+      details: !!tiles()[1].querySelector('[data-action="details"]'),
+      othersHaveDetails: !!tiles()[0].querySelector('[data-action="details"]'),
+    };
+    tiles()[1].querySelector(".open").click();
+    return { focused, after: grid.classList.contains("focus"), connects: window.__connects - start };
+  });
+  assert.deepEqual(r.focused, {
+    grid: true,
+    tile: 1,
+    cols: "repeat(2, minmax(0px, 1fr))",
+    back: true,
+    details: true,
+    othersHaveDetails: false,
+  });
+  assert.equal(r.after, false);
+  assert.equal(r.connects, 0);
+});
+
+test("the enlarged camera goes back on Escape, its back button, a tap on another or a click outside", async () => {
+  const r = await page.evaluate(() => {
+    mount(CAMS);
+    const grid = el.shadowRoot.querySelector(".grid");
+    const enlarge = (i) => tiles()[i].querySelector(".open").click();
+    const out = {};
+    enlarge(0);
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    out.escape = grid.classList.contains("focus");
+    enlarge(0);
+    tiles()[0].querySelector('[data-action="back"]').click();
+    out.back = grid.classList.contains("focus");
+    enlarge(0);
+    enlarge(2);
+    out.switched = tiles().findIndex((t) => t.classList.contains("focused"));
+    document.body.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, composed: true }));
+    out.outside = grid.classList.contains("focus");
+    return out;
+  });
+  assert.deepEqual(r, { escape: false, back: false, switched: 2, outside: false });
+});
+
+test("the camera dialog opens from the details button, or on a tap when there is one camera", async () => {
+  const r = await page.evaluate(() => {
     const opened = [];
+    mount(CAMS);
     el.addEventListener("hass-more-info", (e) => opened.push(e.detail.entityId));
     tiles()[1].querySelector(".open").click();
-    tiles()[2].querySelector(".open").dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, composed: true }));
+    tiles()[1].querySelector('[data-action="details"]').click();
+    mount(["camera.c"]);
+    el.addEventListener("hass-more-info", (e) => opened.push(e.detail.entityId));
+    tiles()[0].querySelector(".open").dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, composed: true }));
+    return opened;
+  });
+  assert.deepEqual(r, ["camera.b_hd_stream", "camera.c"]);
+});
+
+test("with the arrows shown, a tap on the image closes them instead of enlarging", async () => {
+  const r = await page.evaluate(() => {
+    mount(CAMS);
     const tile = tiles()[0];
     tile.querySelector('[data-action="ptz"]').click();
     tile.querySelector(".open").click();
-    return { opened, closed: !tile.classList.contains("ptz-open") };
+    return { closed: !tile.classList.contains("ptz-open"), focus: el.shadowRoot.querySelector(".grid").classList.contains("focus") };
   });
-  assert.deepEqual(r.opened, ["camera.b_hd_stream", "camera.c"]);
-  assert.equal(r.closed, true);
+  assert.deepEqual(r, { closed: true, focus: false });
 });
 
-test("sound is on for one camera at a time", async () => {
+test("a held arrow keeps moving the camera; arrow keys move it too", async () => {
+  const r = await page.evaluate(async () => {
+    mount(CAMS);
+    calls.length = 0;
+    const tile = tiles()[0];
+    tile.querySelector('[data-action="ptz"]').click();
+    const left = tile.querySelector(".move.left");
+    left.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, composed: true, button: 0 }));
+    await new Promise((r) => setTimeout(r, 1000));
+    left.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, composed: true }));
+    const held = calls.length;
+    await new Promise((r) => setTimeout(r, 500));
+    const afterRelease = calls.length;
+    // The click that follows a pointer press does not press again.
+    left.dispatchEvent(new MouseEvent("click", { bubbles: true, composed: true, detail: 1 }));
+    const afterClick = calls.length;
+    tile.querySelector(".open").dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true, composed: true }));
+    return { held, afterRelease, afterClick, last: calls.at(-1) };
+  });
+  // Press at 0, then 500 ms hold, then every 350 ms: 2 or 3 presses within a second.
+  assert.ok(r.held >= 2 && r.held <= 3, `held: ${r.held}`);
+  assert.equal(r.afterRelease, r.held);
+  assert.equal(r.afterClick, r.held);
+  assert.deepEqual(r.last, ["button", "press", "button.a_move_up"]);
+});
+
+test("a spinner shows until the first frame", async () => {
+  const r = await page.evaluate(() => {
+    mount(CAMS);
+    const loading = tiles().map((t) => t.classList.contains("loading"));
+    emit(0, "load");
+    el.hass = makeHass(baseStates()); // a mere state update keeps it loaded
+    return { loading, after: tiles().map((t) => t.classList.contains("loading")) };
+  });
+  assert.deepEqual(r.loading, [true, true, true]);
+  assert.deepEqual(r.after, [false, true, true]);
+});
+
+test("a privacy badge spins until its switch answers, and ignores taps meanwhile", async () => {
+  const r = await page.evaluate(() => {
+    mount(CAMS);
+    calls.length = 0;
+    const chip = () => el.shadowRoot.querySelector('[data-toggle="switch.b_privacy"]');
+    chip().click();
+    const pending = chip().classList.contains("pending");
+    chip().click();
+    const taps = calls.length;
+    el.hass = makeHass({ ...baseStates(), "switch.b_privacy": st("switch.b_privacy", "on") });
+    return { pending, taps, after: chip().className };
+  });
+  assert.equal(r.pending, true);
+  assert.equal(r.taps, 1);
+  assert.match(r.after, /private/);
+});
+
+test("the sound button shows on streams with sound, for one camera at a time", async () => {
   const r = await page.evaluate(() => {
     mount(CAMS);
     const sound = (i) => tiles()[i].querySelector('[data-action="sound"]');
+    const before = !!sound(0);
+    for (const i of [0, 1]) emit(i, "streams", { hasAudio: true, hasVideo: true });
+    emit(2, "streams", { hasAudio: false, hasVideo: true });
+    const shown = [0, 1, 2].map((i) => !!sound(i));
     sound(0).click();
     const first = streams().map((s) => s.muted);
     sound(1).click();
     const second = streams().map((s) => s.muted);
     sound(1).click();
-    return { first, second, third: streams().map((s) => s.muted), icon: sound(0).querySelector("ha-icon").getAttribute("icon") };
+    return {
+      before,
+      shown,
+      first,
+      second,
+      third: streams().map((s) => s.muted),
+      icon: sound(0).querySelector("ha-icon").getAttribute("icon"),
+    };
   });
+  // Only streams that carry sound get the button.
+  assert.equal(r.before, false);
+  assert.deepEqual(r.shown, [true, true, false]);
   assert.deepEqual(r.first, [false, true, true]);
   assert.deepEqual(r.second, [true, false, true]);
   assert.deepEqual(r.third, [true, true, true]);

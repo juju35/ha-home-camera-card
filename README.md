@@ -12,9 +12,9 @@ List the cameras, the card finds their privacy switch, SD stream and PTZ buttons
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=juju35&repository=ha-home-camera-card&category=plugin)
 
-| Light | Dark |
-|---|---|
-| ![Camera card](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card.png) | ![Camera card, dark theme](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-dark.png) |
+| Grid | Pan & tilt (dark) | Enlarged camera |
+|---|---|---|
+| ![Camera card](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card.png) | ![Camera card with the pan and tilt arrows, dark theme](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-dark.png) | ![Camera card with one camera enlarged](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-focus.png) |
 
 ## Features
 
@@ -24,9 +24,11 @@ List the cameras, the card finds their privacy switch, SD stream and PTZ buttons
 - Hidden cameras are removed from the grid: a camera is hidden when its **privacy switch is on** or its **power switch is off**
 - **HD / SD** switch: from an `input_select` shared by every dashboard, or from the card itself (remembered by the browser)
 - Live grid on Home Assistant's own player: WebRTC through go2rtc when available, else HLS or MJPEG — no other card to install
-- Tap a camera to open Home Assistant's camera dialog; a **fullscreen** button on every tile
-- **Sound** button on every tile, for one camera at a time (the grid starts muted)
-- **PTZ**: a button on the tile shows four arrows over the image; arrows whose button is unavailable are greyed out
+- **Tap a camera to enlarge it** in the card, the others lined up underneath; tap it again, press Escape or click outside to go back. Its *Details* button opens Home Assistant's camera dialog (a single camera opens it on tap)
+- **Fullscreen** button on every tile; **sound** button on streams that carry sound, for one camera at a time (the grid starts muted)
+- **PTZ**: a button on the tile shows four arrows over the image; hold an arrow to keep moving, or use the arrow keys; arrows whose button is unavailable are greyed out
+- Spinner until each camera's first frame; privacy badges spin until their switch answers
+- Mouse: tile buttons show on hover; touch: always shown, with larger targets
 - Hiding or showing a camera, or switching HD / SD, never reloads the streams of the other cameras
 - Streams stop while the page is hidden (other tab, phone locked) and resume when it comes back
 - Automatic discovery on the camera's device: `switch.*_privacy`, `button.*_move_left/right/up/down`, and the `*_sd_stream` camera next to a `*_hd_stream` one (Tapo integration naming)
@@ -140,13 +142,13 @@ cameras:
 
 ## Screenshots
 
-| Light (English) | Dark (French) |
-|---|---|
-| ![card](screenshots/card.png) | ![card dark](screenshots/card-dark.png) |
+| Grid | Pan & tilt (dark) | Enlarged camera |
+|---|---|---|
+| ![card](screenshots/card.png) | ![card dark](screenshots/card-dark.png) | ![card focus](screenshots/card-focus.png) |
 
 ## How it works
 
-The card draws its own header, badges and tiles, and plays each camera with Home Assistant's `ha-camera-stream`, the player of the built-in camera cards and dialog: it picks WebRTC, HLS or MJPEG by itself, so go2rtc and the camera's own settings apply as everywhere else in Home Assistant. Tiles are kept between updates and only added or removed when a camera is shown or hidden, so the other streams keep playing. When the quality is SD, every camera that has an SD stream uses it.
+The card draws its own header, badges and tiles, and plays each camera with Home Assistant's `ha-camera-stream`, the player of the built-in camera cards and dialog: it picks WebRTC, HLS or MJPEG by itself, so go2rtc and the camera's own settings apply as everywhere else in Home Assistant. Tiles are kept between updates and only added or removed when a camera is shown or hidden, so the other streams keep playing; enlarging a camera only changes the layout (CSS), for the same reason. When the quality is SD, every camera that has an SD stream uses it.
 
 Discovery looks at the entities of the camera's device in the entity registry. Anything set in the configuration wins over what is found.
 
