@@ -17,7 +17,7 @@ for (const name of new Set([...cardJs.match(/mdi:[a-z0-9-]+/g), "mdi:cctv", "mdi
 
 const THEMES = {
   light: {
-    "--primary-background-color": "#f4f4f4", "--secondary-background-color": "#efefef", "--card-background-color": "#ffffff",
+    "--primary-background-color": "#e8eaed", "--secondary-background-color": "#ececec", "--card-background-color": "#ffffff",
     "--primary-text-color": "#212121", "--secondary-text-color": "#727272", "--divider-color": "rgba(0,0,0,.12)",
   },
   dark: {
@@ -38,7 +38,7 @@ customElements.define("ha-card", class extends HTMLElement {
     super();
     this.attachShadow({ mode: "open" }).innerHTML =
       "<style>:host{display:block;background:var(--card-background-color);border-radius:12px;" +
-      "box-shadow:0 1px 4px rgba(0,0,0,.08);color:var(--primary-text-color);overflow:hidden}</style><slot></slot>";
+      "border:1px solid var(--divider-color);color:var(--primary-text-color);overflow:hidden}</style><slot></slot>";
   }
 });
 customElements.define("ha-icon", class extends HTMLElement {
@@ -85,7 +85,7 @@ const pageHtml = (theme) => `<!doctype html><html><head><meta charset="utf-8">
 <style>
   :root { ${Object.entries({ ...THEMES[theme], ...COMMON }).map(([k, v]) => `${k}:${v};`).join("")} }
   body { margin: 0; padding: 16px; background: var(--primary-background-color); color: var(--primary-text-color);
-         font-family: Roboto, "Segoe UI", Helvetica, Arial, sans-serif; width: 640px; }
+         font-family: Roboto, "Segoe UI", Helvetica, Arial, sans-serif; width: 460px; }
 </style></head><body><div id="root"></div></body></html>`;
 
 // Mock Tapo cameras: [key, name, short name, privacy on].
@@ -120,13 +120,14 @@ const config = {
 
 const SHOTS = [
   { file: "card", theme: "light", lang: "en" },
-  { file: "card-dark", theme: "dark", lang: "fr" },
+  { file: "card-dark", theme: "dark", lang: "en" },
 ];
 
 const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
 // A fresh page per shot: re-running the scripts in the same realm would redeclare their globals.
 for (const s of SHOTS) {
   const page = await browser.newPage({ deviceScaleFactor: 2, viewport: { width: 1000, height: 2000 } });
+  page.on("pageerror", (err) => console.error(`pageerror (${s.file}): ${err.message}`));
   await page.setContent(pageHtml(s.theme));
   await page.addScriptTag({ content: haElements });
   await page.addScriptTag({ content: cardJs });
@@ -137,7 +138,13 @@ for (const s of SHOTS) {
     document.getElementById("root").appendChild(el);
   }, { config, hass: { states, entities, language: s.lang, locale: { language: s.lang }, themes: { darkMode: s.theme === "dark" } } });
   await page.waitForTimeout(400);
-  await page.locator("home-camera-card").screenshot({ path: `${root}screenshots/${s.file}.png`, animations: "disabled" });
+  // The card and a 16 px frame of the theme background around it.
+  const box = await page.locator("#root").boundingBox();
+  await page.screenshot({
+    path: `${root}screenshots/${s.file}.png`,
+    clip: { x: 0, y: 0, width: 460 + 32, height: Math.ceil(box.height) + 32 },
+    animations: "disabled",
+  });
   console.log(`screenshots/${s.file}.png`);
   await page.close();
 }

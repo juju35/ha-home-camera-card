@@ -141,7 +141,7 @@ camera_card:
 
 ## Screenshots
 
-| Light (English) | Dark (French) |
+| Light | Dark |
 |---|---|
 | ![card](screenshots/card.png) | ![card dark](screenshots/card-dark.png) |
 
