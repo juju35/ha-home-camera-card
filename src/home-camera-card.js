@@ -298,6 +298,9 @@ class HomeCameraCard extends HTMLElement {
     document.removeEventListener('visibilitychange', this._onVisibility);
     window.removeEventListener('keydown', this._onEscape);
     this._stopRepeat();
+    // Privacy badges waiting for their switch: drop their timers so none fires on the detached card.
+    for (const p of this._pending?.values() || []) clearTimeout(p.timer);
+    this._pending?.clear();
     if (this._pseudo) this._setPseudo(this._pseudo, false);
   }
 
