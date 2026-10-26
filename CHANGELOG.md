@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.2.1
+
+### Fixes
+- Single camera: its round toggle uses the same marks as the badges of a multi-camera card, the red live dot on a neutral background while the camera films and the green lock while it is hidden (it showed a red open-lock eye while filming).
+
 ## 3.2.0
 
 Visual pass: the same card, nicer to look at.

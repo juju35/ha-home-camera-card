@@ -410,3 +410,18 @@ test("every camera hidden: no quality switch, a panel saying how to bring one ba
   });
   assert.deepEqual(r, { tiles: 0, quality: false, panel: "Enable the camera to see it here" });
 });
+
+test("a single camera's toggle uses the badge marks: live dot while filming, lock while hidden", async () => {
+  const r = await page.evaluate(() => {
+    mount(["camera.b_hd_stream"]);
+    const mark = () => {
+      const t = el.shadowRoot.querySelector(".toggle");
+      return { cls: t.className, dot: !!t.querySelector(".dot"), icon: t.querySelector("ha-icon")?.getAttribute("icon") ?? null };
+    };
+    const live = mark();
+    el.hass = makeHass({ ...baseStates(), "switch.b_privacy": st("switch.b_privacy", "on") });
+    return { live, hidden: mark() };
+  });
+  assert.deepEqual(r.live, { cls: "toggle exposed", dot: true, icon: null });
+  assert.deepEqual(r.hidden, { cls: "toggle private", dot: false, icon: "mdi:eye-lock" });
+});

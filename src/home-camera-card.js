@@ -483,13 +483,15 @@ class HomeCameraCard extends HTMLElement {
     let sub = summary ? `<div class="summary">${hcEsc(summary)}</div>` : '';
     if (single && badges) {
       // Icon only, the size of the header icon; the text stays in the tooltip and for screen readers.
+      // Same marks as the badges: the red live dot while the camera films, the lock while it is hidden.
       const cam = cams[0];
       const l = lock(cam);
       const label = l.cls === 'pending' ? l.title : this._t(this._hidden(cam) ? 'enable' : 'disable');
       right = '';
       side =
         `<span class="toggle ${l.cls}" data-toggle="${hcEsc(cam.privacy || cam.power)}" role="button" tabindex="0"` +
-        ` title="${hcEsc(label)}" aria-label="${hcEsc(label)}"><ha-icon icon="${l.icon}"></ha-icon></span>`;
+        ` title="${hcEsc(label)}" aria-label="${hcEsc(label)}">` +
+        `${badgeIcon(l) ? `<ha-icon icon="${l.icon}"></ha-icon>` : '<span class="dot"></span>'}</span>`;
       if (visible.length) sub = `<div class="chips sub">${quality}</div>`;
       badges = '';
     }
@@ -805,11 +807,14 @@ class HomeCameraCard extends HTMLElement {
       ' color: var(--secondary-text-color); user-select: none; transition: background 0.15s, color 0.15s; }' +
       '.opt.on { background: var(--card-background-color, #fff); color: var(--primary-color, #03a9f4); box-shadow: 0 1px 2px rgba(0,0,0,0.18); cursor: default; }' +
       '.opt:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 1px; }' +
+      // Single camera: its badge as a round button, styled like the badges (neutral with the live dot,
+      // green-tinted with the lock).
       '.toggle { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer;' +
-      ' --hc-c: var(--hc-off); background: color-mix(in srgb, var(--hc-c) 15%, transparent); color: var(--hc-c); }' +
-      '.toggle.private { --hc-c: var(--hc-on); }' +
-      '.toggle.pending { --hc-c: var(--secondary-text-color); cursor: progress; }' +
+      ' background: var(--secondary-background-color, rgba(128,128,128,0.12)); color: var(--primary-text-color); }' +
+      '.toggle.private { background: color-mix(in srgb, var(--hc-on) 15%, transparent); color: var(--hc-on); }' +
+      '.toggle.pending { color: var(--secondary-text-color); cursor: progress; }' +
       '.toggle ha-icon { --mdc-icon-size: 22px; }' +
+      '.toggle .dot { width: 12px; height: 12px; }' +
       // Badges: neutral with a red live dot while the camera films, green-tinted with a lock while hidden.
       '.chip { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; line-height: 18px; padding: 1px 9px 1px 7px; border-radius: 12px;' +
       ' cursor: pointer; white-space: nowrap; user-select: none; background: var(--secondary-background-color, rgba(128,128,128,0.12)); color: var(--primary-text-color); }' +
