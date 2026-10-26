@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Changes
+- Header icon: a round badge drawn like the other ha-* cards (16 % tint of its colour, icon centred at 24 px).
+- Header spacing like the other cards: the camera badges and the camera view start 8 px under the header (were 10 px and 12 px). With a single camera, the header icon and the toggle sit 12 px from the top of the card instead of being pushed down by the HD / SD switch under the title.
+- Green badges and the single camera's green toggle use the shared 16 % tint, 24 % on hover.
+
 ## 3.2.1
 
 ### Fixes
