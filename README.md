@@ -24,7 +24,7 @@ List the cameras, the card finds their privacy switch, SD stream and PTZ buttons
 - Hidden cameras are removed from the grid: a camera is hidden when its **privacy switch is on** or its **power switch is off**
 - **HD / SD** switch: from an `input_select` shared by every dashboard, or from the card itself (remembered by the browser)
 - Live grid on Home Assistant's own player: WebRTC through go2rtc when available, else HLS or MJPEG — no other card to install
-- **Tap a camera to put it fullscreen**, with its buttons; tap again or press Escape to come back (on iPhone, the video opens in the system player)
+- **Tap a camera to put it fullscreen**, with its pan & tilt arrows always shown; tap again or press Escape to come back (on iPhone, the card covers the screen itself)
 - *Details* button on every tile for Home Assistant's camera dialog; **sound** button on streams that carry sound, for one camera at a time (the grid starts muted)
 - **PTZ**: a button on the tile shows four arrows over the image; hold an arrow to keep moving, or use the arrow keys; arrows whose button is unavailable are greyed out
 - Spinner until each camera's first frame; privacy badges spin until their switch answers

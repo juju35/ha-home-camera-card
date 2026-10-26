@@ -5,7 +5,7 @@
 Ergonomics pass: quicker to read, quicker to act on.
 
 ### What's new
-- **Tap a camera to put it fullscreen**, with its buttons; tap again (or its exit button, or Escape) to come back. On iPhone, where pages cannot go fullscreen, the video opens in the system player; an MJPEG camera opens Home Assistant's camera dialog instead.
+- **Tap a camera to put it fullscreen**, with its pan & tilt arrows always shown (larger) when the camera has some, and its sound and exit buttons; tap again, the exit button or Escape to come back. On iPhone, where pages cannot go fullscreen, the card covers the screen itself, arrows included.
 - The camera dialog moves to a *Details* button on each tile.
 - **Pan & tilt**: hold an arrow to keep moving; arrow keys move the camera while its arrows are shown; the pressed arrow lights up.
 - A spinner shows on each tile until its first frame arrives.

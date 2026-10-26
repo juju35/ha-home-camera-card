@@ -154,19 +154,23 @@ test("a tap on a camera puts its tile fullscreen, without reconnecting any playe
   assert.equal(r.connects, 0);
 });
 
-test("in fullscreen: image fitted, exit button instead of details, a tap exits", async () => {
+test("in fullscreen: image fitted, arrows shown, exit button instead of details, a tap exits", async () => {
   const r = await page.evaluate(() => {
     mount(CAMS);
     const tile = tiles()[0];
+    tile.querySelector('[data-action="ptz"]').click(); // opened in the grid: replaced by the fullscreen arrows
     // Fullscreen as the browser reports it.
     Object.defineProperty(el.shadowRoot, "fullscreenElement", { configurable: true, get: () => tile });
     tile.dispatchEvent(new Event("fullscreenchange"));
     const inside = {
       fit: tile.querySelector("ha-camera-stream").fitMode,
-      exit: !!tile.querySelector('[data-action="fullscreen"]'),
-      details: !!tile.querySelector('[data-action="details"]'),
+      buttons: [...tile.querySelectorAll(".tools [data-action]")].map((b) => b.dataset.action),
+      arrows: tile.querySelectorAll(".move").length,
       label: tile.querySelector(".open").getAttribute("aria-label"),
     };
+    calls.length = 0;
+    tile.querySelector(".open").dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true, composed: true }));
+    inside.key = calls.at(-1)?.[2];
     let exited = 0;
     const original = document.exitFullscreen;
     document.exitFullscreen = () => {
@@ -181,33 +185,58 @@ test("in fullscreen: image fitted, exit button instead of details, a tap exits",
     return {
       inside,
       exited,
-      after: { fit: tile.querySelector("ha-camera-stream").fitMode, details: !!tile.querySelector('[data-action="details"]') },
+      after: [...tile.querySelectorAll(".tools [data-action]")].map((b) => b.dataset.action),
     };
   });
-  assert.deepEqual(r.inside, { fit: "contain", exit: true, details: false, label: "Exit fullscreen" });
+  assert.deepEqual(r.inside, {
+    fit: "contain",
+    buttons: ["fullscreen"],
+    arrows: 4,
+    label: "Exit fullscreen",
+    key: "button.a_move_left",
+  });
   assert.equal(r.exited, 2);
-  assert.deepEqual(r.after, { fit: "cover", details: true });
+  assert.deepEqual(r.after, ["ptz", "details"]);
 });
 
-test("without element fullscreen (iPhone), the video goes fullscreen, else the dialog opens", async () => {
+test("without element fullscreen (iPhone), the card covers the screen itself, with the arrows", async () => {
   const r = await page.evaluate(() => {
     mount(CAMS);
-    const opened = [];
-    el.addEventListener("hass-more-info", (e) => opened.push(e.detail.entityId));
     const original = [Element.prototype.requestFullscreen, Element.prototype.webkitRequestFullscreen];
     Element.prototype.requestFullscreen = undefined;
     Element.prototype.webkitRequestFullscreen = undefined;
-    const video = document.createElement("video");
-    let native = 0;
-    video.webkitEnterFullscreen = () => native++;
-    streams()[0].appendChild(video);
-    tiles()[0].querySelector(".open").click();
-    tiles()[2].querySelector(".open").click();
+    const start = window.__connects;
+    const tile = tiles()[0];
+    tile.querySelector(".open").click();
+    const rect = tile.getBoundingClientRect();
+    const pad = getComputedStyle(tile.querySelector(".pad")).display;
+    calls.length = 0;
+    tile.querySelector(".move.up").click();
+    const press = calls.at(-1)?.[2];
+    // A tap on the image leaves; Escape too.
+    tile.querySelector(".open").click();
+    const afterTap = tile.classList.contains("pseudo");
+    tile.querySelector(".open").click();
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    const afterEscape = tile.classList.contains("pseudo");
     [Element.prototype.requestFullscreen, Element.prototype.webkitRequestFullscreen] = original;
-    return { native, opened };
+    return {
+      covers: Math.round(rect.width) === innerWidth && Math.round(rect.height) === innerHeight,
+      pad,
+      press,
+      afterTap,
+      afterEscape,
+      connects: window.__connects - start,
+    };
   });
-  assert.equal(r.native, 1);
-  assert.deepEqual(r.opened, ["camera.c"]);
+  assert.deepEqual(r, {
+    covers: true,
+    pad: "block",
+    press: "button.a_move_up",
+    afterTap: false,
+    afterEscape: false,
+    connects: 0,
+  });
 });
 
 test("the details button opens the camera dialog", async () => {
