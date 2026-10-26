@@ -27,6 +27,7 @@ List the cameras, the card finds their privacy switch, SD stream and PTZ buttons
 - Tap a camera to open Home Assistant's camera dialog; a **fullscreen** button on every tile
 - **PTZ**: a button on the tile shows four arrows over the image; arrows whose button is unavailable are greyed out
 - Hiding or showing a camera, or switching HD / SD, never reloads the streams of the other cameras
+- Streams stop while the page is hidden (other tab, phone locked) and resume when it comes back
 - Automatic discovery on the camera's device: `switch.*_privacy`, `button.*_move_left/right/up/down`, and the `*_sd_stream` camera next to a `*_hd_stream` one (Tapo integration naming)
 - Visual editor in the dashboard UI (no YAML needed)
 - English and French, follows the Home Assistant language

@@ -10,12 +10,13 @@ Advanced Camera Card is no longer used: the card plays the cameras itself with H
 ### What's new
 - Every tile plays with Home Assistant's camera player: WebRTC through go2rtc when available, else HLS or MJPEG, as in the built-in cards. Nothing else to install.
 - Tap a camera to open Home Assistant's camera dialog; a fullscreen button on each tile.
-- PTZ: a button on the tile shows four arrows over the image; arrows whose button is unavailable are greyed out.
+- PTZ: a button on the tile shows four arrows over the image; arrows whose button is unavailable are greyed out. A tap on the image closes them.
 - Unavailable cameras show *Unavailable* in their tile.
 - `aspect_ratio` option (default `16:9`), also in the visual editor.
 
 ### Changes
 - Hiding or showing a camera, or switching HD / SD, no longer reloads the streams of the other cameras.
+- Streams stop while the page is hidden (other tab, phone locked) and resume when it comes back.
 
 ## 2.1.1
 

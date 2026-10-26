@@ -168,7 +168,10 @@ function hcLoadStream(entity) {
       const helpers = window.loadCardHelpers ? await window.loadCardHelpers() : null;
       helpers?.createCardElement({ type: 'picture-entity', entity: entity, camera_view: 'live' });
       await customElements.whenDefined('ha-camera-stream');
-    })();
+    })().catch((err) => {
+      hcStreamLoad = null; // the next render tries again
+      throw err;
+    });
   }
   return hcStreamLoad;
 }
@@ -258,8 +261,11 @@ class HomeCameraCard extends HTMLElement {
         if (!ev.key || ev.key === HC_QUALITY_KEY) this._update();
       };
     }
+    if (!this._onVisibility) this._onVisibility = () => this._syncTiles();
     window.addEventListener('storage', this._onQuality);
     window.addEventListener(HC_QUALITY_EVENT, this._onQuality);
+    document.addEventListener('visibilitychange', this._onVisibility);
+    this._syncTiles();
     // The HD/SD choice may have changed while detached (listeners removed): catch up. _update() is
     // a no-op before setConfig/hass, and the signatures skip the render when nothing changed.
     this._update();
@@ -268,6 +274,7 @@ class HomeCameraCard extends HTMLElement {
   disconnectedCallback() {
     window.removeEventListener('storage', this._onQuality);
     window.removeEventListener(HC_QUALITY_EVENT, this._onQuality);
+    document.removeEventListener('visibilitychange', this._onVisibility);
   }
 
   set hass(hass) {
@@ -319,8 +326,17 @@ class HomeCameraCard extends HTMLElement {
     return (cam.privacy && this._state(cam.privacy) === 'on') || (cam.power && this._state(cam.power) === 'off');
   }
 
+  // Each camera gets a unique key (the same camera listed twice gets two tiles, not one shared tile).
   _cameras() {
-    return (this._config.cameras || []).map((raw, i) => hcCamera(this._hass, raw, i)).filter((cam) => cam.camera);
+    const seen = new Set();
+    return (this._config.cameras || [])
+      .map((raw, i) => hcCamera(this._hass, raw, i))
+      .filter((cam) => cam.camera)
+      .map((cam, i) => {
+        if (seen.has(cam.key)) cam.key = `${cam.key}_${i}`;
+        seen.add(cam.key);
+        return cam;
+      });
   }
 
   _update() {
@@ -522,8 +538,10 @@ class HomeCameraCard extends HTMLElement {
   }
 
   // Live state of every tile: the camera's state object, and which PTZ buttons can be pressed.
+  // While the page is hidden (other tab, phone locked) the players are emptied, which closes the streams.
   _syncTiles() {
     if (!this._tiles || !this._hass) return;
+    const paused = document.visibilityState === 'hidden';
     for (const tile of this._tiles.values()) {
       const st = this._hass.states[tile._entity];
       const ok = !!st && st.state !== 'unavailable';
@@ -531,7 +549,7 @@ class HomeCameraCard extends HTMLElement {
       const stream = tile._stream;
       // Older Home Assistant versions take hass, newer ones read it from the page: both are harmless.
       stream.hass = this._hass;
-      const obj = ok ? st : undefined;
+      const obj = ok && !paused ? st : undefined;
       if (stream.stateObj !== obj) stream.stateObj = obj;
       for (const b of tile.querySelectorAll('.move')) {
         b.classList.toggle('dis', this._state(b.dataset.entity) === 'unavailable');
@@ -613,6 +631,8 @@ class HomeCameraCard extends HTMLElement {
       '.btn:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); }' +
       '.btn ha-icon { --mdc-icon-size: 18px; }' +
       '.tile.ptz-open .btn.ptz { background: var(--primary-color, #03a9f4); }' +
+      // Narrow tiles: the up arrow would run into the fullscreen button.
+      '.tile.ptz-open .btn.full { display: none; }' +
       '.pad { display: none; }' +
       '.tile.ptz-open .pad { display: block; }' +
       '.move { position: absolute; width: 38px; height: 38px; }' +
@@ -647,7 +667,8 @@ class HomeCameraCard extends HTMLElement {
     else if (action === 'move') {
       const btn = path.find((n) => n.dataset?.action);
       if (!btn.classList.contains('dis')) this._hass.callService('button', 'press', { entity_id: btn.dataset.entity });
-    } else if (!this._fullscreen(tile)) this._moreInfo(tile._entity);
+    } else if (tile.classList.contains('ptz-open')) tile.classList.remove('ptz-open');
+    else if (!this._fullscreen(tile)) this._moreInfo(tile._entity);
   }
 
   _toggleQuality() {

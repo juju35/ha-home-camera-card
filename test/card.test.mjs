@@ -101,3 +101,14 @@ test("the local HD/SD choice is shared by every card of the page", () => {
   b.connectedCallback();
   assert.equal(updates, 2);
 });
+
+test("the same camera listed twice gets two distinct tile keys", () => {
+  const { customElements } = loadCard("home-camera-card.js", []);
+  const card = new (customElements.get("home-camera-card"))();
+  card.setConfig({ cameras: ["camera.salon_hd_stream", "camera.garage", "camera.salon_hd_stream"] });
+  card._hass = { states: {}, entities: {} };
+  assert.deepEqual(
+    card._cameras().map((c) => c.key),
+    ["salon_hd_stream", "garage", "salon_hd_stream_2"],
+  );
+});
