@@ -486,8 +486,8 @@ class HomeCameraCard extends HTMLElement {
       ':host { display: block; --hc-on: var(--success-color, #43a047); --hc-off: var(--error-color, #db4437); }' +
       'ha-card { box-sizing: border-box; padding: 12px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }' +
       '.header { display: flex; align-items: center; gap: 10px; }' +
-      '.hicon { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center;' +
-      ' --hc-c: var(--primary-color, #03a9f4); background: color-mix(in srgb, var(--hc-c) 15%, transparent); color: var(--hc-c); }' +
+      '.hicon { width: 40px; height: 40px; border-radius: 50%; flex: none; display: grid; place-items: center;' +
+      ' --hc-c: var(--primary-color, #03a9f4); background: color-mix(in srgb, var(--hc-c) 16%, transparent); color: var(--hc-c); }' +
       '.hicon.off { --hc-c: var(--secondary-text-color); }' +
       '.hicon ha-icon { --mdc-icon-size: 24px; }' +
       '.titles { flex: 1; min-width: 0; }' +
