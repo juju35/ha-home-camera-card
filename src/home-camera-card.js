@@ -643,7 +643,8 @@ class HomeCameraCard extends HTMLElement {
     const n = this._tiles.size;
     if (this._focus && (n < 2 || !this._tiles.has(this._focus))) this._focus = null;
     grid.classList.toggle('focus', !!this._focus);
-    const cols = this._focus ? Math.min(n - 1, 4) : hcColumns(this._config, n);
+    // Enlarged: the others in a row of 3 to 4 thumbnails, so one or two of them stay small.
+    const cols = this._focus ? Math.min(Math.max(n - 1, 3), 4) : hcColumns(this._config, n);
     grid.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
     for (const [key, tile] of this._tiles) {
       const focused = key === this._focus;

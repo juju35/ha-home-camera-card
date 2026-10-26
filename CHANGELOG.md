@@ -5,7 +5,7 @@
 Ergonomics pass: quicker to read, quicker to act on.
 
 ### What's new
-- **Enlarge a camera**: tap it and it fills the card, the other cameras lined up underneath. Tap it again, tap *Back*, press Escape or click outside the card to go back to the grid; tap another camera to switch. No stream reloads on the way.
+- **Enlarge a camera**: tap it and it fills the card, the other cameras as thumbnails underneath. Tap it again, tap *Back*, press Escape or click outside the card to go back to the grid; tap another camera to switch. No stream reloads on the way.
 - The camera dialog moves to a *Details* button on the enlarged camera. With a single camera, a tap still opens it.
 - **Pan & tilt**: hold an arrow to keep moving; arrow keys move the camera while its arrows are shown; the pressed arrow lights up.
 - A spinner shows on each tile until its first frame arrives.

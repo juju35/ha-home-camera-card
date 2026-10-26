@@ -155,7 +155,7 @@ test("a tap enlarges a camera without reconnecting any player, a second tap shri
   assert.deepEqual(r.focused, {
     grid: true,
     tile: 1,
-    cols: "repeat(2, minmax(0px, 1fr))",
+    cols: "repeat(3, minmax(0px, 1fr))",
     back: true,
     details: true,
     othersHaveDetails: false,
