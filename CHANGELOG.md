@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.4.0 - 2026-10-26
+### Fixes
+- Privacy badge timers are now cleared when the card is removed from the DOM. Toggling a privacy badge arms a 15 s timer (`HC_PENDING_MS`) that calls `_update()` if the switch does not answer; this timer was never cancelled in `disconnectedCallback`. If the card left the DOM (view change, dashboard edit) while a switch was still pending, the timer survived and fired `_update()` on a detached element. `disconnectedCallback` now cancels these timers and clears `_pending`, as it already does for PTZ repeat and fullscreen.
+
 ## 3.3.0
 ### Changes
 - Header icon: a round badge drawn like the other ha-* cards (16 % tint of its colour, icon centred at 24 px).
