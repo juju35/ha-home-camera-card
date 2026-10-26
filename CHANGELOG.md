@@ -9,7 +9,7 @@ Visual pass: the same card, nicer to look at.
 - **Badges**: a red live dot while the camera films, green with a lock while it is hidden (was: an eye icon on every badge).
 - **Images**: each name sits in a glass pill with a softly blinking live dot, instead of a dark band over the bottom of the picture; a single camera's pill just says *Live*, its name being the title. Rounder corners, a hairline edge so dark scenes stay framed on a dark card, wider gaps.
 - **Buttons and arrows** on the images are smoked glass with a thin outline, and give under the finger.
-- **Pan & tilt pad**: the four arrows gather in a round glass pad around a centre dot, instead of sitting at the four edges of the image. In the grid it sits in the middle of the tile, sized to it (the name steps aside while it is open); in fullscreen, at the bottom right, within thumb reach on a phone and within reach of each other on a large screen. Larger buttons and name in fullscreen.
+- **Pan & tilt pad**: the four arrows gather in a round pad around a centre dot, in the bottom right corner, instead of sitting at the four edges of the image. Lightly tinted and not blurred, so the image stays visible through it. Sized to the tile in the grid (never under 84 px on touch screens), larger in fullscreen, where it sits within thumb reach on a phone and keeps the arrows close together on a large screen. Larger buttons and name in fullscreen.
 - **Unavailable** cameras show a softer placeholder; the loading spinner is finer.
 - **Every camera hidden**: a panel where the grid would be says how to bring one back; the HD / SD switch hides.
 - Blinking and spinning stop when the system asks for reduced motion.

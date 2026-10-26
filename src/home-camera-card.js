@@ -868,11 +868,12 @@ class HomeCameraCard extends HTMLElement {
       '.tile.ptz-open .btn.ptz, .btn.sound.on, .move:active { background: var(--primary-color, #03a9f4); border-color: transparent; }' +
       // Narrow tiles: the up arrow would run into the other buttons.
       '.tile.ptz-open .tools .btn:not(.ptz) { display: none; }' +
-      // Pan & tilt: a round glass pad, its four arrows around a centre dot. In the grid it sits in the middle
-      // of the tile, sized to it (container units); in fullscreen, at the bottom right under the thumb.
-      '.pad { display: none; position: absolute; --pad: min(164px, 80cqh); width: var(--pad); height: var(--pad); border-radius: 50%;' +
-      ' left: calc(50% - var(--pad) / 2); top: calc(50% - var(--pad) / 2);' +
-      ' background: var(--hc-glass); border: 1px solid var(--hc-glass-line); -webkit-backdrop-filter: blur(12px) saturate(1.3); backdrop-filter: blur(12px) saturate(1.3); }' +
+      // Pan & tilt: a round pad, its four arrows around a centre dot, in the bottom right corner (under the
+      // thumb), sized to the tile (container units). Lightly tinted and not blurred: the image stays visible
+      // through it, the arrows keep a shadow to stay readable on any scene.
+      '.tile { --pad: min(120px, 58cqh); }' +
+      '.pad { display: none; position: absolute; width: var(--pad); height: var(--pad); border-radius: 50%;' +
+      ' right: 8px; bottom: 8px; background: rgba(14, 16, 20, 0.26); border: 1px solid rgba(255, 255, 255, 0.2); }' +
       '.tile.ptz-open .pad, :is(.tile:fullscreen, .tile.pseudo) .pad { display: block; }' +
       '.pad::after { content: ""; position: absolute; inset: 0; margin: auto; width: calc(var(--pad) * 0.07); height: calc(var(--pad) * 0.07); border-radius: 50%;' +
       ' background: rgba(255,255,255,0.22); pointer-events: none; }' +
@@ -880,22 +881,24 @@ class HomeCameraCard extends HTMLElement {
       ' background: transparent; border-color: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }' +
       '.move:hover { background: rgba(255,255,255,0.12); }' +
       '.move:active { background: var(--primary-color, #03a9f4); }' +
-      '.move ha-icon { --mdc-icon-size: calc(var(--s) * 0.62); }' +
+      '.move ha-icon { --mdc-icon-size: calc(var(--s) * 0.62); filter: drop-shadow(0 1px 2px rgba(0,0,0,0.7)); }' +
       '.move.left { left: 2px; top: calc(50% - var(--s) / 2); }' +
       '.move.right { right: 2px; top: calc(50% - var(--s) / 2); }' +
       '.move.up { top: 2px; left: calc(50% - var(--s) / 2); }' +
       '.move.down { bottom: 2px; left: calc(50% - var(--s) / 2); }' +
       '.move.dis { opacity: 0.35; cursor: default; }' +
-      // In the grid the pad covers the middle of the image: the name steps aside while it is open.
-      '.tile.ptz-open .label { opacity: 0; }' +
-      ':is(.tile:fullscreen, .tile.pseudo) .pad { --pad: 164px; left: auto; top: auto;' +
-      ' right: max(24px, env(safe-area-inset-right)); bottom: max(24px, env(safe-area-inset-bottom)); }' +
+      // The name keeps clear of the pad.
+      '.tile.ptz-open .label { max-width: calc(100% - var(--pad) - 24px); }' +
+      ':is(.tile:fullscreen, .tile.pseudo) { --pad: 164px; }' +
+      ':is(.tile:fullscreen, .tile.pseudo) .pad { right: max(24px, env(safe-area-inset-right)); bottom: max(24px, env(safe-area-inset-bottom)); }' +
       ':is(.tile:fullscreen, .tile.pseudo) .btn:not(.move) { width: 40px; height: 40px; }' +
       ':is(.tile:fullscreen, .tile.pseudo) .btn:not(.move) ha-icon { --mdc-icon-size: 20px; }' +
       // Mouse: the buttons show on hover, so the image stays clear. Touch: always shown, and larger.
       '@media (hover: hover) and (pointer: fine) {' +
       ' .tile:not(:hover):not(:focus-within):not(.ptz-open) .tools { opacity: 0; } }' +
-      '@media (pointer: coarse) { .btn:not(.move) { width: 36px; height: 36px; } .btn:not(.move) ha-icon { --mdc-icon-size: 20px; } }' +
+      // Touch: buttons larger, and a pad never too small for a finger, even on a narrow tile.
+      '@media (pointer: coarse) { .btn:not(.move) { width: 36px; height: 36px; } .btn:not(.move) ha-icon { --mdc-icon-size: 20px; }' +
+      ' .tile { --pad: min(120px, max(84px, 58cqh)); } }' +
       '@media (prefers-reduced-motion: reduce) { .label .dot, .spin, .pending ha-icon { animation: none; } }' +
       // Every camera hidden: a quiet panel where the grid would be, saying how to bring one back.
       '.asleep { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 64px; padding: 12px; box-sizing: border-box;' +
