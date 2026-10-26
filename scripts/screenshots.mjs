@@ -51,21 +51,40 @@ customElements.define("ha-icon", class extends HTMLElement {
     this.innerHTML = '<svg viewBox="0 0 24 24" style="width:var(--mdc-icon-size,24px);height:var(--mdc-icon-size,24px);fill:currentColor"><path d="' + path + '"/></svg>';
   }
 });
+// Mock camera views: simple rooms in SVG (wall, floor, window light, furniture), seen from a ceiling corner.
+const svg = (body) => 'url("data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 90" preserveAspectRatio="xMidYMid slice">' + body + '</svg>') + '")';
+const room = (wall, floor, win, extra) =>
+  '<defs><radialGradient id="v" cx="50%" cy="45%" r="75%"><stop offset="60%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity=".45"/></radialGradient>' +
+  '<linearGradient id="l" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>' +
+  '<rect width="160" height="90" fill="' + wall + '"/><path d="M0 58 L160 50 L160 90 L0 90Z" fill="' + floor + '"/>' +
+  '<rect x="18" y="12" width="34" height="30" rx="1" fill="' + win + '"/><path d="M18 42 L52 42 L96 72 L40 76Z" fill="url(#l)"/>' + extra +
+  '<rect width="160" height="90" fill="url(#v)"/>';
 const SCENES = [
-  "linear-gradient(160deg,#8d6e63 0%,#5d4037 55%,#3e2723 100%)",
-  "linear-gradient(160deg,#90a4ae 0%,#546e7a 50%,#263238 100%)",
-  "linear-gradient(160deg,#f8bbd0 0%,#ad7a99 50%,#4a3a48 100%)",
-  "linear-gradient(160deg,#a5d6a7 0%,#558b2f 55%,#1b3a10 100%)",
-  "linear-gradient(180deg,#81d4fa 0%,#b3e5fc 45%,#7cb342 46%,#33691e 100%)",
+  // Living room: sofa and low table.
+  svg(room('#b9a48f', '#7d6450', '#f3eadb', '<rect x="92" y="40" width="54" height="20" rx="4" fill="#5b6b78"/><rect x="88" y="36" width="62" height="10" rx="4" fill="#4d5c68"/><rect x="70" y="62" width="34" height="5" rx="1" fill="#3f3027"/>')),
+  // Kids' room: bed and rug.
+  svg(room('#9fb3bf', '#c7b59c', '#eef4f7', '<rect x="86" y="44" width="62" height="18" rx="3" fill="#e9e3d6"/><rect x="86" y="40" width="16" height="10" rx="3" fill="#f6f1e8"/><ellipse cx="64" cy="72" rx="26" ry="7" fill="#d98c7a" opacity=".7"/>')),
+  // Office: desk and screen.
+  svg(room('#c9b8c6', '#8a7f86', '#f5eff4', '<rect x="84" y="46" width="56" height="4" fill="#3d3438"/><rect x="88" y="50" width="3" height="16" fill="#3d3438"/><rect x="133" y="50" width="3" height="16" fill="#3d3438"/><rect x="102" y="30" width="22" height="14" rx="1" fill="#2a2d33"/><rect x="104" y="32" width="18" height="10" fill="#6f8fb0"/>')),
+  // Spare.
+  svg(room('#a9b49a', '#6f6a57', '#eef2e6', '<rect x="96" y="38" width="40" height="26" rx="2" fill="#5d5242"/>')),
+  // Terrace: sky, hedge, deck, chairs.
+  svg('<defs><linearGradient id="s" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#8fbfe3"/><stop offset="1" stop-color="#d7e9f2"/></linearGradient>' +
+    '<radialGradient id="v" cx="50%" cy="45%" r="75%"><stop offset="60%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity=".4"/></radialGradient></defs>' +
+    '<rect width="160" height="90" fill="url(#s)"/><path d="M0 40 Q20 30 40 38 T80 36 T120 34 T160 38 L160 56 L0 58Z" fill="#4f7d3a"/>' +
+    '<path d="M0 58 L160 54 L160 90 L0 90Z" fill="#a9825c"/><g stroke="#8c6a48" stroke-width=".6"><path d="M0 64 L160 60"/><path d="M0 72 L160 68"/><path d="M0 81 L160 77"/></g>' +
+    '<rect x="58" y="52" width="14" height="12" rx="1" fill="#e9e4da"/><rect x="88" y="52" width="14" height="12" rx="1" fill="#e9e4da"/><rect x="70" y="60" width="20" height="3" fill="#5c4a3a"/>' +
+    '<rect width="160" height="90" fill="url(#v)"/>'),
 ];
-const SCENE_OF = {};
+// Each mock camera shows the room it is named after.
+const SCENE_OF = { living_room: 0, kids_room: 1, office: 2, terrace: 4 };
 customElements.define("ha-camera-stream", class extends HTMLElement {
   get stateObj() { return this._st; }
   set stateObj(st) {
     this._st = st;
     const id = st ? st.entity_id.replace(/_(hd|sd)_stream$/, "") : "";
-    if (id && !(id in SCENE_OF)) SCENE_OF[id] = Object.keys(SCENE_OF).length;
-    this.style.background = id ? SCENES[SCENE_OF[id] % SCENES.length] : "";
+    const key = id.replace(/^camera[.]/, "");
+    this.style.background = id ? SCENES[SCENE_OF[key] ?? 3] + " center / cover" : "";
     if (!id) return;
     // Like Home Assistant's players: first frame, then whether the stream carries sound (not the terrace).
     setTimeout(() => {
@@ -119,6 +138,10 @@ const SHOTS = [
   { file: "card", theme: "light", lang: "en", hover: 0 },
   // The pan & tilt arrows open on the first camera.
   { file: "card-dark", theme: "dark", lang: "en", ptz: true },
+  // A single camera: its name as the title, the privacy toggle on the right.
+  { file: "card-single", theme: "light", lang: "en", width: 420, config: { cameras: [{ camera: "camera.kids_room_hd_stream", name: "Kids' room" }] } },
+  // Every camera hidden.
+  { file: "card-hidden", theme: "dark", lang: "en", width: 420, hidden: true },
 ];
 
 const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
@@ -128,12 +151,16 @@ for (const s of SHOTS) {
   await page.setContent(pageHtml(s.theme));
   await page.addScriptTag({ content: haElements });
   await page.addScriptTag({ content: cardJs });
-  await page.evaluate(({ config, hass }) => {
+  const shotStates = s.hidden
+    ? Object.fromEntries(Object.entries(states).map(([k, v]) => [k, k.endsWith("_privacy") ? { ...v, state: "on" } : k.endsWith("_plug") ? { ...v, state: "off" } : v]))
+    : states;
+  await page.evaluate(({ config, hass, width }) => {
+    if (width) document.body.style.width = `${width}px`;
     const el = document.createElement("home-camera-card");
     el.setConfig({ type: "custom:home-camera-card", ...config });
     el.hass = { ...hass, callService: async () => {} };
     document.getElementById("root").appendChild(el);
-  }, { config, hass: { states, entities, language: s.lang, locale: { language: s.lang }, themes: { darkMode: s.theme === "dark" } } });
+  }, { width: s.width, config: s.config || config, hass: { states: shotStates, entities, language: s.lang, locale: { language: s.lang }, themes: { darkMode: s.theme === "dark" } } });
   await page.waitForTimeout(100);
   const tile = (i) => page.locator("home-camera-card .tile").nth(i);
   if (s.ptz) await tile(0).locator(".btn.ptz").click();

@@ -11,6 +11,9 @@ const HcI18n = {
     all_hidden: 'Toutes les caméras sont masquées',
     one_hidden: 'Caméra désactivée',
     no_cameras: 'Aucune caméra configurée',
+    hint_all: 'Touchez une pastille pour afficher une caméra',
+    live: 'En direct',
+    hint_one: 'Activez la caméra pour la voir ici',
     hd: 'HD',
     sd: 'SD',
     quality_hint: 'Basculer entre HD et SD',
@@ -62,6 +65,9 @@ const HcI18n = {
     all_hidden: 'All cameras are hidden',
     one_hidden: 'Camera disabled',
     no_cameras: 'No camera configured',
+    hint_all: 'Tap a badge to show a camera',
+    live: 'Live',
+    hint_one: 'Enable the camera to see it here',
     hd: 'HD',
     sd: 'SD',
     quality_hint: 'Switch between HD and SD',
@@ -411,10 +417,12 @@ class HomeCameraCard extends HTMLElement {
     }
   }
 
+  // A badge: an icon, or the red live dot when icon is null.
   _chip(cls, attrs, icon, label, title) {
+    const mark = icon ? `<ha-icon icon="${icon}"></ha-icon>` : '<span class="dot"></span>';
     return (
       `<span class="chip ${cls}" ${attrs} role="button" tabindex="0" title="${hcEsc(title)}">` +
-      `<ha-icon icon="${icon}"></ha-icon><span>${hcEsc(label)}</span></span>`
+      `${mark}<span>${hcEsc(label)}</span></span>`
     );
   }
 
@@ -435,13 +443,10 @@ class HomeCameraCard extends HTMLElement {
       }
     }
 
-    const quality = this._chip(
-      hd ? 'hd' : 'sd',
-      'data-quality="1"',
-      hd ? 'mdi:high-definition' : 'mdi:standard-definition',
-      this._t(hd ? 'hd' : 'sd'),
-      this._t('quality_hint'),
-    );
+    // HD / SD as a two-way switch: both options shown, the current one raised.
+    const opt = (q, on) =>
+      `<span class="opt${on ? ' on' : ''}" data-quality="${q}" role="radio" aria-checked="${on}" tabindex="0">${this._t(q)}</span>`;
+    const quality = `<span class="seg" role="radiogroup" title="${hcEsc(this._t('quality_hint'))}">${opt('hd', hd)}${opt('sd', !hd)}</span>`;
 
     // Lock icon by state; a spinning icon while the switch toggled from the card has not answered yet.
     const lock = (cam) => {
@@ -454,6 +459,8 @@ class HomeCameraCard extends HTMLElement {
         title: this._t(off ? 'privacy_on' : 'privacy_off', { c: cam.name }),
       };
     };
+    // Badges: a live camera shows the red dot, a hidden one its lock.
+    const badgeIcon = (l) => (l.cls === 'exposed' ? null : l.icon);
 
     let badges = '';
     if (c.show_badges) {
@@ -463,14 +470,15 @@ class HomeCameraCard extends HTMLElement {
           const l = lock(cam);
           const target = cam.privacy || cam.power;
           const label = single ? this._t(this._hidden(cam) ? 'enable' : 'disable') : cam.short;
-          return this._chip(l.cls, `data-toggle="${hcEsc(target)}"`, l.icon, label, l.title);
+          return this._chip(l.cls, `data-toggle="${hcEsc(target)}"`, badgeIcon(l), label, l.title);
         })
         .join('');
     }
 
     // A single camera with a toggle: the toggle sits on the right of the title, the quality under it
     // (only while the camera films: once it is hidden, the line says so instead).
-    let right = quality;
+    // No camera on screen: nothing to choose a quality for.
+    let right = visible.length ? quality : '';
     let side = '';
     let sub = summary ? `<div class="summary">${hcEsc(summary)}</div>` : '';
     if (single && badges) {
@@ -502,9 +510,17 @@ class HomeCameraCard extends HTMLElement {
     if (!this._tiles) this._tiles = new Map();
     if (!visible.length) {
       this._tiles.clear();
-      view.innerHTML = this._config.cameras?.length
-        ? ''
-        : `<div class="empty"><ha-icon icon="mdi:cctv-off"></ha-icon>${hcEsc(this._t('no_cameras'))}</div>`;
+      const n = this._config.cameras?.length || 0;
+      // Every camera hidden: what brings one back, where the grid would be.
+      if (n && this._config.show_badges) {
+        view.innerHTML =
+          `<div class="asleep"><ha-icon icon="mdi:eye-lock"></ha-icon>` +
+          `<span>${hcEsc(this._t(n === 1 ? 'hint_one' : 'hint_all'))}</span></div>`;
+      } else {
+        view.innerHTML = n
+          ? ''
+          : `<div class="empty"><ha-icon icon="mdi:cctv-off"></ha-icon>${hcEsc(this._t('no_cameras'))}</div>`;
+      }
       return;
     }
     hcLoadStream(visible[0].camera).catch(() => {});
@@ -542,7 +558,8 @@ class HomeCameraCard extends HTMLElement {
     tile.setAttribute('role', 'group');
     tile.innerHTML =
       '<div class="na"><ha-icon icon="mdi:cctv-off"></ha-icon><span></span></div><div class="spin"></div>' +
-      '<div class="label"></div><span class="open" data-action="open" role="button" tabindex="0"></span>' +
+      '<div class="label"><span class="dot"></span><span class="text"></span></div>' +
+      '<span class="open" data-action="open" role="button" tabindex="0"></span>' +
       '<div class="tools"></div><div class="pad"></div>';
     const stream = document.createElement('ha-camera-stream');
     stream.muted = true;
@@ -569,7 +586,9 @@ class HomeCameraCard extends HTMLElement {
     tile.dataset.cam = cam.key;
     tile.setAttribute('aria-label', cam.name);
     tile.querySelector('.open').title = cam.name;
-    tile.querySelector('.label').textContent = cam.name;
+    // A single camera already has its name as the card title: its image just says it is live.
+    const single = (this._config.cameras?.length || 0) === 1;
+    tile.querySelector('.label .text').textContent = single ? this._t('live') : cam.name;
     tile.querySelector('.na span').textContent = this._t('unavailable');
     if (!this._fullscreen(tile)) tile._stream.aspectRatio = hcRatio(this._config.aspect_ratio);
     this._renderTools(tile);
@@ -763,8 +782,10 @@ class HomeCameraCard extends HTMLElement {
   _styles() {
     return (
       '<style>' +
-      ':host { display: block; --hc-on: var(--success-color, #43a047); --hc-off: var(--error-color, #db4437); }' +
-      'ha-card { box-sizing: border-box; padding: 12px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }' +
+      // --hc-glass: the smoked glass of everything laid over the images (labels, buttons, arrows).
+      ':host { display: block; --hc-on: var(--success-color, #43a047); --hc-off: var(--error-color, #db4437);' +
+      ' --hc-live: var(--error-color, #db4437); --hc-glass: rgba(14, 16, 20, 0.46); --hc-glass-line: rgba(255, 255, 255, 0.14); }' +
+      'ha-card { box-sizing: border-box; padding: 12px; display: flex; flex-direction: column; gap: 12px; overflow: hidden; }' +
       '.header { display: flex; align-items: center; gap: 10px; }' +
       '.hicon { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center;' +
       ' --hc-c: var(--primary-color, #03a9f4); background: color-mix(in srgb, var(--hc-c) 15%, transparent); color: var(--hc-c); }' +
@@ -776,52 +797,74 @@ class HomeCameraCard extends HTMLElement {
       '.summary { font-size: 12px; line-height: 1.35; margin-top: 2px; color: var(--secondary-text-color); }' +
       '.chips { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }' +
       '.chips.badges, .chips.sub { justify-content: flex-start; }' +
-      '.chips.badges { margin-top: 8px; }' +
-      '.chips.sub { margin-top: 3px; }' +
+      '.chips.badges { margin-top: 10px; }' +
+      '.chips.sub { margin-top: 4px; }' +
+      // HD / SD switch: a track with the current option raised on it.
+      '.seg { display: inline-flex; padding: 2px; gap: 2px; border-radius: 12px; background: var(--secondary-background-color, rgba(128,128,128,0.12)); }' +
+      '.opt { font-size: 11px; font-weight: 600; letter-spacing: 0.02em; line-height: 18px; padding: 0 8px; border-radius: 10px; cursor: pointer;' +
+      ' color: var(--secondary-text-color); user-select: none; transition: background 0.15s, color 0.15s; }' +
+      '.opt.on { background: var(--card-background-color, #fff); color: var(--primary-color, #03a9f4); box-shadow: 0 1px 2px rgba(0,0,0,0.18); cursor: default; }' +
+      '.opt:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 1px; }' +
       '.toggle { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer;' +
       ' --hc-c: var(--hc-off); background: color-mix(in srgb, var(--hc-c) 15%, transparent); color: var(--hc-c); }' +
       '.toggle.private { --hc-c: var(--hc-on); }' +
       '.toggle.pending { --hc-c: var(--secondary-text-color); cursor: progress; }' +
       '.toggle ha-icon { --mdc-icon-size: 22px; }' +
-      '.chip { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; padding: 1px 8px 1px 5px; border-radius: 12px; cursor: pointer;' +
-      ' background: var(--secondary-background-color, rgba(128,128,128,0.12)); color: var(--primary-text-color); white-space: nowrap; user-select: none; }' +
-      '.chip ha-icon { --mdc-icon-size: 13px; color: var(--secondary-text-color); }' +
-      '.chip.hd ha-icon { color: var(--primary-color, #03a9f4); }' +
-      '.chip.private ha-icon { color: var(--hc-on); }' +
-      '.chip.exposed ha-icon { color: var(--hc-off); }' +
-      '.chip.pending { cursor: progress; opacity: 0.75; }' +
+      // Badges: neutral with a red live dot while the camera films, green-tinted with a lock while hidden.
+      '.chip { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; line-height: 18px; padding: 1px 9px 1px 7px; border-radius: 12px;' +
+      ' cursor: pointer; white-space: nowrap; user-select: none; background: var(--secondary-background-color, rgba(128,128,128,0.12)); color: var(--primary-text-color); }' +
+      '.chip ha-icon { --mdc-icon-size: 13px; }' +
+      '.chip.private { background: color-mix(in srgb, var(--hc-on) 15%, transparent); color: var(--hc-on); }' +
+      '.chip.pending { cursor: progress; color: var(--secondary-text-color); }' +
+      '.chip:focus-visible, .toggle:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 1px; }' +
+      '.dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; background: var(--hc-live); }' +
       '.pending ha-icon { animation: hc-spin 0.9s linear infinite; }' +
       '@keyframes hc-spin { to { transform: rotate(360deg); } }' +
+      // The one moving thing: the live dot on the images breathes, like a recording light.
+      '@keyframes hc-live { 50% { opacity: 0.35; } }' +
       '.view:empty { display: none; }' +
-      '.grid { display: grid; gap: 6px; }' +
-      '.tile { position: relative; aspect-ratio: var(--hc-ratio, 1.7778); border-radius: 10px; overflow: hidden; background: #000; }' +
-      '.open { position: absolute; inset: 0; cursor: pointer; outline: none; border-radius: inherit; -webkit-tap-highlight-color: transparent; }' +
+      '.grid { display: grid; gap: 8px; }' +
+      '.tile { position: relative; aspect-ratio: var(--hc-ratio, 1.7778); border-radius: 12px; overflow: hidden; background: #0d0f12; }' +
+      // A hairline ring over the image, so dark scenes keep their edge on a dark card.
+      '.tile::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.07); pointer-events: none; }' +
+      ':is(.tile:fullscreen, .tile.pseudo)::after { display: none; }' +
+      '.open { position: absolute; inset: 0; outline: none; border-radius: inherit; -webkit-tap-highlight-color: transparent; }' +
       '.open:focus-visible { box-shadow: inset 0 0 0 2px var(--primary-color, #03a9f4); }' +
       // A tap on the image puts it fullscreen, a second tap brings it back.
       '.open { cursor: zoom-in; }' +
       ':is(.tile:fullscreen, .tile.pseudo) .open { cursor: zoom-out; }' +
       '.tile ha-camera-stream { display: block; width: 100%; height: 100%; --video-max-height: 100%; }' +
-      ':is(.tile:fullscreen, .tile.pseudo) { display: flex; align-items: center; justify-content: center; border-radius: 0; }' +
+      ':is(.tile:fullscreen, .tile.pseudo) { display: flex; align-items: center; justify-content: center; border-radius: 0; background: #000; }' +
       '.tile.pseudo { position: fixed; inset: 0; z-index: 10000; aspect-ratio: auto; }' +
       ':is(.tile:fullscreen, .tile.pseudo) ha-camera-stream { height: auto; --video-max-height: 100vh; }' +
       '.tile.off ha-camera-stream { display: none; }' +
-      '.na { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 12px;' +
-      ' color: rgba(255,255,255,0.7); background: #1a1a1a; }' +
+      '.na { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-size: 12px;' +
+      ' color: rgba(255,255,255,0.62); background: radial-gradient(circle at 50% 42%, #2a2e35, #121418 72%); }' +
+      '.na ha-icon { --mdc-icon-size: 20px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%;' +
+      ' background: rgba(255,255,255,0.07); }' +
       '.tile.off .na { display: flex; }' +
-      '.spin { position: absolute; inset: 0; margin: auto; width: 26px; height: 26px; box-sizing: border-box; border-radius: 50%; display: none;' +
-      ' border: 3px solid rgba(255,255,255,0.25); border-top-color: #fff; animation: hc-spin 0.9s linear infinite; pointer-events: none; }' +
+      '.tile.off .label .dot { display: none; }' +
+      '.spin { position: absolute; inset: 0; margin: auto; width: 24px; height: 24px; box-sizing: border-box; border-radius: 50%; display: none;' +
+      ' border: 2px solid rgba(255,255,255,0.18); border-top-color: rgba(255,255,255,0.9); animation: hc-spin 0.8s linear infinite; pointer-events: none; }' +
       '.tile.loading:not(.off) .spin { display: block; }' +
-      '.label { position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 10px 6px; font-size: 12px; font-weight: 500; color: #fff;' +
-      ' background: linear-gradient(transparent, rgba(0,0,0,0.55)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }' +
-      ':is(.tile:fullscreen, .tile.pseudo) .label { font-size: 16px; padding: 32px 16px max(12px, env(safe-area-inset-bottom)); }' +
-      '.tools { position: absolute; top: 6px; right: 6px; display: flex; gap: 6px; transition: opacity 0.15s; }' +
-      ':is(.tile:fullscreen, .tile.pseudo) .tools { top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); }' +
-      '.btn { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;' +
-      ' color: #fff; background: rgba(0,0,0,0.45); -webkit-tap-highlight-color: transparent; user-select: none; }' +
-      '.btn:hover { background: rgba(0,0,0,0.65); }' +
-      '.btn:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); }' +
-      '.btn ha-icon { --mdc-icon-size: 18px; }' +
-      '.tile.ptz-open .btn.ptz, .btn.sound.on, .move:active { background: var(--primary-color, #03a9f4); }' +
+      // Name on the image: a glass pill with the live dot, not a dark gradient over the bottom of the picture.
+      '.label { position: absolute; left: 8px; bottom: 8px; max-width: calc(100% - 16px); box-sizing: border-box; display: inline-flex; align-items: center; gap: 6px;' +
+      ' padding: 3px 10px 3px 8px; border-radius: 999px; font-size: 12px; font-weight: 500; line-height: 18px; color: #fff; pointer-events: none;' +
+      ' background: var(--hc-glass); -webkit-backdrop-filter: blur(10px) saturate(1.3); backdrop-filter: blur(10px) saturate(1.3); }' +
+      '.label .dot { animation: hc-live 2.4s ease-in-out infinite; }' +
+      '.label .text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }' +
+      ':is(.tile:fullscreen, .tile.pseudo) .label { font-size: 15px; padding: 5px 14px 5px 12px; left: max(16px, env(safe-area-inset-left));' +
+      ' bottom: max(16px, env(safe-area-inset-bottom)); }' +
+      '.tools { position: absolute; top: 8px; right: 8px; display: flex; gap: 6px; transition: opacity 0.15s; }' +
+      ':is(.tile:fullscreen, .tile.pseudo) .tools { top: max(16px, env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right)); }' +
+      '.btn { width: 30px; height: 30px; box-sizing: border-box; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;' +
+      ' color: #fff; background: var(--hc-glass); border: 1px solid var(--hc-glass-line); -webkit-backdrop-filter: blur(10px) saturate(1.3); backdrop-filter: blur(10px) saturate(1.3);' +
+      ' -webkit-tap-highlight-color: transparent; user-select: none; transition: background 0.15s, transform 0.1s; }' +
+      '.btn:hover { background: rgba(14, 16, 20, 0.66); }' +
+      '.btn:active { transform: scale(0.94); }' +
+      '.btn:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 1px; }' +
+      '.btn ha-icon { --mdc-icon-size: 17px; }' +
+      '.tile.ptz-open .btn.ptz, .btn.sound.on, .move:active { background: var(--primary-color, #03a9f4); border-color: transparent; }' +
       // Narrow tiles: the up arrow would run into the other buttons.
       '.tile.ptz-open .tools .btn:not(.ptz) { display: none; }' +
       '.pad { display: none; }' +
@@ -839,11 +882,16 @@ class HomeCameraCard extends HTMLElement {
       ':is(.tile:fullscreen, .tile.pseudo) .move.left { left: max(16px, env(safe-area-inset-left)); }' +
       ':is(.tile:fullscreen, .tile.pseudo) .move.right { right: max(16px, env(safe-area-inset-right)); }' +
       ':is(.tile:fullscreen, .tile.pseudo) .move.up { top: max(16px, env(safe-area-inset-top)); }' +
-      ':is(.tile:fullscreen, .tile.pseudo) .move.down { bottom: max(48px, env(safe-area-inset-bottom)); }' +
+      ':is(.tile:fullscreen, .tile.pseudo) .move.down { bottom: max(56px, env(safe-area-inset-bottom)); }' +
       // Mouse: the buttons show on hover, so the image stays clear. Touch: always shown, and larger.
       '@media (hover: hover) and (pointer: fine) {' +
       ' .tile:not(:hover):not(:focus-within):not(.ptz-open) .tools { opacity: 0; } }' +
       '@media (pointer: coarse) { .btn { width: 36px; height: 36px; } .btn ha-icon { --mdc-icon-size: 20px; } .move { --s: 46px; } }' +
+      '@media (prefers-reduced-motion: reduce) { .label .dot, .spin, .pending ha-icon { animation: none; } }' +
+      // Every camera hidden: a quiet panel where the grid would be, saying how to bring one back.
+      '.asleep { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 64px; padding: 12px; box-sizing: border-box;' +
+      ' border-radius: 12px; border: 1px dashed var(--divider-color, rgba(128,128,128,0.3)); font-size: 12px; color: var(--secondary-text-color); text-align: center; }' +
+      '.asleep ha-icon { --mdc-icon-size: 18px; color: var(--hc-on); }' +
       '.empty { display: flex; align-items: center; gap: 10px; color: var(--secondary-text-color); }' +
       '</style>'
     );
@@ -851,8 +899,9 @@ class HomeCameraCard extends HTMLElement {
 
   _onClick(ev) {
     const path = ev.composedPath();
-    if (path.some((n) => n.dataset?.quality)) {
-      this._toggleQuality();
+    const q = path.find((n) => n.dataset?.quality)?.dataset.quality;
+    if (q) {
+      if ((q === 'hd') !== this._hd()) this._toggleQuality();
       return;
     }
     const toggle = path.find((n) => n.dataset?.toggle);

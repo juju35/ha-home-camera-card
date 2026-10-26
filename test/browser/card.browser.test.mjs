@@ -377,3 +377,36 @@ test("the same camera listed twice gets two tiles", async () => {
   });
   assert.equal(n, 2);
 });
+
+test("the HD / SD switch selects the option tapped, and a tap on the current one does nothing", async () => {
+  const r = await page.evaluate(() => {
+    mount(CAMS);
+    const opt = (q) => el.shadowRoot.querySelector(`[data-quality="${q}"]`);
+    const state = () => ({ hd: opt("hd").classList.contains("on"), entity: streams()[0].stateObj?.entity_id });
+    opt("hd").click();
+    const first = state();
+    opt("sd").click();
+    const second = state();
+    opt("sd").click();
+    const third = state();
+    opt("hd").click();
+    return { first, second, third, checked: opt("hd").getAttribute("aria-checked") };
+  });
+  assert.deepEqual(r.first, { hd: true, entity: "camera.a_hd_stream" });
+  assert.deepEqual(r.second, { hd: false, entity: "camera.a_sd_stream" });
+  assert.deepEqual(r.third, r.second);
+  assert.equal(r.checked, "true");
+});
+
+test("every camera hidden: no quality switch, a panel saying how to bring one back", async () => {
+  const r = await page.evaluate(() => {
+    mount(["camera.b_hd_stream"]);
+    el.hass = makeHass({ ...baseStates(), "switch.b_privacy": st("switch.b_privacy", "on") });
+    return {
+      tiles: tiles().length,
+      quality: !!el.shadowRoot.querySelector(".seg"),
+      panel: el.shadowRoot.querySelector(".asleep")?.textContent,
+    };
+  });
+  assert.deepEqual(r, { tiles: 0, quality: false, panel: "Enable the camera to see it here" });
+});

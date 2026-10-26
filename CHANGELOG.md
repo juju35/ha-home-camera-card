@@ -1,5 +1,19 @@
 # Changelog
 
+## 3.2.0
+
+Visual pass: the same card, nicer to look at.
+
+### Changes
+- **HD / SD switch**: both options shown in the header, the current one raised; a tap picks the one you tap.
+- **Badges**: a red live dot while the camera films, green with a lock while it is hidden (was: an eye icon on every badge).
+- **Images**: each name sits in a glass pill with a softly blinking live dot, instead of a dark band over the bottom of the picture; a single camera's pill just says *Live*, its name being the title. Rounder corners, a hairline edge so dark scenes stay framed on a dark card, wider gaps.
+- **Buttons and arrows** on the images are smoked glass with a thin outline, and give under the finger.
+- **Unavailable** cameras show a softer placeholder; the loading spinner is finer.
+- **Every camera hidden**: a panel where the grid would be says how to bring one back; the HD / SD switch hides.
+- Blinking and spinning stop when the system asks for reduced motion.
+- Screenshots: mock rooms instead of flat colours, plus a single-camera and an every-camera-hidden view.
+
 ## 3.1.0
 
 Ergonomics pass: quicker to read, quicker to act on.

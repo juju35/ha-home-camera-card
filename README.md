@@ -15,11 +15,14 @@ List the cameras, the card finds their privacy switch, SD stream and PTZ buttons
 | Light | Dark, pan & tilt |
 |---|---|
 | ![Camera card](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card.png) | ![Camera card with the pan and tilt arrows, dark theme](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-dark.png) |
+| **Single camera** | **Every camera hidden** |
+| ![Camera card with a single camera](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-single.png) | ![Camera card with every camera hidden, dark theme](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-hidden.png) |
 
 ## Features
 
-- Header with the number of cameras live and hidden, and an **HD / SD** badge
-- One badge per camera: green lock when the camera is hidden, red when it films; tap to toggle its privacy switch (or its smart plug)
+- Header with the number of cameras live and hidden, and an **HD / SD** switch
+- One badge per camera: a red live dot while it films, a green lock while it is hidden; tap to toggle its privacy switch (or its smart plug)
+- Each image carries its name with a live dot; when every camera is hidden, a panel says how to bring one back
 - A single camera: its name is the title, a round *Disable* / *Enable* icon button sits on the right and the HD / SD badge under the title
 - Hidden cameras are removed from the grid: a camera is hidden when its **privacy switch is on** or its **power switch is off**
 - **HD / SD** switch: from an `input_select` shared by every dashboard, or from the card itself (remembered by the browser)
@@ -145,6 +148,8 @@ cameras:
 | Light | Dark, pan & tilt |
 |---|---|
 | ![card](screenshots/card.png) | ![card dark](screenshots/card-dark.png) |
+| **Single camera** | **Every camera hidden** |
+| ![card single](screenshots/card-single.png) | ![card hidden](screenshots/card-hidden.png) |
 
 ## How it works
 
