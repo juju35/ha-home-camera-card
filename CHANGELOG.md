@@ -9,10 +9,11 @@ Visual pass: the same card, nicer to look at.
 - **Badges**: a red live dot while the camera films, green with a lock while it is hidden (was: an eye icon on every badge).
 - **Images**: each name sits in a glass pill with a softly blinking live dot, instead of a dark band over the bottom of the picture; a single camera's pill just says *Live*, its name being the title. Rounder corners, a hairline edge so dark scenes stay framed on a dark card, wider gaps.
 - **Buttons and arrows** on the images are smoked glass with a thin outline, and give under the finger.
+- **Fullscreen**: the pan & tilt arrows gather in a round glass pad at the bottom right (within thumb reach on a phone, within reach of each other on a large screen) instead of sitting at the four edges of the screen; larger buttons and name.
 - **Unavailable** cameras show a softer placeholder; the loading spinner is finer.
 - **Every camera hidden**: a panel where the grid would be says how to bring one back; the HD / SD switch hides.
 - Blinking and spinning stop when the system asks for reduced motion.
-- Screenshots: mock rooms instead of flat colours, plus a single-camera and an every-camera-hidden view.
+- Screenshots: mock rooms instead of flat colours, plus single-camera, every-camera-hidden and fullscreen views.
 
 ## 3.1.0
 

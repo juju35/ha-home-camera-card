@@ -79,6 +79,7 @@ const SCENES = [
 // Each mock camera shows the room it is named after.
 const SCENE_OF = { living_room: 0, kids_room: 1, office: 2, terrace: 4 };
 customElements.define("ha-camera-stream", class extends HTMLElement {
+  connectedCallback() { this.style.aspectRatio = "16 / 9"; this.style.maxHeight = "100vh"; this.style.maxWidth = "calc(100vh * 16 / 9)"; }
   get stateObj() { return this._st; }
   set stateObj(st) {
     this._st = st;
@@ -142,12 +143,14 @@ const SHOTS = [
   { file: "card-single", theme: "light", lang: "en", width: 420, config: { cameras: [{ camera: "camera.kids_room_hd_stream", name: "Kids' room" }] } },
   // Every camera hidden.
   { file: "card-hidden", theme: "dark", lang: "en", width: 420, hidden: true },
+  // Fullscreen on the first camera, with its pan & tilt arrows (the whole screen is captured).
+  { file: "card-fullscreen", theme: "dark", lang: "en", fullscreen: 0, viewport: { width: 1280, height: 720 } },
 ];
 
 const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
 // A fresh page per shot: re-running the scripts in the same realm would redeclare their globals.
 for (const s of SHOTS) {
-  const page = await browser.newPage({ deviceScaleFactor: 2, viewport: { width: 1000, height: 2000 } });
+  const page = await browser.newPage({ deviceScaleFactor: s.viewport ? 1.5 : 2, viewport: s.viewport || { width: 1000, height: 2000 } });
   await page.setContent(pageHtml(s.theme));
   await page.addScriptTag({ content: haElements });
   await page.addScriptTag({ content: cardJs });
@@ -165,8 +168,17 @@ for (const s of SHOTS) {
   const tile = (i) => page.locator("home-camera-card .tile").nth(i);
   if (s.ptz) await tile(0).locator(".btn.ptz").click();
   if (s.hover !== undefined) await tile(s.hover).hover();
+  // The card's own fullscreen (what a headless browser can show): same look as the browser's.
+  if (s.fullscreen !== undefined) {
+    await page.evaluate((i) => {
+      const el = document.querySelector("home-camera-card");
+      el._setPseudo(el.shadowRoot.querySelectorAll(".tile")[i], true);
+    }, s.fullscreen);
+    await tile(s.fullscreen).hover();
+  }
   await page.waitForTimeout(400);
-  await page.locator("home-camera-card").screenshot({ path: `${root}screenshots/${s.file}.png`, animations: "disabled" });
+  const target = s.fullscreen !== undefined ? page : page.locator("home-camera-card");
+  await target.screenshot({ path: `${root}screenshots/${s.file}.png`, animations: "disabled" });
   console.log(`screenshots/${s.file}.png`);
   await page.close();
 }

@@ -876,13 +876,22 @@ class HomeCameraCard extends HTMLElement {
       '.move.up { top: 8px; left: calc(50% - var(--s) / 2); }' +
       '.move.down { bottom: 8px; left: calc(50% - var(--s) / 2); }' +
       '.move.dis { opacity: 0.35; cursor: default; }' +
-      // Fullscreen: larger arrows, further from the edges.
-      ':is(.tile:fullscreen, .tile.pseudo) .move { --s: 56px; }' +
-      ':is(.tile:fullscreen, .tile.pseudo) .move ha-icon { --mdc-icon-size: 34px; }' +
-      ':is(.tile:fullscreen, .tile.pseudo) .move.left { left: max(16px, env(safe-area-inset-left)); }' +
-      ':is(.tile:fullscreen, .tile.pseudo) .move.right { right: max(16px, env(safe-area-inset-right)); }' +
-      ':is(.tile:fullscreen, .tile.pseudo) .move.up { top: max(16px, env(safe-area-inset-top)); }' +
-      ':is(.tile:fullscreen, .tile.pseudo) .move.down { bottom: max(56px, env(safe-area-inset-bottom)); }' +
+      // Fullscreen: the arrows gather in a round pad at the bottom right, under the thumb on a phone and
+      // within reach of each other on a large screen; the buttons grow.
+      ':is(.tile:fullscreen, .tile.pseudo) .pad { position: absolute; width: 164px; height: 164px; border-radius: 50%;' +
+      ' right: max(24px, env(safe-area-inset-right)); bottom: max(24px, env(safe-area-inset-bottom));' +
+      ' background: var(--hc-glass); border: 1px solid var(--hc-glass-line); -webkit-backdrop-filter: blur(12px) saturate(1.3); backdrop-filter: blur(12px) saturate(1.3); }' +
+      ':is(.tile:fullscreen, .tile.pseudo) .pad::after { content: ""; position: absolute; inset: 0; margin: auto; width: 12px; height: 12px; border-radius: 50%;' +
+      ' background: rgba(255,255,255,0.22); pointer-events: none; }' +
+      ':is(.tile:fullscreen, .tile.pseudo) .move { --s: 52px; background: transparent; border-color: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }' +
+      ':is(.tile:fullscreen, .tile.pseudo) .move:hover { background: rgba(255,255,255,0.12); }' +
+      ':is(.tile:fullscreen, .tile.pseudo) .move ha-icon { --mdc-icon-size: 32px; }' +
+      ':is(.tile:fullscreen, .tile.pseudo) .move.left { left: 4px; }' +
+      ':is(.tile:fullscreen, .tile.pseudo) .move.right { right: 4px; }' +
+      ':is(.tile:fullscreen, .tile.pseudo) .move.up { top: 4px; }' +
+      ':is(.tile:fullscreen, .tile.pseudo) .move.down { bottom: 4px; }' +
+      ':is(.tile:fullscreen, .tile.pseudo) .btn:not(.move) { width: 40px; height: 40px; }' +
+      ':is(.tile:fullscreen, .tile.pseudo) .btn:not(.move) ha-icon { --mdc-icon-size: 20px; }' +
       // Mouse: the buttons show on hover, so the image stays clear. Touch: always shown, and larger.
       '@media (hover: hover) and (pointer: fine) {' +
       ' .tile:not(:hover):not(:focus-within):not(.ptz-open) .tools { opacity: 0; } }' +
