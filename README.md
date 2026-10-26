@@ -147,6 +147,10 @@ cameras:
 
 ## Screenshots
 
+While a camera is live, the card animates: the red live dot breathes on the stream. It settles to a still card when the stream stops (and honours `prefers-reduced-motion`).
+
+![live](screenshots/live.gif)
+
 | Light | Dark, pan & tilt |
 |---|---|
 | ![card](screenshots/card.png) | ![card dark](screenshots/card-dark.png) |
@@ -169,7 +173,7 @@ npm run build        # stamps the version of package.json into dist/home-camera-
 npm run check        # builds and checks the card (run in CI)
 npm test             # unit tests
 npm run test:browser # builds the card and runs it in Chromium with a stand-in player (run in CI)
-npm run screenshots  # renders the card with mock cameras into screenshots/
+npm run screenshots  # renders the card with mock cameras into screenshots/ (and live.gif, needs ffmpeg)
 ```
 
 `dist/` is not committed: `npm run build` creates it locally, CI builds it on every push, and the release workflow attaches the built file to the release, which is where HACS downloads it from.

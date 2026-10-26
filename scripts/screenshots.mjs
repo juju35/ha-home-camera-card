@@ -1,6 +1,9 @@
 // Renders the card with mock cameras and saves the README screenshots.
 // Usage: npm install && npm run screenshots (CHROMIUM_PATH=... to use an installed Chromium)
-import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as mdi from "@mdi/js";
 import { chromium } from "playwright";
@@ -150,9 +153,8 @@ const SHOTS = [
   { file: "card-fullscreen", theme: "dark", lang: "en", fullscreen: 0, width: 1280 },
 ];
 
-const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
-// A fresh page per shot: re-running the scripts in the same realm would redeclare their globals.
-for (const s of SHOTS) {
+// Mount the card for one shot on a fresh page and return it (shared by the stills and the GIF).
+async function openCard(browser, s) {
   const width = s.width || 460;
   // The fullscreen shot stays at 1.5x: a 1280 px screen needs no more to be sharp in the README.
   const page = await browser.newPage({ deviceScaleFactor: s.fullscreen !== undefined ? 1.5 : 2, viewport: { width: Math.max(1000, width + 32), height: 2000 } });
@@ -170,6 +172,14 @@ for (const s of SHOTS) {
     el.hass = { ...hass, callService: async () => {} };
     document.getElementById("root").appendChild(el);
   }, { config: s.config || config, hass: { states: shotStates, entities, language: s.lang, locale: { language: s.lang }, themes: { darkMode: s.theme === "dark" } } });
+  return page;
+}
+
+const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
+// A fresh page per shot: re-running the scripts in the same realm would redeclare their globals.
+for (const s of SHOTS) {
+  const width = s.width || 460;
+  const page = await openCard(browser, s);
   await page.waitForTimeout(100);
   const tile = (i) => page.locator("home-camera-card .tile").nth(i);
   if (s.ptz) await tile(0).locator(".btn.ptz").click();
@@ -193,5 +203,32 @@ for (const s of SHOTS) {
   });
   console.log(`screenshots/${s.file}.png`);
   await page.close();
+}
+
+// The live card as a GIF (hc-live, the breathing red dot on a streaming camera). Needs ffmpeg on PATH. Every animation
+// is paused and stepped frame by frame, so the GIF is identical whatever the machine's speed.
+const gif = { file: "live", theme: "light", lang: "en", hover: 0, width: 460 };
+const FPS = 20;
+const SECONDS = 3;
+{
+  const page = await openCard(browser, gif);
+  await page.waitForTimeout(300);
+  const box = await page.locator("#root").boundingBox();
+  const clip = { x: 0, y: 0, width: gif.width + 32, height: Math.ceil(box.height) + 32 };
+  const dir = mkdtempSync(join(tmpdir(), "hc-frames-"));
+  const frames = Math.round(FPS * SECONDS);
+  for (let i = 0; i < frames; i++) {
+    await page.evaluate((t) => { for (const a of document.getAnimations()) { a.pause(); a.currentTime = t; } }, (i * 1000) / FPS);
+    await page.screenshot({ path: join(dir, `f${String(i).padStart(3, "0")}.png`), clip });
+  }
+  await page.close();
+  const out = `${root}screenshots/${gif.file}.gif`;
+  execFileSync("ffmpeg", [
+    "-y", "-loglevel", "error", "-framerate", String(FPS), "-i", join(dir, "f%03d.png"),
+    "-vf", `scale=${clip.width}:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=128[p];[b][p]paletteuse=dither=bayer:bayer_scale=4`,
+    "-loop", "0", out,
+  ]);
+  rmSync(dir, { recursive: true });
+  console.log(`screenshots/${gif.file}.gif`);
 }
 await browser.close();
