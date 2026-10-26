@@ -17,7 +17,7 @@ for (const name of new Set(cardJs.match(/mdi:[a-z0-9-]+/g))) {
 
 const THEMES = {
   light: {
-    "--primary-background-color": "#f4f4f4", "--secondary-background-color": "#efefef", "--card-background-color": "#ffffff",
+    "--primary-background-color": "#e8eaed", "--secondary-background-color": "#ececec", "--card-background-color": "#ffffff",
     "--primary-text-color": "#212121", "--secondary-text-color": "#727272", "--divider-color": "rgba(0,0,0,.12)",
   },
   dark: {
@@ -38,7 +38,7 @@ customElements.define("ha-card", class extends HTMLElement {
     super();
     this.attachShadow({ mode: "open" }).innerHTML =
       "<style>:host{display:block;background:var(--card-background-color);border-radius:12px;" +
-      "box-shadow:0 1px 4px rgba(0,0,0,.08);color:var(--primary-text-color);overflow:hidden}</style><slot></slot>";
+      "border:1px solid var(--divider-color);color:var(--primary-text-color);overflow:hidden}</style><slot></slot>";
   }
 });
 customElements.define("ha-icon", class extends HTMLElement {
@@ -97,11 +97,14 @@ customElements.define("ha-camera-stream", class extends HTMLElement {
 });
 `;
 
-const pageHtml = (theme) => `<!doctype html><html><head><meta charset="utf-8">
+// The card on the theme background, with a 16 px frame around it (the captured area).
+const pageHtml = (theme, width) => `<!doctype html><html><head><meta charset="utf-8">
 <style>
   :root { ${Object.entries({ ...THEMES[theme], ...COMMON }).map(([k, v]) => `${k}:${v};`).join("")} }
   body { margin: 0; padding: 16px; background: var(--primary-background-color); color: var(--primary-text-color);
-         font-family: Roboto, "Segoe UI", Helvetica, Arial, sans-serif; width: 640px; }
+         font-family: Roboto, "Segoe UI", Helvetica, Arial, sans-serif; width: ${width}px; }
+  /* Fullscreen shot: the screen is the framed box (a transform makes it the tile's fixed-position container). */
+  #root.screen { height: ${Math.round((width * 9) / 16)}px; transform: translateZ(0); overflow: hidden; }
 </style></head><body><div id="root"></div></body></html>`;
 
 // Mock Tapo cameras: [key, name, short name, privacy on].
@@ -134,42 +137,46 @@ const config = {
   ],
 };
 
-// All in English. The mouse rests on a tile (its buttons only show on hover).
+// All in English, card 460 px wide. The mouse rests on a tile (its buttons only show on hover).
 const SHOTS = [
   { file: "card", theme: "light", lang: "en", hover: 0 },
   // The pan & tilt arrows open on the first camera.
   { file: "card-dark", theme: "dark", lang: "en", ptz: true },
   // A single camera: its name as the title, the privacy toggle on the right.
-  { file: "card-single", theme: "light", lang: "en", width: 420, config: { cameras: [{ camera: "camera.kids_room_hd_stream", name: "Kids' room" }] } },
+  { file: "card-single", theme: "light", lang: "en", config: { cameras: [{ camera: "camera.kids_room_hd_stream", name: "Kids' room" }] } },
   // Every camera hidden.
-  { file: "card-hidden", theme: "dark", lang: "en", width: 420, hidden: true },
-  // Fullscreen on the first camera, with its pan & tilt arrows (the whole screen is captured).
-  { file: "card-fullscreen", theme: "dark", lang: "en", fullscreen: 0, viewport: { width: 1280, height: 720 } },
+  { file: "card-hidden", theme: "dark", lang: "en", hidden: true },
+  // Fullscreen on the first camera, with its pan & tilt arrows: a 1280 x 720 screen in the frame.
+  { file: "card-fullscreen", theme: "dark", lang: "en", fullscreen: 0, width: 1280 },
 ];
 
 const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
 // A fresh page per shot: re-running the scripts in the same realm would redeclare their globals.
 for (const s of SHOTS) {
-  const page = await browser.newPage({ deviceScaleFactor: s.viewport ? 1.5 : 2, viewport: s.viewport || { width: 1000, height: 2000 } });
-  await page.setContent(pageHtml(s.theme));
+  const width = s.width || 460;
+  // The fullscreen shot stays at 1.5x: a 1280 px screen needs no more to be sharp in the README.
+  const page = await browser.newPage({ deviceScaleFactor: s.fullscreen !== undefined ? 1.5 : 2, viewport: { width: Math.max(1000, width + 32), height: 2000 } });
+  page.on("pageerror", (err) => console.error(`pageerror (${s.file}): ${err.message}`));
+  page.on("console", (msg) => msg.type() === "error" && console.error(`console (${s.file}): ${msg.text()}`));
+  await page.setContent(pageHtml(s.theme, width));
   await page.addScriptTag({ content: haElements });
   await page.addScriptTag({ content: cardJs });
   const shotStates = s.hidden
     ? Object.fromEntries(Object.entries(states).map(([k, v]) => [k, k.endsWith("_privacy") ? { ...v, state: "on" } : k.endsWith("_plug") ? { ...v, state: "off" } : v]))
     : states;
-  await page.evaluate(({ config, hass, width }) => {
-    if (width) document.body.style.width = `${width}px`;
+  await page.evaluate(({ config, hass }) => {
     const el = document.createElement("home-camera-card");
     el.setConfig({ type: "custom:home-camera-card", ...config });
     el.hass = { ...hass, callService: async () => {} };
     document.getElementById("root").appendChild(el);
-  }, { width: s.width, config: s.config || config, hass: { states: shotStates, entities, language: s.lang, locale: { language: s.lang }, themes: { darkMode: s.theme === "dark" } } });
+  }, { config: s.config || config, hass: { states: shotStates, entities, language: s.lang, locale: { language: s.lang }, themes: { darkMode: s.theme === "dark" } } });
   await page.waitForTimeout(100);
   const tile = (i) => page.locator("home-camera-card .tile").nth(i);
   if (s.ptz) await tile(0).locator(".btn.ptz").click();
   if (s.hover !== undefined) await tile(s.hover).hover();
   // The card's own fullscreen (what a headless browser can show): same look as the browser's.
   if (s.fullscreen !== undefined) {
+    await page.evaluate(() => document.getElementById("root").classList.add("screen"));
     await page.evaluate((i) => {
       const el = document.querySelector("home-camera-card");
       el._setPseudo(el.shadowRoot.querySelectorAll(".tile")[i], true);
@@ -177,8 +184,13 @@ for (const s of SHOTS) {
     await tile(s.fullscreen).hover();
   }
   await page.waitForTimeout(400);
-  const target = s.fullscreen !== undefined ? page : page.locator("home-camera-card");
-  await target.screenshot({ path: `${root}screenshots/${s.file}.png`, animations: "disabled" });
+  // The card (or the screen) and the 16 px frame of theme background around it.
+  const box = await page.locator("#root").boundingBox();
+  await page.screenshot({
+    path: `${root}screenshots/${s.file}.png`,
+    clip: { x: 0, y: 0, width: width + 32, height: Math.ceil(box.height) + 32 },
+    animations: "disabled",
+  });
   console.log(`screenshots/${s.file}.png`);
   await page.close();
 }
