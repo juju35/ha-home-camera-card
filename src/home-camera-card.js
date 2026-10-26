@@ -824,7 +824,7 @@ class HomeCameraCard extends HTMLElement {
       '@keyframes hc-live { 50% { opacity: 0.35; } }' +
       '.view:empty { display: none; }' +
       '.grid { display: grid; gap: 8px; }' +
-      '.tile { position: relative; aspect-ratio: var(--hc-ratio, 1.7778); border-radius: 12px; overflow: hidden; background: #0d0f12; }' +
+      '.tile { position: relative; aspect-ratio: var(--hc-ratio, 1.7778); border-radius: 12px; overflow: hidden; background: #0d0f12; container-type: size; }' +
       // A hairline ring over the image, so dark scenes keep their edge on a dark card.
       '.tile::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.07); pointer-events: none; }' +
       ':is(.tile:fullscreen, .tile.pseudo)::after { display: none; }' +
@@ -855,7 +855,8 @@ class HomeCameraCard extends HTMLElement {
       '.label .text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }' +
       ':is(.tile:fullscreen, .tile.pseudo) .label { font-size: 15px; padding: 5px 14px 5px 12px; left: max(16px, env(safe-area-inset-left));' +
       ' bottom: max(16px, env(safe-area-inset-bottom)); }' +
-      '.tools { position: absolute; top: 8px; right: 8px; display: flex; gap: 6px; transition: opacity 0.15s; }' +
+      // Above the pan & tilt pad: on narrow tiles the pad reaches the corner of the pan & tilt button.
+      '.tools { position: absolute; top: 8px; right: 8px; z-index: 1; display: flex; gap: 6px; transition: opacity 0.15s; }' +
       ':is(.tile:fullscreen, .tile.pseudo) .tools { top: max(16px, env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right)); }' +
       '.btn { width: 30px; height: 30px; box-sizing: border-box; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;' +
       ' color: #fff; background: var(--hc-glass); border: 1px solid var(--hc-glass-line); -webkit-backdrop-filter: blur(10px) saturate(1.3); backdrop-filter: blur(10px) saturate(1.3);' +
@@ -867,35 +868,34 @@ class HomeCameraCard extends HTMLElement {
       '.tile.ptz-open .btn.ptz, .btn.sound.on, .move:active { background: var(--primary-color, #03a9f4); border-color: transparent; }' +
       // Narrow tiles: the up arrow would run into the other buttons.
       '.tile.ptz-open .tools .btn:not(.ptz) { display: none; }' +
-      '.pad { display: none; }' +
-      '.tile.ptz-open .pad, :is(.tile:fullscreen, .tile.pseudo) .pad { display: block; }' +
-      '.move { --s: 40px; position: absolute; width: var(--s); height: var(--s); touch-action: none; }' +
-      '.move ha-icon { --mdc-icon-size: 26px; }' +
-      '.move.left { left: 8px; top: calc(50% - var(--s) / 2); }' +
-      '.move.right { right: 8px; top: calc(50% - var(--s) / 2); }' +
-      '.move.up { top: 8px; left: calc(50% - var(--s) / 2); }' +
-      '.move.down { bottom: 8px; left: calc(50% - var(--s) / 2); }' +
-      '.move.dis { opacity: 0.35; cursor: default; }' +
-      // Fullscreen: the arrows gather in a round pad at the bottom right, under the thumb on a phone and
-      // within reach of each other on a large screen; the buttons grow.
-      ':is(.tile:fullscreen, .tile.pseudo) .pad { position: absolute; width: 164px; height: 164px; border-radius: 50%;' +
-      ' right: max(24px, env(safe-area-inset-right)); bottom: max(24px, env(safe-area-inset-bottom));' +
+      // Pan & tilt: a round glass pad, its four arrows around a centre dot. In the grid it sits in the middle
+      // of the tile, sized to it (container units); in fullscreen, at the bottom right under the thumb.
+      '.pad { display: none; position: absolute; --pad: min(164px, 80cqh); width: var(--pad); height: var(--pad); border-radius: 50%;' +
+      ' left: calc(50% - var(--pad) / 2); top: calc(50% - var(--pad) / 2);' +
       ' background: var(--hc-glass); border: 1px solid var(--hc-glass-line); -webkit-backdrop-filter: blur(12px) saturate(1.3); backdrop-filter: blur(12px) saturate(1.3); }' +
-      ':is(.tile:fullscreen, .tile.pseudo) .pad::after { content: ""; position: absolute; inset: 0; margin: auto; width: 12px; height: 12px; border-radius: 50%;' +
+      '.tile.ptz-open .pad, :is(.tile:fullscreen, .tile.pseudo) .pad { display: block; }' +
+      '.pad::after { content: ""; position: absolute; inset: 0; margin: auto; width: calc(var(--pad) * 0.07); height: calc(var(--pad) * 0.07); border-radius: 50%;' +
       ' background: rgba(255,255,255,0.22); pointer-events: none; }' +
-      ':is(.tile:fullscreen, .tile.pseudo) .move { --s: 52px; background: transparent; border-color: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }' +
-      ':is(.tile:fullscreen, .tile.pseudo) .move:hover { background: rgba(255,255,255,0.12); }' +
-      ':is(.tile:fullscreen, .tile.pseudo) .move ha-icon { --mdc-icon-size: 32px; }' +
-      ':is(.tile:fullscreen, .tile.pseudo) .move.left { left: 4px; }' +
-      ':is(.tile:fullscreen, .tile.pseudo) .move.right { right: 4px; }' +
-      ':is(.tile:fullscreen, .tile.pseudo) .move.up { top: 4px; }' +
-      ':is(.tile:fullscreen, .tile.pseudo) .move.down { bottom: 4px; }' +
+      '.move { --s: calc(var(--pad) * 0.32); position: absolute; width: var(--s); height: var(--s); touch-action: none;' +
+      ' background: transparent; border-color: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }' +
+      '.move:hover { background: rgba(255,255,255,0.12); }' +
+      '.move:active { background: var(--primary-color, #03a9f4); }' +
+      '.move ha-icon { --mdc-icon-size: calc(var(--s) * 0.62); }' +
+      '.move.left { left: 2px; top: calc(50% - var(--s) / 2); }' +
+      '.move.right { right: 2px; top: calc(50% - var(--s) / 2); }' +
+      '.move.up { top: 2px; left: calc(50% - var(--s) / 2); }' +
+      '.move.down { bottom: 2px; left: calc(50% - var(--s) / 2); }' +
+      '.move.dis { opacity: 0.35; cursor: default; }' +
+      // In the grid the pad covers the middle of the image: the name steps aside while it is open.
+      '.tile.ptz-open .label { opacity: 0; }' +
+      ':is(.tile:fullscreen, .tile.pseudo) .pad { --pad: 164px; left: auto; top: auto;' +
+      ' right: max(24px, env(safe-area-inset-right)); bottom: max(24px, env(safe-area-inset-bottom)); }' +
       ':is(.tile:fullscreen, .tile.pseudo) .btn:not(.move) { width: 40px; height: 40px; }' +
       ':is(.tile:fullscreen, .tile.pseudo) .btn:not(.move) ha-icon { --mdc-icon-size: 20px; }' +
       // Mouse: the buttons show on hover, so the image stays clear. Touch: always shown, and larger.
       '@media (hover: hover) and (pointer: fine) {' +
       ' .tile:not(:hover):not(:focus-within):not(.ptz-open) .tools { opacity: 0; } }' +
-      '@media (pointer: coarse) { .btn { width: 36px; height: 36px; } .btn ha-icon { --mdc-icon-size: 20px; } .move { --s: 46px; } }' +
+      '@media (pointer: coarse) { .btn:not(.move) { width: 36px; height: 36px; } .btn:not(.move) ha-icon { --mdc-icon-size: 20px; } }' +
       '@media (prefers-reduced-motion: reduce) { .label .dot, .spin, .pending ha-icon { animation: none; } }' +
       // Every camera hidden: a quiet panel where the grid would be, saying how to bring one back.
       '.asleep { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 64px; padding: 12px; box-sizing: border-box;' +
