@@ -29,6 +29,15 @@ jobs:
       - name: Unit tests
         run: npm test
 
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser tests
+        run: npm run test:browser
+
       - name: Check hacs.json points to the built file
         run: |
           file=$(node -p "require('./hacs.json').filename")

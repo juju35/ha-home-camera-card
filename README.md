@@ -25,6 +25,7 @@ List the cameras, the card finds their privacy switch, SD stream and PTZ buttons
 - **HD / SD** switch: from an `input_select` shared by every dashboard, or from the card itself (remembered by the browser)
 - Live grid on Home Assistant's own player: WebRTC through go2rtc when available, else HLS or MJPEG — no other card to install
 - Tap a camera to open Home Assistant's camera dialog; a **fullscreen** button on every tile
+- **Sound** button on every tile, for one camera at a time (the grid starts muted)
 - **PTZ**: a button on the tile shows four arrows over the image; arrows whose button is unavailable are greyed out
 - Hiding or showing a camera, or switching HD / SD, never reloads the streams of the other cameras
 - Streams stop while the page is hidden (other tab, phone locked) and resume when it comes back
@@ -155,6 +156,8 @@ Discovery looks at the entities of the camera's device in the entity registry. A
 npm install
 npm run build        # stamps the version of package.json into dist/home-camera-card.js
 npm run check        # builds and checks the card (run in CI)
+npm test             # unit tests
+npm run test:browser # builds the card and runs it in Chromium with a stand-in player (run in CI)
 npm run screenshots  # renders the card with mock cameras into screenshots/
 ```
 

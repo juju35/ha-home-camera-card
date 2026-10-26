@@ -43,7 +43,9 @@ test("only the card's own controls handle Enter/Space", () => {
   assert.equal(hcOwnControl([{ dataset: { toggle: "switch.salon_privacy" } }, {}]), true);
   assert.equal(hcOwnControl([{ dataset: { quality: "1" } }]), true);
   assert.equal(hcOwnControl([{ dataset: { action: "fullscreen" } }, { dataset: { cam: "salon" } }]), true);
-  assert.equal(hcOwnControl([{ tagName: "VIDEO" }, { dataset: { cam: "salon" } }]), true);
+  assert.equal(hcOwnControl([{ dataset: { action: "open" } }, { dataset: { cam: "salon" } }]), true);
+  // The tile itself is a group, not a control.
+  assert.equal(hcOwnControl([{ tagName: "VIDEO" }, { dataset: { cam: "salon" } }]), false);
   // Outside the card's controls (e.g. the header text): left alone.
   assert.equal(hcOwnControl([{ dataset: {} }, { tagName: "DIV" }, {}]), false);
 });
