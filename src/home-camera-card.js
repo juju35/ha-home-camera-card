@@ -484,7 +484,8 @@ class HomeCameraCard extends HTMLElement {
     return (
       '<style>' +
       ':host { display: block; --hc-on: var(--success-color, #43a047); --hc-off: var(--error-color, #db4437); }' +
-      'ha-card { box-sizing: border-box; padding: 12px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }' +
+      'ha-card { box-sizing: border-box; padding: 12px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }' +
+      '.head { display: flex; flex-direction: column; gap: 8px; }' +
       '.header { display: flex; align-items: center; gap: 10px; }' +
       '.hicon { width: 40px; height: 40px; border-radius: 50%; flex: none; display: grid; place-items: center;' +
       ' --hc-c: var(--primary-color, #03a9f4); background: color-mix(in srgb, var(--hc-c) 16%, transparent); color: var(--hc-c); }' +
@@ -498,7 +499,8 @@ class HomeCameraCard extends HTMLElement {
       '.chips.badges, .chips.sub { justify-content: flex-start; }' +
       '.chips.sub { margin-top: 3px; }' +
       '.toggle { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer;' +
-      ' --hc-c: var(--hc-off); background: color-mix(in srgb, var(--hc-c) 15%, transparent); color: var(--hc-c); }' +
+      ' --hc-c: var(--hc-off); background: color-mix(in srgb, var(--hc-c) 16%, transparent); color: var(--hc-c); }' +
+      '.toggle:hover { background: color-mix(in srgb, var(--hc-c) 24%, transparent); }' +
       '.toggle.private { --hc-c: var(--hc-on); }' +
       '.toggle ha-icon { --mdc-icon-size: 22px; }' +
       '.chip { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; padding: 1px 8px 1px 5px; border-radius: 12px; cursor: pointer;' +

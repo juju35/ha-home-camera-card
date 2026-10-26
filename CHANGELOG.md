@@ -4,6 +4,8 @@
 
 ### Changes
 - Header icon badge at 40 px with a 16 % tint, the size shared by the other ha-* cards.
+- The camera badges row and the camera view start 8 px under the header (were 0 px and 10 px), like the other cards.
+- The single camera's show / hide button uses the shared 16 % tint, 24 % on hover.
 
 ### Maintenance
 - Screenshots: 16 px frame on the theme background, shared theme tokens and card border, 460 px card, English everywhere.
