@@ -119,8 +119,6 @@ const SHOTS = [
   { file: "card", theme: "light", lang: "en", hover: 0 },
   // The pan & tilt arrows open on the first camera.
   { file: "card-dark", theme: "dark", lang: "en", ptz: true },
-  // The second camera enlarged, the others under it.
-  { file: "card-focus", theme: "light", lang: "en", focus: 1 },
 ];
 
 const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
@@ -139,10 +137,6 @@ for (const s of SHOTS) {
   await page.waitForTimeout(100);
   const tile = (i) => page.locator("home-camera-card .tile").nth(i);
   if (s.ptz) await tile(0).locator(".btn.ptz").click();
-  if (s.focus !== undefined) {
-    await tile(s.focus).locator(".open").click();
-    await tile(s.focus).hover();
-  }
   if (s.hover !== undefined) await tile(s.hover).hover();
   await page.waitForTimeout(400);
   await page.locator("home-camera-card").screenshot({ path: `${root}screenshots/${s.file}.png`, animations: "disabled" });

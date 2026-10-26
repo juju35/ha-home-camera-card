@@ -135,81 +135,108 @@ test("PTZ: arrows press their button, unavailable ones are greyed out and ignore
   assert.equal(r.noPtzOnOthers, true);
 });
 
-test("a tap enlarges a camera without reconnecting any player, a second tap shrinks it back", async () => {
-  const r = await page.evaluate(() => {
+test("a tap on a camera puts its tile fullscreen, without reconnecting any player", async () => {
+  const r = await page.evaluate(async () => {
     mount(CAMS);
     const start = window.__connects;
-    tiles()[1].querySelector(".open").click();
-    const grid = el.shadowRoot.querySelector(".grid");
-    const focused = {
-      grid: grid.classList.contains("focus"),
-      tile: tiles().findIndex((t) => t.classList.contains("focused")),
-      cols: grid.style.gridTemplateColumns,
-      back: !!tiles()[1].querySelector('[data-action="back"]'),
-      details: !!tiles()[1].querySelector('[data-action="details"]'),
-      othersHaveDetails: !!tiles()[0].querySelector('[data-action="details"]'),
+    const requested = [];
+    const original = Element.prototype.requestFullscreen;
+    Element.prototype.requestFullscreen = function () {
+      requested.push(this.dataset.cam);
+      return Promise.resolve();
     };
     tiles()[1].querySelector(".open").click();
-    return { focused, after: grid.classList.contains("focus"), connects: window.__connects - start };
+    tiles()[0].querySelector(".open").dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, composed: true }));
+    Element.prototype.requestFullscreen = original;
+    return { requested, connects: window.__connects - start };
   });
-  assert.deepEqual(r.focused, {
-    grid: true,
-    tile: 1,
-    cols: "repeat(3, minmax(0px, 1fr))",
-    back: true,
-    details: true,
-    othersHaveDetails: false,
-  });
-  assert.equal(r.after, false);
+  assert.deepEqual(r.requested, ["b_hd_stream", "a_hd_stream"]);
   assert.equal(r.connects, 0);
 });
 
-test("the enlarged camera goes back on Escape, its back button, a tap on another or a click outside", async () => {
-  const r = await page.evaluate(() => {
-    mount(CAMS);
-    const grid = el.shadowRoot.querySelector(".grid");
-    const enlarge = (i) => tiles()[i].querySelector(".open").click();
-    const out = {};
-    enlarge(0);
-    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
-    out.escape = grid.classList.contains("focus");
-    enlarge(0);
-    tiles()[0].querySelector('[data-action="back"]').click();
-    out.back = grid.classList.contains("focus");
-    enlarge(0);
-    enlarge(2);
-    out.switched = tiles().findIndex((t) => t.classList.contains("focused"));
-    document.body.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, composed: true }));
-    out.outside = grid.classList.contains("focus");
-    return out;
-  });
-  assert.deepEqual(r, { escape: false, back: false, switched: 2, outside: false });
-});
-
-test("the camera dialog opens from the details button, or on a tap when there is one camera", async () => {
-  const r = await page.evaluate(() => {
-    const opened = [];
-    mount(CAMS);
-    el.addEventListener("hass-more-info", (e) => opened.push(e.detail.entityId));
-    tiles()[1].querySelector(".open").click();
-    tiles()[1].querySelector('[data-action="details"]').click();
-    mount(["camera.c"]);
-    el.addEventListener("hass-more-info", (e) => opened.push(e.detail.entityId));
-    tiles()[0].querySelector(".open").dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, composed: true }));
-    return opened;
-  });
-  assert.deepEqual(r, ["camera.b_hd_stream", "camera.c"]);
-});
-
-test("with the arrows shown, a tap on the image closes them instead of enlarging", async () => {
+test("in fullscreen: image fitted, exit button instead of details, a tap exits", async () => {
   const r = await page.evaluate(() => {
     mount(CAMS);
     const tile = tiles()[0];
+    // Fullscreen as the browser reports it.
+    Object.defineProperty(el.shadowRoot, "fullscreenElement", { configurable: true, get: () => tile });
+    tile.dispatchEvent(new Event("fullscreenchange"));
+    const inside = {
+      fit: tile.querySelector("ha-camera-stream").fitMode,
+      exit: !!tile.querySelector('[data-action="fullscreen"]'),
+      details: !!tile.querySelector('[data-action="details"]'),
+      label: tile.querySelector(".open").getAttribute("aria-label"),
+    };
+    let exited = 0;
+    const original = document.exitFullscreen;
+    document.exitFullscreen = () => {
+      exited++;
+      return Promise.resolve();
+    };
+    tile.querySelector(".open").click();
+    tile.querySelector('[data-action="fullscreen"]').click();
+    document.exitFullscreen = original;
+    delete el.shadowRoot.fullscreenElement;
+    tile.dispatchEvent(new Event("fullscreenchange"));
+    return {
+      inside,
+      exited,
+      after: { fit: tile.querySelector("ha-camera-stream").fitMode, details: !!tile.querySelector('[data-action="details"]') },
+    };
+  });
+  assert.deepEqual(r.inside, { fit: "contain", exit: true, details: false, label: "Exit fullscreen" });
+  assert.equal(r.exited, 2);
+  assert.deepEqual(r.after, { fit: "cover", details: true });
+});
+
+test("without element fullscreen (iPhone), the video goes fullscreen, else the dialog opens", async () => {
+  const r = await page.evaluate(() => {
+    mount(CAMS);
+    const opened = [];
+    el.addEventListener("hass-more-info", (e) => opened.push(e.detail.entityId));
+    const original = [Element.prototype.requestFullscreen, Element.prototype.webkitRequestFullscreen];
+    Element.prototype.requestFullscreen = undefined;
+    Element.prototype.webkitRequestFullscreen = undefined;
+    const video = document.createElement("video");
+    let native = 0;
+    video.webkitEnterFullscreen = () => native++;
+    streams()[0].appendChild(video);
+    tiles()[0].querySelector(".open").click();
+    tiles()[2].querySelector(".open").click();
+    [Element.prototype.requestFullscreen, Element.prototype.webkitRequestFullscreen] = original;
+    return { native, opened };
+  });
+  assert.equal(r.native, 1);
+  assert.deepEqual(r.opened, ["camera.c"]);
+});
+
+test("the details button opens the camera dialog", async () => {
+  const r = await page.evaluate(() => {
+    mount(CAMS);
+    const opened = [];
+    el.addEventListener("hass-more-info", (e) => opened.push(e.detail.entityId));
+    tiles()[1].querySelector('[data-action="details"]').click();
+    return opened;
+  });
+  assert.deepEqual(r, ["camera.b_hd_stream"]);
+});
+
+test("with the arrows shown, a tap on the image closes them instead of going fullscreen", async () => {
+  const r = await page.evaluate(() => {
+    mount(CAMS);
+    let requested = 0;
+    const original = Element.prototype.requestFullscreen;
+    Element.prototype.requestFullscreen = () => {
+      requested++;
+      return Promise.resolve();
+    };
+    const tile = tiles()[0];
     tile.querySelector('[data-action="ptz"]').click();
     tile.querySelector(".open").click();
-    return { closed: !tile.classList.contains("ptz-open"), focus: el.shadowRoot.querySelector(".grid").classList.contains("focus") };
+    Element.prototype.requestFullscreen = original;
+    return { closed: !tile.classList.contains("ptz-open"), requested };
   });
-  assert.deepEqual(r, { closed: true, focus: false });
+  assert.deepEqual(r, { closed: true, requested: 0 });
 });
 
 test("a held arrow keeps moving the camera; arrow keys move it too", async () => {

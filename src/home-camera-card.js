@@ -20,10 +20,8 @@ const HcI18n = {
     disable: 'Désactiver',
     unavailable: 'Indisponible',
     ptz: 'Orientation',
-    fullscreen: 'Plein écran',
-    open: 'Ouvrir {c}',
-    enlarge: 'Agrandir {c}',
-    back: 'Revenir à la grille',
+    open: 'Afficher {c} en plein écran',
+    exit_fullscreen: 'Quitter le plein écran',
     details: 'Détails',
     pending: 'Changement en cours…',
     sound_on: 'Activer le son',
@@ -73,10 +71,8 @@ const HcI18n = {
     disable: 'Disable',
     unavailable: 'Unavailable',
     ptz: 'Pan & tilt',
-    fullscreen: 'Fullscreen',
-    open: 'Open {c}',
-    enlarge: 'Enlarge {c}',
-    back: 'Back to the grid',
+    open: 'Show {c} fullscreen',
+    exit_fullscreen: 'Exit fullscreen',
     details: 'Details',
     pending: 'Updating…',
     sound_on: 'Unmute',
@@ -195,6 +191,18 @@ function hcLoadStream(entity) {
   return hcStreamLoad;
 }
 
+// The <video> of a player, inside its shadow roots (ha-camera-stream → ha-web-rtc-player → video).
+function hcFindVideo(root) {
+  const stack = [root];
+  while (stack.length) {
+    const n = stack.pop();
+    if (n?.tagName === 'VIDEO') return n;
+    if (n?.shadowRoot) stack.push(n.shadowRoot);
+    for (const c of n?.children || []) stack.push(c);
+  }
+  return null;
+}
+
 // PTZ buttons as { left, right, up, down }: a prefix ("button.x_move" + "_left"…), an object, or found on the device.
 function hcPtz(hass, cam, cameraId) {
   if (cam.ptz === false) return null;
@@ -275,23 +283,10 @@ class HomeCameraCard extends HTMLElement {
         if (!ev.key || ev.key === HC_QUALITY_KEY) this._update();
       };
       this._onVisibility = () => this._syncTiles();
-      // A click outside the card, or Escape, brings the enlarged camera back into the grid.
-      // Clicks in Home Assistant's dialogs (opened from the card) do not count.
-      this._onOutside = (ev) => {
-        if (!this._focus) return;
-        const path = ev.composedPath();
-        if (path.includes(this) || path.some((n) => /^HA-(MORE-INFO-|ADAPTIVE-)?DIALOG/.test(n.tagName || ''))) return;
-        this._setFocus(null);
-      };
-      this._onEscape = (ev) => {
-        if (ev.key === 'Escape' && this._focus && !this._fullscreen(this._tiles?.get(this._focus))) this._setFocus(null);
-      };
     }
     window.addEventListener('storage', this._onQuality);
     window.addEventListener(HC_QUALITY_EVENT, this._onQuality);
-    window.addEventListener('keydown', this._onEscape);
     document.addEventListener('visibilitychange', this._onVisibility);
-    document.addEventListener('pointerdown', this._onOutside);
     this._syncTiles();
     // The HD/SD choice may have changed while detached (listeners removed): catch up. _update() is
     // a no-op before setConfig/hass, and the signatures skip the render when nothing changed.
@@ -301,9 +296,7 @@ class HomeCameraCard extends HTMLElement {
   disconnectedCallback() {
     window.removeEventListener('storage', this._onQuality);
     window.removeEventListener(HC_QUALITY_EVENT, this._onQuality);
-    window.removeEventListener('keydown', this._onEscape);
     document.removeEventListener('visibilitychange', this._onVisibility);
-    document.removeEventListener('pointerdown', this._onOutside);
     this._stopRepeat();
   }
 
@@ -509,13 +502,11 @@ class HomeCameraCard extends HTMLElement {
 
   // The grid of tiles, one per visible camera. Tiles are kept across renders and only added or removed
   // where needed: a tile that stays in place keeps its stream running (moving a player reconnects it).
-  // The enlarged camera is laid out with CSS only (order, span), for the same reason.
   _renderView(visible, hd) {
     const view = this.shadowRoot.querySelector('.view');
     if (!this._tiles) this._tiles = new Map();
     if (!visible.length) {
       this._tiles.clear();
-      this._focus = null;
       view.innerHTML = this._config.cameras?.length
         ? ''
         : `<div class="empty"><ha-icon icon="mdi:cctv-off"></ha-icon>${hcEsc(this._t('no_cameras'))}</div>`;
@@ -528,6 +519,7 @@ class HomeCameraCard extends HTMLElement {
       grid.className = 'grid';
       view.replaceChildren(grid);
     }
+    grid.style.gridTemplateColumns = `repeat(${hcColumns(this._config, visible.length)}, minmax(0, 1fr))`;
     grid.style.setProperty('--hc-ratio', String(hcRatio(this._config.aspect_ratio)));
 
     const keys = new Set(visible.map((cam) => cam.key));
@@ -545,7 +537,6 @@ class HomeCameraCard extends HTMLElement {
       this._fillTile(tile, cam, hd);
       if (grid.children[i] !== tile) grid.insertBefore(tile, grid.children[i] || null);
     });
-    this._applyFocus();
     this._syncTiles();
   }
 
@@ -557,7 +548,7 @@ class HomeCameraCard extends HTMLElement {
     tile.innerHTML =
       '<div class="na"><ha-icon icon="mdi:cctv-off"></ha-icon><span></span></div><div class="spin"></div>' +
       '<div class="label"></div><span class="open" data-action="open" role="button" tabindex="0"></span>' +
-      '<div class="lead"></div><div class="tools"></div><div class="pad"></div>';
+      '<div class="tools"></div><div class="pad"></div>';
     const stream = document.createElement('ha-camera-stream');
     stream.muted = true;
     stream.fitMode = 'cover';
@@ -589,34 +580,25 @@ class HomeCameraCard extends HTMLElement {
     this._renderTools(tile);
   }
 
-  // Buttons of a tile. In the grid: pan & tilt, sound (when the stream has some) and fullscreen.
-  // Enlarged: a back button on the left, and the camera dialog among the buttons on the right.
+  // Buttons of a tile: pan & tilt, sound (when the stream has some), and the camera dialog; in
+  // fullscreen, an exit button instead of the dialog (a dialog would open behind the fullscreen tile).
   _renderTools(tile) {
     const cam = tile._cam;
     if (!cam) return;
-    const focused = tile.classList.contains('focused');
-    const many = (this._tiles?.size || 0) > 1;
-    const sig = JSON.stringify([this._lang(), cam.ptz, focused, many, tile._audio]);
+    const full = this._fullscreen(tile);
+    const sig = JSON.stringify([this._lang(), cam.ptz, full, tile._audio]);
     if (sig === tile._toolsSig) return;
     tile._toolsSig = sig;
 
-    const open = tile.querySelector('.open');
-    let openLabel = this._t('open', { c: cam.name });
-    if (focused) openLabel = this._t('back');
-    else if (many) openLabel = this._t('enlarge', { c: cam.name });
-    open.setAttribute('aria-label', openLabel);
-
+    tile.querySelector('.open').setAttribute('aria-label', full ? this._t('exit_fullscreen') : this._t('open', { c: cam.name }));
     const btn = (cls, attrs, icon, label) =>
       `<span class="btn ${cls}" ${attrs} role="button" tabindex="0" title="${hcEsc(label)}" aria-label="${hcEsc(label)}">` +
       `<ha-icon icon="${icon}"></ha-icon></span>`;
-    tile.querySelector('.lead').innerHTML = focused
-      ? btn('back', 'data-action="back"', 'mdi:arrow-left', this._t('back'))
-      : '';
     let tools = '';
     if (cam.ptz) tools += btn('ptz', 'data-action="ptz"', 'mdi:arrow-all', this._t('ptz'));
     if (tile._audio) tools += btn('sound', 'data-action="sound"', 'mdi:volume-off', this._t('sound_on'));
-    if (focused) tools += btn('details', 'data-action="details"', 'mdi:information-outline', this._t('details'));
-    tools += btn('full', 'data-action="fullscreen"', 'mdi:fullscreen', this._t('fullscreen'));
+    if (full) tools += btn('full', 'data-action="fullscreen"', 'mdi:fullscreen-exit', this._t('exit_fullscreen'));
+    else tools += btn('details', 'data-action="details"', 'mdi:information-outline', this._t('details'));
     tile.querySelector('.tools').innerHTML = tools;
     tile.querySelector('.pad').innerHTML = cam.ptz
       ? HC_PTZ_DIRS.filter((d) => cam.ptz[d])
@@ -627,31 +609,7 @@ class HomeCameraCard extends HTMLElement {
       : '';
     if (!cam.ptz) tile.classList.remove('ptz-open');
     this._soundIcon(tile);
-    this._fullscreenChanged(tile);
     this._syncPtz(tile);
-  }
-
-  // Enlarged camera: it spans the whole width, the others line up under it. CSS only, no DOM move.
-  _setFocus(key) {
-    this._focus = key || null;
-    this._applyFocus();
-  }
-
-  _applyFocus() {
-    const grid = this.shadowRoot.querySelector('.grid');
-    if (!grid || !this._tiles) return;
-    const n = this._tiles.size;
-    if (this._focus && (n < 2 || !this._tiles.has(this._focus))) this._focus = null;
-    grid.classList.toggle('focus', !!this._focus);
-    // Enlarged: the others in a row of 3 to 4 thumbnails, so one or two of them stay small.
-    const cols = this._focus ? Math.min(Math.max(n - 1, 3), 4) : hcColumns(this._config, n);
-    grid.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
-    for (const [key, tile] of this._tiles) {
-      const focused = key === this._focus;
-      tile.classList.toggle('focused', focused);
-      if (this._focus && !focused) tile.classList.remove('ptz-open');
-      this._renderTools(tile);
-    }
   }
 
   // Live state of every tile: the camera's state object, and which PTZ buttons can be pressed.
@@ -698,18 +656,38 @@ class HomeCameraCard extends HTMLElement {
     const on = this._fullscreen(tile);
     tile._stream.fitMode = on ? 'contain' : 'cover';
     tile._stream.aspectRatio = on ? undefined : hcRatio(this._config.aspect_ratio);
-    tile.querySelector('.full ha-icon')?.setAttribute('icon', on ? 'mdi:fullscreen-exit' : 'mdi:fullscreen');
+    this._renderTools(tile);
   }
 
+  // The tile goes fullscreen with its buttons. Where elements cannot (iPhone), the video itself goes
+  // fullscreen in the system player; without a video (MJPEG), the camera dialog opens instead.
   _toggleFullscreen(tile) {
     if (this._fullscreen(tile)) {
       (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
       return;
     }
+    const fallback = () => {
+      const video = hcFindVideo(tile._stream);
+      if (video?.webkitEnterFullscreen) {
+        try {
+          video.webkitEnterFullscreen();
+          return;
+        } catch (_e) {
+          // not ready yet: the dialog below
+        }
+      }
+      this._moreInfo(tile._entity);
+    };
     const request = tile.requestFullscreen || tile.webkitRequestFullscreen;
-    // No element fullscreen (iPhone): Home Assistant's camera dialog instead.
-    if (request) request.call(tile)?.catch?.(() => this._moreInfo(tile._entity));
-    else this._moreInfo(tile._entity);
+    if (!request) {
+      fallback();
+      return;
+    }
+    try {
+      Promise.resolve(request.call(tile)).catch(fallback);
+    } catch (_e) {
+      fallback();
+    }
   }
 
   // Sound on one camera at a time: unmuting a tile mutes the others.
@@ -816,13 +794,11 @@ class HomeCameraCard extends HTMLElement {
       '.view:empty { display: none; }' +
       '.grid { display: grid; gap: 6px; }' +
       '.tile { position: relative; aspect-ratio: var(--hc-ratio, 1.7778); border-radius: 10px; overflow: hidden; background: #000; }' +
-      '.grid.focus .tile.focused { grid-column: 1 / -1; order: -1; }' +
       '.open { position: absolute; inset: 0; cursor: pointer; outline: none; border-radius: inherit; -webkit-tap-highlight-color: transparent; }' +
       '.open:focus-visible { box-shadow: inset 0 0 0 2px var(--primary-color, #03a9f4); }' +
-      // Several cameras: a tap enlarges one, a tap on it shrinks it back. One camera: a tap opens its dialog.
-      '.grid:not(.focus) .tile:not(:only-child) .open { cursor: zoom-in; }' +
-      '.tile.focused .open { cursor: zoom-out; }' +
-      '.tile:fullscreen .open { cursor: default; }' +
+      // A tap on the image puts it fullscreen, a second tap brings it back.
+      '.open { cursor: zoom-in; }' +
+      '.tile:fullscreen .open { cursor: zoom-out; }' +
       '.tile ha-camera-stream { display: block; width: 100%; height: 100%; --video-max-height: 100%; }' +
       '.tile:fullscreen { display: flex; align-items: center; justify-content: center; border-radius: 0; }' +
       '.tile:fullscreen ha-camera-stream { --video-max-height: 100vh; }' +
@@ -835,12 +811,9 @@ class HomeCameraCard extends HTMLElement {
       '.tile.loading:not(.off) .spin { display: block; }' +
       '.label { position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 10px 6px; font-size: 12px; font-weight: 500; color: #fff;' +
       ' background: linear-gradient(transparent, rgba(0,0,0,0.55)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }' +
-      '.tile.focused .label { font-size: 14px; padding: 24px 12px 8px; }' +
-      '.grid.focus .tile:not(.focused) .label { font-size: 11px; padding: 12px 6px 4px; }' +
-      '.lead, .tools { position: absolute; top: 6px; display: flex; gap: 6px; transition: opacity 0.15s; }' +
-      '.lead { left: 6px; }' +
-      '.tools { right: 6px; }' +
-      '.grid.focus .tile:not(.focused) :is(.lead, .tools, .pad) { display: none; }' +
+      '.tile:fullscreen .label { font-size: 16px; padding: 32px 16px 12px; }' +
+      '.tools { position: absolute; top: 6px; right: 6px; display: flex; gap: 6px; transition: opacity 0.15s; }' +
+      '.tile:fullscreen .tools { top: 12px; right: 12px; }' +
       '.btn { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;' +
       ' color: #fff; background: rgba(0,0,0,0.45); -webkit-tap-highlight-color: transparent; user-select: none; }' +
       '.btn:hover { background: rgba(0,0,0,0.65); }' +
@@ -860,7 +833,7 @@ class HomeCameraCard extends HTMLElement {
       '.move.dis { opacity: 0.35; cursor: default; }' +
       // Mouse: the buttons show on hover, so the image stays clear. Touch: always shown, and larger.
       '@media (hover: hover) and (pointer: fine) {' +
-      ' .tile:not(:hover):not(:focus-within):not(.ptz-open) :is(.lead, .tools) { opacity: 0; } }' +
+      ' .tile:not(:hover):not(:focus-within):not(.ptz-open) .tools { opacity: 0; } }' +
       '@media (pointer: coarse) { .btn { width: 36px; height: 36px; } .btn ha-icon { --mdc-icon-size: 20px; } .move { --s: 46px; } }' +
       '.empty { display: flex; align-items: center; gap: 10px; color: var(--secondary-text-color); }' +
       '</style>'
@@ -890,14 +863,12 @@ class HomeCameraCard extends HTMLElement {
     else if (action === 'sound') this._toggleSound(tile);
     else if (action === 'fullscreen') this._toggleFullscreen(tile);
     else if (action === 'details') this._moreInfo(tile._entity);
-    else if (action === 'back') this._setFocus(null);
     else if (action === 'move') {
       // A pointer press already moved the camera (pointerdown); a click without a pointer did not.
       if (ev.type !== 'click' || !ev.detail) this._move(btn);
     } else if (tile.classList.contains('ptz-open')) tile.classList.remove('ptz-open');
-    else if (this._fullscreen(tile)) return;
-    else if ((this._tiles?.size || 0) < 2) this._moreInfo(tile._entity);
-    else this._setFocus(tile.classList.contains('focused') ? null : tile.dataset.cam);
+    // A tap on the image: fullscreen, and out of it again.
+    else this._toggleFullscreen(tile);
   }
 
   _toggleQuality() {
