@@ -2,7 +2,12 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { loadCard } from "./load.mjs";
 
-const { hcSibling, hcOwnControl, hcDeviceIndex } = loadCard("home-camera-card.js", ["hcSibling", "hcOwnControl", "hcDeviceIndex"]);
+const { hcSibling, hcOwnControl, hcDeviceIndex, hcRatio } = loadCard("home-camera-card.js", [
+  "hcSibling",
+  "hcOwnControl",
+  "hcDeviceIndex",
+  "hcRatio",
+]);
 
 const entities = () => ({
   "camera.salon_hd_stream": { entity_id: "camera.salon_hd_stream", device_id: "d1" },
@@ -37,8 +42,21 @@ test("the device index is built once per registry object and rebuilt when it cha
 test("only the card's own controls handle Enter/Space", () => {
   assert.equal(hcOwnControl([{ dataset: { toggle: "switch.salon_privacy" } }, {}]), true);
   assert.equal(hcOwnControl([{ dataset: { quality: "1" } }]), true);
-  // A button inside the embedded advanced-camera-card: not ours, left alone.
-  assert.equal(hcOwnControl([{ dataset: {} }, { tagName: "BUTTON" }, {}]), false);
+  assert.equal(hcOwnControl([{ dataset: { action: "fullscreen" } }, { dataset: { cam: "salon" } }]), true);
+  assert.equal(hcOwnControl([{ tagName: "VIDEO" }, { dataset: { cam: "salon" } }]), true);
+  // Outside the card's controls (e.g. the header text): left alone.
+  assert.equal(hcOwnControl([{ dataset: {} }, { tagName: "DIV" }, {}]), false);
+});
+
+test("hcRatio reads 16:9, 4/3 or a number, and falls back to 16:9", () => {
+  assert.equal(hcRatio("16:9"), 16 / 9);
+  assert.equal(hcRatio("4/3"), 4 / 3);
+  assert.equal(hcRatio(" 1 : 1 "), 1);
+  assert.equal(hcRatio(1.5), 1.5);
+  assert.equal(hcRatio("2"), 2);
+  assert.equal(hcRatio(undefined), 16 / 9);
+  assert.equal(hcRatio("wide"), 16 / 9);
+  assert.equal(hcRatio("0:9"), 16 / 9);
 });
 
 test("the local HD/SD choice is shared by every card of the page", () => {

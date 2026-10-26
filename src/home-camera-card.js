@@ -18,6 +18,13 @@ const HcI18n = {
     privacy_off: '{c} : visible, toucher pour la masquer',
     enable: 'Activer',
     disable: 'Désactiver',
+    unavailable: 'Indisponible',
+    ptz: 'Orientation',
+    fullscreen: 'Plein écran',
+    move_left: 'Gauche',
+    move_right: 'Droite',
+    move_up: 'Haut',
+    move_down: 'Bas',
     ed_title: 'Titre',
     ed_title_helper: 'Laisser vide pour « Caméras »',
     ed_icon: 'Icône',
@@ -26,6 +33,8 @@ const HcI18n = {
     ed_hd_option: 'Option HD',
     ed_sd_option: 'Option SD',
     ed_columns: 'Colonnes',
+    ed_aspect_ratio: 'Format des vignettes',
+    ed_aspect_ratio_helper: 'Par exemple 16:9 (par défaut) ou 4:3',
     ed_show_summary: 'Résumé',
     ed_show_badges: 'Pastilles de confidentialité',
     ed_language: 'Langue',
@@ -55,6 +64,13 @@ const HcI18n = {
     privacy_off: '{c}: visible, tap to hide it',
     enable: 'Enable',
     disable: 'Disable',
+    unavailable: 'Unavailable',
+    ptz: 'Pan & tilt',
+    fullscreen: 'Fullscreen',
+    move_left: 'Left',
+    move_right: 'Right',
+    move_up: 'Up',
+    move_down: 'Down',
     ed_title: 'Title',
     ed_title_helper: 'Leave empty for "Cameras"',
     ed_icon: 'Icon',
@@ -63,6 +79,8 @@ const HcI18n = {
     ed_hd_option: 'HD option',
     ed_sd_option: 'SD option',
     ed_columns: 'Columns',
+    ed_aspect_ratio: 'Tile aspect ratio',
+    ed_aspect_ratio_helper: 'For example 16:9 (default) or 4:3',
     ed_show_summary: 'Summary',
     ed_show_badges: 'Privacy badges',
     ed_language: 'Language',
@@ -99,6 +117,7 @@ const HC_DEFAULTS = {
 };
 
 const HC_PTZ_DIRS = ['left', 'right', 'up', 'down'];
+const HC_PTZ_ICONS = { left: 'mdi:chevron-left', right: 'mdi:chevron-right', up: 'mdi:chevron-up', down: 'mdi:chevron-down' };
 
 // ── Entity discovery ─────────────────────────────────────────────────────────
 // The registry is indexed by device once per `hass.entities` object (it only changes with the registry).
@@ -125,9 +144,33 @@ function hcSibling(hass, cameraId, domain, suffix) {
   return hcDeviceEntities(reg, device).find((id) => id.startsWith(`${domain}.`) && id.endsWith(suffix));
 }
 
-// True when an event path goes through one of the card's own controls (privacy toggle, HD/SD switch).
+// True when an event path goes through one of the card's own controls (privacy toggle, HD/SD switch,
+// tile buttons, or a tile itself, which opens the camera).
 function hcOwnControl(path) {
-  return path.some((n) => n.dataset?.toggle || n.dataset?.quality);
+  return path.some((n) => n.dataset?.toggle || n.dataset?.quality || n.dataset?.action || n.dataset?.cam);
+}
+
+// "16:9", "4/3" or 1.5 as a width / height ratio; 16:9 when missing or invalid.
+function hcRatio(value) {
+  if (typeof value === 'number' && value > 0) return value;
+  const m = /^\s*(\d+(?:\.\d+)?)\s*[:/x]\s*(\d+(?:\.\d+)?)\s*$/.exec(String(value || ''));
+  const r = m ? Number(m[1]) / Number(m[2]) : Number(value);
+  return Number.isFinite(r) && r > 0 ? r : 16 / 9;
+}
+
+// Home Assistant's own live player (WebRTC through go2rtc, HLS or MJPEG, whichever the camera offers).
+// It ships with the picture cards, which are loaded on demand: building one loads it.
+let hcStreamLoad = null;
+function hcLoadStream(entity) {
+  if (customElements.get('ha-camera-stream')) return Promise.resolve();
+  if (!hcStreamLoad) {
+    hcStreamLoad = (async () => {
+      const helpers = window.loadCardHelpers ? await window.loadCardHelpers() : null;
+      helpers?.createCardElement({ type: 'picture-entity', entity: entity, camera_view: 'live' });
+      await customElements.whenDefined('ha-camera-stream');
+    })();
+  }
+  return hcStreamLoad;
 }
 
 // PTZ buttons as { left, right, up, down }: a prefix ("button.x_move" + "_left"…), an object, or found on the device.
@@ -230,8 +273,7 @@ class HomeCameraCard extends HTMLElement {
   set hass(hass) {
     this._hass = hass;
     this._update();
-    if (this._inner) this._inner.hass = hass;
-    for (const el of this._fallback || []) el.hass = hass;
+    this._syncTiles();
   }
 
   getCardSize() {
@@ -297,17 +339,16 @@ class HomeCameraCard extends HTMLElement {
       this._renderHead(cams, visible, hd);
     }
 
-    const acc = !!customElements.get('advanced-camera-card');
     const viewSig = JSON.stringify([
-      acc,
+      this._lang(),
       hd,
       this._config.columns,
-      this._config.camera_card,
+      this._config.aspect_ratio,
       visible.map((cam) => [cam.key, cam.camera, cam.sd, cam.name, cam.ptz]),
     ]);
     if (viewSig !== this._viewSig) {
       this._viewSig = viewSig;
-      this._renderView(visible, hd, acc);
+      this._renderView(visible, hd);
     }
   }
 
@@ -388,96 +429,141 @@ class HomeCameraCard extends HTMLElement {
       (badges ? `<div class="chips badges">${badges}</div>` : '');
   }
 
-  // advanced-camera-card config: the visible cameras, in HD or SD, with their PTZ buttons.
-  _accConfig(visible, hd) {
-    const c = this._config;
-    const cameras = visible.map((cam) => {
-      const out = { camera_entity: hd || !cam.sd ? cam.camera : cam.sd, title: cam.name, id: cam.key };
-      if (cam.ptz) {
-        out.ptz = {};
-        for (const d of HC_PTZ_DIRS) {
-          if (!cam.ptz[d]) continue;
-          out.ptz[`actions_${d}`] = {
-            action: 'perform-action',
-            perform_action: 'button.press',
-            target: { entity_id: cam.ptz[d] },
-          };
-        }
-      }
-      return out;
-    });
-    const enabled = { enabled: true };
-    const base = {
-      type: 'custom:advanced-camera-card',
-      cameras: cameras,
-      view: { default: 'live' },
-      live: { display: { mode: visible.length > 1 ? 'grid' : 'single', grid_columns: hcColumns(c, visible) } },
-      menu: {
-        style: 'overlay',
-        position: 'top',
-        alignment: 'left',
-        buttons: {
-          cameras: enabled,
-          live: enabled,
-          clips: enabled,
-          snapshots: enabled,
-          ptz: enabled,
-          fullscreen: enabled,
-        },
-      },
-      status_bar: { style: 'hover-card', position: 'bottom' },
-    };
-    return hcMerge(base, c.camera_card || {});
-  }
-
-  async _renderView(visible, hd, acc) {
-    const sig = this._viewSig;
+  // The grid of tiles, one per visible camera. Tiles are kept across renders and only added or removed
+  // where needed: a tile that stays in place keeps its stream running (moving a player reconnects it).
+  _renderView(visible, hd) {
     const view = this.shadowRoot.querySelector('.view');
-    this._inner = null;
-    this._fallback = null;
+    if (!this._tiles) this._tiles = new Map();
     if (!visible.length) {
+      this._tiles.clear();
       view.innerHTML = this._config.cameras?.length
         ? ''
         : `<div class="empty"><ha-icon icon="mdi:cctv-off"></ha-icon>${hcEsc(this._t('no_cameras'))}</div>`;
       return;
     }
-    const helpers = window.loadCardHelpers ? await window.loadCardHelpers() : null;
-    if (sig !== this._viewSig) return; // a newer render started meanwhile
-    if (!helpers) {
-      view.innerHTML = '';
-      return;
+    hcLoadStream(visible[0].camera).catch(() => {});
+    let grid = view.querySelector('.grid');
+    if (!grid) {
+      grid = document.createElement('div');
+      grid.className = 'grid';
+      view.replaceChildren(grid);
     }
-    if (acc) {
-      const el = helpers.createCardElement(this._accConfig(visible, hd));
-      el.hass = this._hass;
-      this._inner = el;
-      view.replaceChildren(el);
-      return;
-    }
-    // Without advanced-camera-card: Home Assistant's own picture-entity cards, live, in a grid.
-    const grid = document.createElement('div');
-    grid.className = 'grid';
     grid.style.gridTemplateColumns = `repeat(${hcColumns(this._config, visible)}, minmax(0, 1fr))`;
-    this._fallback = visible.map((cam) => {
-      const el = helpers.createCardElement({
-        type: 'picture-entity',
-        entity: hd || !cam.sd ? cam.camera : cam.sd,
-        name: cam.name,
-        camera_view: 'live',
-        show_state: false,
-      });
-      el.hass = this._hass;
-      grid.appendChild(el);
-      return el;
-    });
-    view.replaceChildren(grid);
-    // advanced-camera-card may load after this card: switch to it once it is defined.
-    if (!this._waitAcc) {
-      this._waitAcc = customElements.whenDefined('advanced-camera-card').then(() => {
-        this._viewSig = null;
-        this._update();
-      });
+    grid.style.setProperty('--hc-ratio', String(hcRatio(this._config.aspect_ratio)));
+
+    const keys = new Set(visible.map((cam) => cam.key));
+    for (const [key, tile] of this._tiles) {
+      if (keys.has(key)) continue;
+      tile.remove();
+      this._tiles.delete(key);
     }
+    visible.forEach((cam, i) => {
+      let tile = this._tiles.get(cam.key);
+      if (!tile) {
+        tile = this._tile();
+        this._tiles.set(cam.key, tile);
+      }
+      this._fillTile(tile, cam, hd);
+      if (grid.children[i] !== tile) grid.insertBefore(tile, grid.children[i] || null);
+    });
+    this._syncTiles();
+  }
+
+  _tile() {
+    const tile = document.createElement('div');
+    tile.className = 'tile';
+    tile.tabIndex = 0;
+    tile.setAttribute('role', 'button');
+    tile.innerHTML =
+      '<div class="na"><ha-icon icon="mdi:cctv-off"></ha-icon><span></span></div>' +
+      '<div class="label"></div><div class="tools"></div><div class="pad"></div>';
+    const stream = document.createElement('ha-camera-stream');
+    stream.muted = true;
+    stream.fitMode = 'cover';
+    tile.prepend(stream);
+    tile._stream = stream;
+    tile.addEventListener('fullscreenchange', () => this._fullscreenChanged(tile));
+    tile.addEventListener('webkitfullscreenchange', () => this._fullscreenChanged(tile));
+    return tile;
+  }
+
+  // Name, buttons and PTZ arrows of a tile; the stream element itself is left alone.
+  _fillTile(tile, cam, hd) {
+    tile._entity = hd || !cam.sd ? cam.camera : cam.sd;
+    tile.dataset.cam = cam.key;
+    tile.title = cam.name;
+    tile.querySelector('.label').textContent = cam.name;
+    tile.querySelector('.na span').textContent = this._t('unavailable');
+    if (!this._fullscreen(tile)) tile._stream.aspectRatio = hcRatio(this._config.aspect_ratio);
+
+    const sig = JSON.stringify([this._lang(), cam.ptz]);
+    if (sig === tile._toolsSig) return;
+    tile._toolsSig = sig;
+    const btn = (cls, attrs, icon, label) =>
+      `<span class="btn ${cls}" ${attrs} role="button" tabindex="0" title="${hcEsc(label)}" aria-label="${hcEsc(label)}">` +
+      `<ha-icon icon="${icon}"></ha-icon></span>`;
+    let tools = '';
+    if (cam.ptz) tools += btn('ptz', 'data-action="ptz"', 'mdi:arrow-all', this._t('ptz'));
+    tools += btn('full', 'data-action="fullscreen"', 'mdi:fullscreen', this._t('fullscreen'));
+    tile.querySelector('.tools').innerHTML = tools;
+    tile.querySelector('.pad').innerHTML = cam.ptz
+      ? HC_PTZ_DIRS.filter((d) => cam.ptz[d])
+          .map((d) =>
+            btn(
+              `move ${d}`,
+              `data-action="move" data-entity="${hcEsc(cam.ptz[d])}"`,
+              HC_PTZ_ICONS[d],
+              this._t(`move_${d}`),
+            ),
+          )
+          .join('')
+      : '';
+    if (!cam.ptz) tile.classList.remove('ptz-open');
+  }
+
+  // Live state of every tile: the camera's state object, and which PTZ buttons can be pressed.
+  _syncTiles() {
+    if (!this._tiles || !this._hass) return;
+    for (const tile of this._tiles.values()) {
+      const st = this._hass.states[tile._entity];
+      const ok = !!st && st.state !== 'unavailable';
+      tile.classList.toggle('off', !ok);
+      const stream = tile._stream;
+      // Older Home Assistant versions take hass, newer ones read it from the page: both are harmless.
+      stream.hass = this._hass;
+      const obj = ok ? st : undefined;
+      if (stream.stateObj !== obj) stream.stateObj = obj;
+      for (const b of tile.querySelectorAll('.move')) {
+        b.classList.toggle('dis', this._state(b.dataset.entity) === 'unavailable');
+      }
+    }
+  }
+
+  _fullscreen(tile) {
+    const root = this.shadowRoot;
+    return !!tile && (root.fullscreenElement === tile || root.webkitFullscreenElement === tile);
+  }
+
+  _fullscreenChanged(tile) {
+    const on = this._fullscreen(tile);
+    tile._stream.fitMode = on ? 'contain' : 'cover';
+    tile._stream.aspectRatio = on ? undefined : hcRatio(this._config.aspect_ratio);
+    tile.querySelector('.full ha-icon')?.setAttribute('icon', on ? 'mdi:fullscreen-exit' : 'mdi:fullscreen');
+  }
+
+  _toggleFullscreen(tile) {
+    if (this._fullscreen(tile)) {
+      (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
+      return;
+    }
+    const request = tile.requestFullscreen || tile.webkitRequestFullscreen;
+    // No element fullscreen (iPhone): Home Assistant's camera dialog instead.
+    if (request) request.call(tile)?.catch?.(() => this._moreInfo(tile._entity));
+    else this._moreInfo(tile._entity);
+  }
+
+  _moreInfo(entityId) {
+    this.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId }, bubbles: true, composed: true }));
   }
 
   _styles() {
@@ -509,6 +595,33 @@ class HomeCameraCard extends HTMLElement {
       '.chip.exposed ha-icon { color: var(--hc-off); }' +
       '.view:empty { display: none; }' +
       '.grid { display: grid; gap: 6px; }' +
+      '.tile { position: relative; aspect-ratio: var(--hc-ratio, 1.7778); border-radius: 10px; overflow: hidden; background: #000; cursor: pointer; outline: none; }' +
+      '.tile:focus-visible { box-shadow: 0 0 0 2px var(--primary-color, #03a9f4); }' +
+      '.tile ha-camera-stream { display: block; width: 100%; height: 100%; --video-max-height: 100%; }' +
+      '.tile:fullscreen { display: flex; align-items: center; justify-content: center; border-radius: 0; cursor: default; }' +
+      '.tile:fullscreen ha-camera-stream { --video-max-height: 100vh; }' +
+      '.tile.off ha-camera-stream { display: none; }' +
+      '.na { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 12px;' +
+      ' color: rgba(255,255,255,0.7); background: #1a1a1a; }' +
+      '.tile.off .na { display: flex; }' +
+      '.label { position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 10px 6px; font-size: 12px; font-weight: 500; color: #fff;' +
+      ' background: linear-gradient(transparent, rgba(0,0,0,0.55)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }' +
+      '.tools { position: absolute; top: 6px; right: 6px; display: flex; gap: 6px; }' +
+      '.btn { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;' +
+      ' color: #fff; background: rgba(0,0,0,0.45); -webkit-tap-highlight-color: transparent; user-select: none; }' +
+      '.btn:hover { background: rgba(0,0,0,0.65); }' +
+      '.btn:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); }' +
+      '.btn ha-icon { --mdc-icon-size: 18px; }' +
+      '.tile.ptz-open .btn.ptz { background: var(--primary-color, #03a9f4); }' +
+      '.pad { display: none; }' +
+      '.tile.ptz-open .pad { display: block; }' +
+      '.move { position: absolute; width: 38px; height: 38px; }' +
+      '.move ha-icon { --mdc-icon-size: 26px; }' +
+      '.move.left { left: 8px; top: calc(50% - 19px); }' +
+      '.move.right { right: 8px; top: calc(50% - 19px); }' +
+      '.move.up { top: 8px; left: calc(50% - 19px); }' +
+      '.move.down { bottom: 8px; left: calc(50% - 19px); }' +
+      '.move.dis { opacity: 0.35; cursor: default; }' +
       '.empty { display: flex; align-items: center; gap: 10px; color: var(--secondary-text-color); }' +
       '</style>'
     );
@@ -524,7 +637,17 @@ class HomeCameraCard extends HTMLElement {
     if (toggle) {
       const id = toggle.dataset.toggle;
       this._hass.callService(id.split('.')[0], 'toggle', { entity_id: id });
+      return;
     }
+    const tile = path.find((n) => n.dataset?.cam);
+    if (!tile) return;
+    const action = path.find((n) => n.dataset?.action)?.dataset.action;
+    if (action === 'ptz') tile.classList.toggle('ptz-open');
+    else if (action === 'fullscreen') this._toggleFullscreen(tile);
+    else if (action === 'move') {
+      const btn = path.find((n) => n.dataset?.action);
+      if (!btn.classList.contains('dis')) this._hass.callService('button', 'press', { entity_id: btn.dataset.entity });
+    } else if (!this._fullscreen(tile)) this._moreInfo(tile._entity);
   }
 
   _toggleQuality() {
@@ -553,18 +676,6 @@ class HomeCameraCard extends HTMLElement {
 // Grid columns, never more than the cameras shown: one camera takes the full width.
 function hcColumns(config, visible) {
   return Math.max(1, Math.min(Number(config.columns) || 2, visible.length));
-}
-
-// Deep merge for camera_card overrides: objects merge, everything else replaces.
-function hcMerge(base, extra) {
-  const out = Object.assign({}, base);
-  for (const k of Object.keys(extra)) {
-    const a = out[k];
-    const b = extra[k];
-    const isObj = (v) => v && typeof v === 'object' && !Array.isArray(v);
-    out[k] = isObj(a) && isObj(b) ? hcMerge(a, b) : b;
-  }
-  return out;
 }
 
 // ── home-camera-card-editor (visual editor, built on HA's ha-form) ───────────
@@ -625,6 +736,13 @@ class HomeCameraCardEditor extends HTMLElement {
         name: '',
         schema: [
           { name: 'columns', selector: { number: { min: 1, max: 4, step: 1, mode: 'box' } } },
+          { name: 'aspect_ratio', selector: { text: {} } },
+        ],
+      },
+      {
+        type: 'grid',
+        name: '',
+        schema: [
           { name: 'show_summary', selector: { boolean: {} } },
           { name: 'show_badges', selector: { boolean: {} } },
         ],

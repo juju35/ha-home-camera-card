@@ -23,8 +23,10 @@ List the cameras, the card finds their privacy switch, SD stream and PTZ buttons
 - A single camera: its name is the title, a round *Disable* / *Enable* icon button sits on the right and the HD / SD badge under the title
 - Hidden cameras are removed from the grid: a camera is hidden when its **privacy switch is on** or its **power switch is off**
 - **HD / SD** switch: from an `input_select` shared by every dashboard, or from the card itself (remembered by the browser)
-- Live grid, clips, snapshots, PTZ and fullscreen through [Advanced Camera Card](https://github.com/dermotduffy/advanced-camera-card); any of its options can be set through `camera_card`
-- Without Advanced Camera Card, a grid of Home Assistant's own live camera cards
+- Live grid on Home Assistant's own player: WebRTC through go2rtc when available, else HLS or MJPEG — no other card to install
+- Tap a camera to open Home Assistant's camera dialog; a **fullscreen** button on every tile
+- **PTZ**: a button on the tile shows four arrows over the image; arrows whose button is unavailable are greyed out
+- Hiding or showing a camera, or switching HD / SD, never reloads the streams of the other cameras
 - Automatic discovery on the camera's device: `switch.*_privacy`, `button.*_move_left/right/up/down`, and the `*_sd_stream` camera next to a `*_hd_stream` one (Tapo integration naming)
 - Visual editor in the dashboard UI (no YAML needed)
 - English and French, follows the Home Assistant language
@@ -34,7 +36,6 @@ List the cameras, the card finds their privacy switch, SD stream and PTZ buttons
 ## Prerequisites
 
 - Home Assistant 2024.8 or later with `camera` entities
-- [Advanced Camera Card](https://github.com/dermotduffy/advanced-camera-card) (HACS) for the grid with clips, snapshots and PTZ — optional, the card falls back to Home Assistant's camera cards
 - Optional: an `input_select` with the options `HD` and `SD` to share the quality between dashboards and devices
 
 ## Installation
@@ -90,6 +91,7 @@ quality_entity: input_select.camera_quality
 hd_option: HD
 sd_option: SD
 columns: 2
+aspect_ratio: "16:9"
 cameras:
   - camera: camera.living_room_hd_stream
     name: Living room
@@ -104,11 +106,6 @@ cameras:
     name: Terrace
     power: switch.terrace_camera_plug
     ptz: false
-camera_card:
-  menu:
-    buttons:
-      clips:
-        enabled: false
 ```
 
 ### Options reference
@@ -122,9 +119,9 @@ camera_card:
 | `hd_option` | ❌ | `HD` | Option of `quality_entity` meaning HD |
 | `sd_option` | ❌ | `SD` | Option of `quality_entity` meaning SD |
 | `columns` | ❌ | `2` | Columns of the grid |
+| `aspect_ratio` | ❌ | `16:9` | Shape of the tiles (`16:9`, `4:3`, `1:1`…); the image fills the tile |
 | `show_summary` | ❌ | `true` | Summary line under the title |
 | `show_badges` | ❌ | `true` | Privacy badges under the header |
-| `camera_card` | ❌ | — | Advanced Camera Card options, merged into the generated configuration (`menu`, `live`, `status_bar`…) |
 | `language` | ❌ | Auto | Force language: `fr` or `en` (auto-detects from HA settings) |
 
 **Camera options**
@@ -147,7 +144,7 @@ camera_card:
 
 ## How it works
 
-The card draws its own header and badges, and hands the visible cameras to Advanced Camera Card: its configuration is rebuilt only when the quality or the list of visible cameras changes, so the streams are not reloaded on every state update. When the quality is SD, every camera that has an SD stream uses it.
+The card draws its own header, badges and tiles, and plays each camera with Home Assistant's `ha-camera-stream`, the player of the built-in camera cards and dialog: it picks WebRTC, HLS or MJPEG by itself, so go2rtc and the camera's own settings apply as everywhere else in Home Assistant. Tiles are kept between updates and only added or removed when a camera is shown or hidden, so the other streams keep playing. When the quality is SD, every camera that has an SD stream uses it.
 
 Discovery looks at the entities of the camera's device in the entity registry. Anything set in the configuration wins over what is found.
 

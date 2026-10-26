@@ -10,7 +10,7 @@ const cardJs = readFileSync(`${root}dist/home-camera-card.js`, "utf8");
 
 // Every mdi:* icon the card and the mock camera view use, as SVG paths for the <ha-icon> stand-in.
 const icons = {};
-for (const name of new Set([...cardJs.match(/mdi:[a-z0-9-]+/g), "mdi:cctv", "mdi:video", "mdi:filmstrip", "mdi:camera", "mdi:pan", "mdi:fullscreen"])) {
+for (const name of new Set(cardJs.match(/mdi:[a-z0-9-]+/g))) {
   const key = `mdi${name.slice(4).replace(/(^|-)([a-z0-9])/g, (_, __, c) => c.toUpperCase())}`;
   if (mdi[key]) icons[name.slice(4)] = mdi[key];
 }
@@ -30,7 +30,7 @@ const COMMON = {
   "--text-primary-color": "#ffffff",
 };
 
-// ha-card, ha-icon and a stand-in advanced-camera-card drawing one tile per camera.
+// ha-card, ha-icon and a stand-in ha-camera-stream drawing a still scene per camera.
 const haElements = `
 const ICONS = ${JSON.stringify(icons)};
 customElements.define("ha-card", class extends HTMLElement {
@@ -58,28 +58,18 @@ const SCENES = [
   "linear-gradient(160deg,#a5d6a7 0%,#558b2f 55%,#1b3a10 100%)",
   "linear-gradient(180deg,#81d4fa 0%,#b3e5fc 45%,#7cb342 46%,#33691e 100%)",
 ];
-customElements.define("advanced-camera-card", class extends HTMLElement {
-  setConfig(c) { this._c = c; }
-  set hass(_) {}
-  connectedCallback() {
-    const c = this._c, cols = c.live.display.grid_columns;
-    const tile = (cam, i) =>
-      '<div style="position:relative;aspect-ratio:16/9;background:' + SCENES[i % SCENES.length] + '">' +
-      '<span style="position:absolute;left:8px;bottom:6px;color:#fff;font:500 12px Roboto,sans-serif;text-shadow:0 1px 3px #000">' + cam.title + '</span>' +
-      '<span style="position:absolute;right:8px;top:6px;color:#fff;font:600 9px Roboto,sans-serif;background:#db4437;padding:1px 5px;border-radius:4px">LIVE</span></div>';
-    const menu = ["cctv", "video", "filmstrip", "camera", "pan", "fullscreen"].map((i) => '<ha-icon icon="mdi:' + i + '" style="--mdc-icon-size:18px"></ha-icon>').join("");
-    this.innerHTML = '<div style="position:relative;border-radius:8px;overflow:hidden;background:#000">' +
-      '<div style="display:grid;grid-template-columns:repeat(' + cols + ',1fr);gap:2px">' + c.cameras.map(tile).join("") + '</div>' +
-      '<div style="position:absolute;left:6px;top:6px;display:flex;gap:6px;padding:4px 6px;border-radius:8px;background:rgba(0,0,0,.45);color:#fff">' + menu + '</div></div>';
+const SCENE_OF = {};
+customElements.define("ha-camera-stream", class extends HTMLElement {
+  get stateObj() { return this._st; }
+  set stateObj(st) {
+    this._st = st;
+    const id = st ? st.entity_id.replace(/_(hd|sd)_stream$/, "") : "";
+    if (id && !(id in SCENE_OF)) SCENE_OF[id] = Object.keys(SCENE_OF).length;
+    this.style.background = id ? SCENES[SCENE_OF[id] % SCENES.length] : "";
+    this.innerHTML = id ? '<span style="position:absolute;left:8px;top:8px;color:#fff;font:600 9px Roboto,sans-serif;background:#db4437;padding:1px 5px;border-radius:4px">LIVE</span>' : "";
   }
 });
-window.loadCardHelpers = async () => ({
-  createCardElement(config) {
-    const el = document.createElement(config.type.replace("custom:", ""));
-    el.setConfig(config);
-    return el;
-  },
-});`;
+`;
 
 const pageHtml = (theme) => `<!doctype html><html><head><meta charset="utf-8">
 <style>
@@ -120,7 +110,8 @@ const config = {
 
 const SHOTS = [
   { file: "card", theme: "light", lang: "en" },
-  { file: "card-dark", theme: "dark", lang: "fr" },
+  // The pan & tilt arrows open on the first camera.
+  { file: "card-dark", theme: "dark", lang: "fr", ptz: true },
 ];
 
 const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
@@ -136,6 +127,7 @@ for (const s of SHOTS) {
     el.hass = { ...hass, callService: async () => {} };
     document.getElementById("root").appendChild(el);
   }, { config, hass: { states, entities, language: s.lang, locale: { language: s.lang }, themes: { darkMode: s.theme === "dark" } } });
+  if (s.ptz) await page.locator("home-camera-card .tile .btn.ptz").first().click();
   await page.waitForTimeout(400);
   await page.locator("home-camera-card").screenshot({ path: `${root}screenshots/${s.file}.png`, animations: "disabled" });
   console.log(`screenshots/${s.file}.png`);
