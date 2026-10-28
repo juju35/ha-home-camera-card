@@ -145,3 +145,25 @@ test("hcLoadStream rejects (and rearms) instead of hanging when the stream eleme
   defined = true;
   await hcLoadStream("camera.salon_hd_stream");
 });
+
+test("I18N parity: every language has exactly the English keys and placeholders", () => {
+  const { HcI18n } = loadCard("home-camera-card.js", ["HcI18n"]);
+  const ref = Object.keys(HcI18n.en).sort();
+  const ph = (s) => (String(s).match(/\{\w+\}/g) || []).sort();
+  for (const lang of ["fr", "de", "es"]) {
+    assert.ok(HcI18n[lang], `missing language ${lang}`);
+    assert.deepEqual(Object.keys(HcI18n[lang]).sort(), ref, `keys of ${lang}`);
+    for (const k of ref) assert.deepEqual(ph(HcI18n[lang][k]), ph(HcI18n.en[k]), `placeholders of ${lang}.${k}`);
+  }
+});
+
+test("the card accepts de and es, and falls back to en", () => {
+  const { customElements } = loadCard("home-camera-card.js", []);
+  const card = new (customElements.get("home-camera-card"))();
+  for (const [language, want] of [["de", "de"], ["es-ES", "es"], ["it", "en"]]) {
+    card.setConfig({ cameras: [], language });
+    assert.equal(card._lang(), want);
+  }
+  card.setConfig({ cameras: [], language: "de" });
+  assert.equal(card._t("live_many", { n: 3 }), "3 Kameras live");
+});
