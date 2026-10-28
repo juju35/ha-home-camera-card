@@ -187,8 +187,13 @@ function hcLoadStream(entity) {
   if (!hcStreamLoad) {
     hcStreamLoad = (async () => {
       const helpers = window.loadCardHelpers ? await window.loadCardHelpers() : null;
-      helpers?.createCardElement({ type: 'picture-entity', entity: entity, camera_view: 'live' });
-      await customElements.whenDefined('ha-camera-stream');
+      if (!helpers) throw new Error('loadCardHelpers unavailable');
+      helpers.createCardElement({ type: 'picture-entity', entity: entity, camera_view: 'live' });
+      // whenDefined never rejects: time out so a failed load rearms hcStreamLoad instead of hanging forever.
+      await Promise.race([
+        customElements.whenDefined('ha-camera-stream'),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('ha-camera-stream not loaded')), 15000)),
+      ]);
     })().catch((err) => {
       hcStreamLoad = null; // the next render tries again
       throw err;

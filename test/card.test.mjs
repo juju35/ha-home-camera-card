@@ -114,3 +114,34 @@ test("the same camera listed twice gets two distinct tile keys", () => {
     ["salon_hd_stream", "garage", "salon_hd_stream_2"],
   );
 });
+
+test("hcLoadStream rejects (and rearms) instead of hanging when the stream element cannot load", async () => {
+  let helpersAvailable = false;
+  let defined = false;
+  const timeouts = [];
+  const { hcLoadStream } = loadCard("home-camera-card.js", ["hcLoadStream"], {
+    loadCardHelpers: async () => (helpersAvailable ? { createCardElement() {} } : null),
+    customElements: {
+      get: () => undefined,
+      define() {},
+      whenDefined: () => (defined ? Promise.resolve() : new Promise(() => {})),
+    },
+    setTimeout: (fn) => timeouts.push(fn),
+  });
+
+  // No loadCardHelpers: explicit rejection, not a forever-pending promise.
+  await assert.rejects(hcLoadStream("camera.salon_hd_stream"), /loadCardHelpers/);
+
+  // Rearmed after the failure: the next call retries; the element never defines, so the timeout rejects.
+  helpersAvailable = true;
+  const second = hcLoadStream("camera.salon_hd_stream");
+  second.catch(() => {});
+  await new Promise((r) => setImmediate(r));
+  assert.equal(timeouts.length, 1);
+  timeouts[0]();
+  await assert.rejects(second, /ha-camera-stream/);
+
+  // Rearmed again: once the element defines, the load resolves.
+  defined = true;
+  await hcLoadStream("camera.salon_hd_stream");
+});
