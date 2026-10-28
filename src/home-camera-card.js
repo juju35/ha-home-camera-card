@@ -311,8 +311,10 @@ class HomeCameraCard extends HTMLElement {
 
   set hass(hass) {
     this._hass = hass;
+    this._viewRendered = false;
     this._update();
-    this._syncTiles();
+    // _renderView has just synced the tiles it rendered: no second pass over them.
+    if (!this._viewRendered) this._syncTiles();
   }
 
   getCardSize() {
@@ -505,17 +507,30 @@ class HomeCameraCard extends HTMLElement {
     }
 
     const level = cams.length && !visible.length ? 'off' : 'on';
-    this.shadowRoot.querySelector('.head').innerHTML =
+    const head = this.shadowRoot.querySelector('.head');
+    // Replacing the header drops the keyboard focus (HD/SD toggled, a badge tapped): remember which
+    // control held it, and give it back to its replacement.
+    const focused = this.shadowRoot.activeElement;
+    const kind = head.contains(focused) && (focused.dataset?.quality ? 'quality' : focused.dataset?.toggle ? 'toggle' : null);
+    head.innerHTML =
       `<div class="header"><div class="hicon ${level}"><ha-icon icon="${hcEsc(c.icon || 'mdi:cctv')}"></ha-icon></div>` +
       `<div class="titles"><div class="name-row"><div class="name">${hcEsc(title)}</div><div class="chips">${right}</div></div>` +
       sub +
       `</div>${side}</div>` +
       (badges ? `<div class="chips badges">${badges}</div>` : '');
+    if (kind) {
+      for (const el of head.querySelectorAll(`[data-${kind}]`)) {
+        if (el.dataset[kind] !== focused.dataset[kind]) continue;
+        el.focus();
+        break;
+      }
+    }
   }
 
   // The grid of tiles, one per visible camera. Tiles are kept across renders and only added or removed
   // where needed: a tile that stays in place keeps its stream running (moving a player reconnects it).
   _renderView(visible, hd) {
+    this._viewRendered = true;
     const view = this.shadowRoot.querySelector('.view');
     if (!this._tiles) this._tiles = new Map();
     if (!visible.length) {
@@ -667,6 +682,7 @@ class HomeCameraCard extends HTMLElement {
   }
 
   _syncPtz(tile) {
+    if (!tile._cam?.ptz) return;
     for (const b of tile.querySelectorAll('.move')) {
       b.classList.toggle('dis', this._state(b.dataset.entity) === 'unavailable');
     }
@@ -686,6 +702,9 @@ class HomeCameraCard extends HTMLElement {
   _setPseudo(tile, on) {
     tile.classList.toggle('pseudo', on);
     this._pseudo = on ? tile : null;
+    // The tile only covers the page: a drag on the image would still scroll the dashboard behind it.
+    document.documentElement.style.overflow = on ? 'hidden' : '';
+    document.body.style.overflow = on ? 'hidden' : '';
     this._fullscreenChanged(tile);
   }
 
@@ -793,7 +812,7 @@ class HomeCameraCard extends HTMLElement {
     return (
       '<style>' +
       // --hc-glass: the smoked glass of everything laid over the images (labels, buttons, arrows).
-      ':host { display: block; --hc-on: var(--success-color, #43a047); --hc-off: var(--error-color, #db4437);' +
+      ':host { display: block; --hc-on: var(--success-color, #43a047);' +
       ' --hc-live: var(--error-color, #db4437); --hc-glass: rgba(14, 16, 20, 0.46); --hc-glass-line: rgba(255, 255, 255, 0.14); }' +
       'ha-card { box-sizing: border-box; padding: 12px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }' +
       // Icon and single-camera toggle at the top of the header row (12 px from the card's edge), the titles
@@ -951,7 +970,7 @@ class HomeCameraCard extends HTMLElement {
     if (action === 'ptz') tile.classList.toggle('ptz-open');
     else if (action === 'sound') this._toggleSound(tile);
     else if (action === 'fullscreen') this._toggleFullscreen(tile);
-    else if (action === 'details') this._moreInfo(tile._entity);
+    else if (action === 'details') this._moreInfo(tile._cam?.camera || tile._entity);
     else if (action === 'move') {
       // A pointer press already moved the camera (pointerdown); a click without a pointer did not.
       if (ev.type !== 'click' || !ev.detail) this._move(btn);
