@@ -8,8 +8,10 @@ on:
       - "src/**"
       - "scripts/**"
 
-# Protected main is never pushed to: the job commits the refreshed screenshots
-# back onto the pull request's own branch, so they land through the normal merge.
+# Protected main is never pushed to: on same-repo pull requests the job commits the
+# refreshed screenshots back onto the pull request's own branch, so they land through
+# the normal merge. Fork PRs and manual runs never push; manual runs upload the
+# rendered screenshots as a workflow artifact instead.
 permissions:
   contents: write
 
@@ -53,7 +55,14 @@ jobs:
             echo "::error::screenshots failed: $(tail -c 1200 /tmp/screenshots.log | tr -d '\r' | tr '\n' ' ')"
             exit 1
           }
+      - name: Upload screenshots artifact
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        with:
+          name: screenshots
+          path: screenshots/
       - name: Commit refreshed screenshots
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         run: |
           if [ -z "$(git status --porcelain screenshots)" ]; then
             echo "No screenshot changes."
@@ -62,5 +71,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add screenshots
-          git commit -m "chore: refresh screenshots [skip ci]"
+          git commit -m "chore: refresh screenshots"
           git push
