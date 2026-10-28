@@ -1,5 +1,17 @@
 # Changelog
 
+## 3.4.1 - 2026-10-28
+### Fixes
+- Camera streams no longer stay blank for the rest of the session when Home Assistant's player fails to load: loading now gives up after 15 s (or at once when the card helpers are missing) and is retried on the next render.
+- *Details* opens the main camera's dialog while in SD, instead of the `*_sd_stream` entity's.
+- The keyboard focus stays on the HD / SD switch or the privacy badge that held it when the header re-renders.
+- The card's own fullscreen (iPhone) locks the page scroll behind the tile and releases it on exit.
+- Fewer updates: the tiles are no longer synced twice after a grid re-render, and cameras without PTZ skip the pan & tilt sync.
+
+### Maintenance
+- README: live and loading animation GIFs, Lint badge, duplicated screenshot table removed, current HACS custom-repository wording, note that the visual editor's Cameras form needs a recent Home Assistant (older versions fall back to YAML for that list).
+- CI: hardened apt handling in the Screenshots workflow, screenshot commits guarded against forks and manual runs, release gated on build and tests, unused ruff tooling removed, Dependabot covers npm devDependencies.
+
 ## 3.4.0 - 2026-10-26
 ### Fixes
 - Privacy badge timers are now cleared when the card is removed from the DOM. Toggling a privacy badge arms a 15 s timer (`HC_PENDING_MS`) that calls `_update()` if the switch does not answer; this timer was never cancelled in `disconnectedCallback`. If the card left the DOM (view change, dashboard edit) while a switch was still pending, the timer survived and fired `_update()` on a detached element. `disconnectedCallback` now cancels these timers and clears `_pending`, as it already does for PTZ repeat and fullscreen.
