@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.5.0 - 2026-10-28
+### What's new
+- German and Spanish translations: the card and its visual editor (including the language selector) now support `de` and `es`, alongside English and French.
+
 ## 3.4.1 - 2026-10-28
 ### Fixes
 - Camera streams no longer stay blank for the rest of the session when Home Assistant's player fails to load: loading now gives up after 15 s (or at once when the card helpers are missing) and is retried on the next render.
