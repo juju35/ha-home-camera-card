@@ -23,11 +23,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 22
-
       - name: Read version
         id: version
         run: |
@@ -40,12 +35,44 @@ jobs:
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Setup Node
+        if: steps.version.outputs.exists == 'false'
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        if: steps.version.outputs.exists == 'false'
+        run: npm ci
+
+      # The browser download (no apt) is kept apart from its system libraries, so the apt work all
+      # sits in one time-boxed, retried step and a hung mirror cannot stall the release.
+      - name: Install Chromium for the browser tests
+        if: steps.version.outputs.exists == 'false'
+        run: npx playwright install chromium
+
+      - name: Install Chromium system deps
+        if: steps.version.outputs.exists == 'false'
+        timeout-minutes: 12
+        run: |
+          for i in 1 2 3; do
+            timeout 150 sudo apt-get update \
+              && timeout 300 npx playwright install-deps chromium \
+              && ok=1 && break
+            echo "release: apt attempt $i failed or timed out, retrying in 15s"; sleep 15
+          done
+          [ -n "$ok" ] || { echo "::error::apt failed 3 times"; exit 1; }
+
+      - name: Run tests
+        if: steps.version.outputs.exists == 'false'
+        run: |
+          npm test
+          npm run test:browser
+
       - name: Check build and notes
         if: steps.version.outputs.exists == 'false'
         run: |
-          npm ci
           npm run check
-          npm test
           .github/scripts/release-notes.sh "${{ steps.version.outputs.version }}" > notes.md
           test -s notes.md
 
