@@ -1,5 +1,17 @@
 # Changelog
 
+## 3.5.1 - 2026-10-29
+### Fixes
+- The dashboard no longer stays unscrollable when a camera shown in the card's own fullscreen (iPhone) is hidden from elsewhere, or when the card's configuration changes.
+- A held pan & tilt arrow no longer keeps turning the camera when the arrows are redrawn under the finger (the stream reports its sound, fullscreen changes) or the tile goes away.
+- Camera streams that failed to load are retried on the next Home Assistant update, instead of spinning until the grid changes.
+- A refused privacy toggle (non-admin user, removed entity) stops the badge spinner at once instead of after 15 s; refused pan & tilt and HD / SD calls no longer raise errors in the console.
+- German: "Badge" instead of "Abzeichen", and "Nach links / rechts / oben / unten" for the pan & tilt arrows.
+- The visual editor follows the page language when Home Assistant does not give one, like the card.
+
+### Maintenance
+- CI: fork-safe checkout in the Screenshots workflow, time-boxed and retried Chromium system deps in Validate and Release (failing explicitly after three attempts), browser tests run before a release, `hacs/action` pinned to its 22.5.0 release, Playwright floor aligned with the lockfile.
+
 ## 3.5.0 - 2026-10-28
 ### What's new
 - German and Spanish translations: the card and its visual editor (including the language selector) now support `de` and `es`, alongside English and French.
