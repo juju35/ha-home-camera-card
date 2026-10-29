@@ -10,7 +10,7 @@
 - The visual editor follows the page language when Home Assistant does not give one, like the card.
 
 ### Maintenance
-- CI: fork-safe checkout in the Screenshots workflow, time-boxed and retried Chromium system deps in Validate and Release (failing explicitly after three attempts), browser tests run before a release, `hacs/action` pinned to its 22.5.0 release, Playwright floor aligned with the lockfile.
+- CI: fork-safe checkout in the Screenshots workflow, time-boxed and retried Chromium system deps in Validate and Release (failing explicitly after three attempts), browser tests run before a release, Playwright floor aligned with the lockfile. After pushing refreshed screenshots onto a pull request, the Screenshots workflow re-runs Lint, Validate and HACS on that commit (via `workflow_dispatch`, since a `GITHUB_TOKEN` push does not trigger them).
 
 ## 3.5.0 - 2026-10-28
 ### What's new

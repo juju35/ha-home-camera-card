@@ -12,8 +12,12 @@ on:
 # refreshed screenshots back onto the pull request's own branch, so they land through
 # the normal merge. Fork PRs and manual runs never push; manual runs upload the
 # rendered screenshots as a workflow artifact instead.
+# A push made with GITHUB_TOKEN does not trigger pull_request workflows, but it may
+# dispatch them: after pushing a screenshot commit the job re-runs the PR checks
+# (lint, validate, hacs) on the branch through workflow_dispatch (needs actions: write).
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: screenshots-${{ github.head_ref || github.ref_name }}
@@ -67,6 +71,7 @@ jobs:
           name: screenshots
           path: screenshots/
       - name: Commit refreshed screenshots
+        id: commit
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         run: |
           if [ -z "$(git status --porcelain screenshots)" ]; then
@@ -78,3 +83,12 @@ jobs:
           git add screenshots
           git commit -m "chore: refresh screenshots"
           git push
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+      - name: Re-run checks on the screenshot commit
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && steps.commit.outputs.pushed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for wf in lint.yml validate.yml hacs.yml; do
+            [ -f ".github/workflows/$wf" ] && gh workflow run "$wf" --ref "${{ github.head_ref }}"
+          done
