@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.5.3 - 2026-10-29
+### Fixes
+- An entry without a camera entity (for example a mistyped `entity_id:` key) no longer counts as a camera: with one real camera left, its image says "Live" like the title already showed, and once it is hidden the panel says "Enable the camera to see it here" instead of pointing to badges that are not shown. A card whose entries have no camera at all shows "No camera configured".
+
 ## 3.5.2 - 2026-10-29
 ### Fixes
 - A camera with both a privacy switch and a `power` switch can be turned back on from the card again: while its power is off, the badge (and the single-camera toggle) switches the power on instead of the privacy switch, which could not bring the camera back and is usually unavailable with the power cut.
