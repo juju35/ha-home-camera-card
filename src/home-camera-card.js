@@ -552,11 +552,12 @@ class HomeCameraCard extends HTMLElement {
       hd,
       this._config.columns,
       this._config.aspect_ratio,
+      cams.length,
       visible.map((cam) => [cam.key, cam.camera, cam.sd, cam.name, cam.ptz]),
     ]);
     if (viewSig !== this._viewSig) {
       this._viewSig = viewSig;
-      this._renderView(visible, hd);
+      this._renderView(visible, hd, cams.length);
     }
   }
 
@@ -662,7 +663,8 @@ class HomeCameraCard extends HTMLElement {
 
   // The grid of tiles, one per visible camera. Tiles are kept across renders and only added or removed
   // where needed: a tile that stays in place keeps its stream running (moving a player reconnects it).
-  _renderView(visible, hd) {
+  // count: cameras the card shows (entries without a camera entity are skipped), as in the header.
+  _renderView(visible, hd, count) {
     this._viewRendered = true;
     const view = this.shadowRoot.querySelector('.view');
     if (!this._tiles) this._tiles = new Map();
@@ -670,7 +672,7 @@ class HomeCameraCard extends HTMLElement {
       for (const tile of this._tiles.values()) this._dropTile(tile);
       this._tiles.clear();
       this._streamEntity = null;
-      const n = this._config.cameras?.length || 0;
+      const n = count;
       // Every camera hidden: what brings one back, where the grid would be.
       if (n && this._config.show_badges) {
         view.innerHTML =
@@ -707,7 +709,7 @@ class HomeCameraCard extends HTMLElement {
         tile = this._tile();
         this._tiles.set(cam.key, tile);
       }
-      this._fillTile(tile, cam, hd);
+      this._fillTile(tile, cam, hd, count === 1);
       if (grid.children[i] !== tile) grid.insertBefore(tile, grid.children[i] || null);
     });
     this._syncTiles();
@@ -748,14 +750,13 @@ class HomeCameraCard extends HTMLElement {
   }
 
   // Name and buttons of a tile; the stream element itself is left alone.
-  _fillTile(tile, cam, hd) {
+  _fillTile(tile, cam, hd, single) {
     tile._cam = cam;
     tile._entity = hd || !cam.sd ? cam.camera : cam.sd;
     tile.dataset.cam = cam.key;
     tile.setAttribute('aria-label', cam.name);
     tile.querySelector('.open').title = cam.name;
     // A single camera already has its name as the card title: its image just says it is live.
-    const single = (this._config.cameras?.length || 0) === 1;
     tile.querySelector('.label .text').textContent = single ? this._t('live') : cam.name;
     tile.querySelector('.na span').textContent = this._t('unavailable');
     if (!this._fullscreen(tile)) tile._stream.aspectRatio = hcRatio(this._config.aspect_ratio);
