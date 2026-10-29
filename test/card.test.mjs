@@ -184,3 +184,85 @@ test("the card accepts de and es, and falls back to en", () => {
   card.setConfig({ cameras: [], language: "de" });
   assert.equal(card._t("live_many", { n: 3 }), "3 Kameras live");
 });
+
+// A card whose header renders into a stub, and whose taps reach a recorded callService.
+function headCard(cameras, states) {
+  const { customElements } = loadCard("home-camera-card.js", []);
+  const card = new (customElements.get("home-camera-card"))();
+  card.setConfig({ cameras });
+  const head = { innerHTML: "", contains: () => false, querySelectorAll: () => [] };
+  const view = { innerHTML: "" };
+  card.shadowRoot.querySelector = (sel) => (sel === ".head" ? head : sel === ".view" ? view : null);
+  const calls = [];
+  card._hass = {
+    states: Object.fromEntries(Object.entries(states).map(([id, state]) => [id, { entity_id: id, state, attributes: {} }])),
+    entities: {},
+    callService: (domain, service, data) => {
+      calls.push(`${domain}.${service} ${data.entity_id}`);
+      return Promise.resolve();
+    },
+  };
+  const render = () => {
+    const cams = card._cameras();
+    card._renderHead(cams, cams.filter((cam) => !card._hidden(cam)), true);
+    return [...head.innerHTML.matchAll(/data-toggle="([^"]*)"/g)].map((m) => m[1]);
+  };
+  const tap = (id) => card._onClick({ composedPath: () => [{ dataset: { toggle: id } }] });
+  return { card, render, tap, calls };
+}
+
+test("a camera hidden by its power switch is switched back on by its badge, not by its privacy switch", () => {
+  const states = { "camera.terrace": "idle", "switch.terrace_privacy": "unavailable", "switch.terrace_plug": "off" };
+  const cam = { camera: "camera.terrace", privacy: "switch.terrace_privacy", power: "switch.terrace_plug" };
+
+  // Single camera: the round toggle beside the title.
+  const one = headCard([cam], states);
+  assert.deepEqual(one.render(), ["switch.terrace_plug"]);
+  one.tap("switch.terrace_plug");
+  assert.deepEqual(one.calls, ["switch.toggle switch.terrace_plug"]);
+  // A second tap toggles the plug again (or waits for it), never the unavailable privacy switch.
+  one.tap(one.render()[0]);
+  assert.deepEqual(one.calls, ["switch.toggle switch.terrace_plug"]);
+
+  // Several cameras: the badge row.
+  const many = headCard([cam, "camera.garage"], { ...states, "camera.garage": "idle" });
+  assert.deepEqual(many.render(), ["switch.terrace_plug"]);
+});
+
+test("the badge spins on the power switch it toggled, then targets the privacy switch once powered", () => {
+  const states = { "camera.terrace": "idle", "switch.terrace_privacy": "unavailable", "switch.terrace_plug": "off" };
+  const cam = { camera: "camera.terrace", privacy: "switch.terrace_privacy", power: "switch.terrace_plug" };
+  const { card, render, tap } = headCard([cam], states);
+  render();
+  tap("switch.terrace_plug");
+  render();
+  assert.match(card.shadowRoot.querySelector(".head").innerHTML, /class="toggle pending" data-toggle="switch\.terrace_plug"/);
+
+  // The plug is back on and the privacy switch with it: the badge now hides the camera with privacy.
+  card._hass.states["switch.terrace_plug"].state = "on";
+  card._hass.states["switch.terrace_privacy"].state = "off";
+  card._pending.clear();
+  assert.deepEqual(render(), ["switch.terrace_privacy"]);
+});
+
+test("power on and privacy on: the badge still toggles the privacy switch", () => {
+  const { render } = headCard(
+    [{ camera: "camera.terrace", privacy: "switch.terrace_privacy", power: "switch.terrace_plug" }],
+    { "camera.terrace": "idle", "switch.terrace_privacy": "on", "switch.terrace_plug": "on" },
+  );
+  assert.deepEqual(render(), ["switch.terrace_privacy"]);
+});
+
+test("the header follows the badge target when the power comes back elsewhere while privacy stays on", () => {
+  const { card } = headCard(
+    [{ camera: "camera.terrace", privacy: "switch.terrace_privacy", power: "switch.terrace_plug" }],
+    { "camera.terrace": "idle", "switch.terrace_privacy": "on", "switch.terrace_plug": "off" },
+  );
+  const toggles = () => [...card.shadowRoot.querySelector(".head").innerHTML.matchAll(/data-toggle="([^"]*)"/g)].map((m) => m[1]);
+  card._update();
+  assert.deepEqual(toggles(), ["switch.terrace_plug"]);
+  // Plug switched on from elsewhere: still hidden (privacy on), but a tap must now turn privacy off.
+  card._hass = { ...card._hass, states: { ...card._hass.states, "switch.terrace_plug": { state: "on", attributes: {} } } };
+  card._update();
+  assert.deepEqual(toggles(), ["switch.terrace_privacy"]);
+});
