@@ -146,6 +146,23 @@ test("hcLoadStream rejects (and rearms) instead of hanging when the stream eleme
   await hcLoadStream("camera.salon_hd_stream");
 });
 
+test("a failed player load is retried on the next hass update, not only when the grid changes", async () => {
+  let loads = 0;
+  const { customElements } = loadCard("home-camera-card.js", [], {
+    loadCardHelpers: async () => {
+      loads++;
+      return null;
+    },
+  });
+  const card = new (customElements.get("home-camera-card"))();
+  card._streamEntity = "camera.salon_hd_stream";
+  card.hass = { states: {}, entities: {} };
+  await new Promise((r) => setImmediate(r));
+  card.hass = { states: {}, entities: {} };
+  await new Promise((r) => setImmediate(r));
+  assert.equal(loads, 2);
+});
+
 test("I18N parity: every language has exactly the English keys and placeholders", () => {
   const { HcI18n } = loadCard("home-camera-card.js", ["HcI18n"]);
   const ref = Object.keys(HcI18n.en).sort();

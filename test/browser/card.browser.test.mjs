@@ -425,3 +425,65 @@ test("a single camera's toggle uses the badge marks: live dot while filming, loc
   assert.deepEqual(r.live, { cls: "toggle exposed", dot: true, icon: null });
   assert.deepEqual(r.hidden, { cls: "toggle private", dot: false, icon: "mdi:eye-lock" });
 });
+
+test("a fullscreen tile (iPhone) removed by its camera going hidden gives the page scroll back", async () => {
+  const r = await page.evaluate(() => {
+    const scroll = () => [document.documentElement.style.overflow, document.body.style.overflow];
+    const original = [Element.prototype.requestFullscreen, Element.prototype.webkitRequestFullscreen];
+    Element.prototype.requestFullscreen = undefined;
+    Element.prototype.webkitRequestFullscreen = undefined;
+    const out = {};
+    // One of several cameras hidden, then the only camera hidden.
+    for (const [name, cams, index] of [["some", CAMS, 1], ["all", ["camera.b_hd_stream"], 0]]) {
+      mount(cams);
+      tiles()[index].querySelector(".open").click();
+      const locked = scroll();
+      el.hass = makeHass({ ...baseStates(), "switch.b_privacy": st("switch.b_privacy", "on") });
+      out[name] = { locked, released: scroll(), pseudo: el._pseudo };
+    }
+    [Element.prototype.requestFullscreen, Element.prototype.webkitRequestFullscreen] = original;
+    return out;
+  });
+  for (const name of ["some", "all"]) {
+    assert.deepEqual(r[name], { locked: ["hidden", "hidden"], released: ["", ""], pseudo: null }, name);
+  }
+});
+
+test("a held arrow stops when it is re-rendered or its tile removed before the release", async () => {
+  const r = await page.evaluate(async () => {
+    const hold = async (detach) => {
+      mount(CAMS);
+      const tile = tiles()[0];
+      tile.querySelector('[data-action="ptz"]').click();
+      calls.length = 0;
+      tile.querySelector(".move.left").dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, composed: true, button: 0 }));
+      detach(tile);
+      await new Promise((r) => setTimeout(r, 1300));
+      return calls.length;
+    };
+    return {
+      // The player reports sound: the buttons and arrows are re-rendered under the finger.
+      rerendered: await hold(() => emit(0, "streams", { hasAudio: true, hasVideo: true })),
+      removed: await hold(() => el.setConfig({ cameras: ["camera.c"] })),
+    };
+  });
+  // Only the press at pointerdown: no repeat on a button that is gone.
+  assert.deepEqual(r, { rerendered: 1, removed: 1 });
+});
+
+test("a refused privacy toggle stops the badge spinning at once", async () => {
+  const r = await page.evaluate(async () => {
+    mount(CAMS);
+    const unhandled = [];
+    const onUnhandled = (e) => unhandled.push(String(e.reason));
+    window.addEventListener("unhandledrejection", onUnhandled);
+    el._hass.callService = () => Promise.reject(new Error("Unauthorized"));
+    const chip = () => el.shadowRoot.querySelector('[data-toggle="switch.b_privacy"]');
+    chip().click();
+    const pending = chip().classList.contains("pending");
+    await new Promise((r) => setTimeout(r, 50));
+    window.removeEventListener("unhandledrejection", onUnhandled);
+    return { pending, after: chip().classList.contains("pending"), unhandled };
+  });
+  assert.deepEqual(r, { pending: true, after: false, unhandled: [] });
+});

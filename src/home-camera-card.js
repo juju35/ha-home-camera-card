@@ -119,7 +119,7 @@ const HcI18n = {
     all_hidden: 'Alle Kameras sind ausgeblendet',
     one_hidden: 'Kamera deaktiviert',
     no_cameras: 'Keine Kamera konfiguriert',
-    hint_all: 'Tippe auf ein Abzeichen, um eine Kamera anzuzeigen',
+    hint_all: 'Tippe auf ein Badge, um eine Kamera anzuzeigen',
     live: 'Live',
     hint_one: 'Aktiviere die Kamera, um sie hier zu sehen',
     hd: 'HD',
@@ -137,10 +137,10 @@ const HcI18n = {
     pending: 'Wird aktualisiert…',
     sound_on: 'Ton einschalten',
     sound_off: 'Ton ausschalten',
-    move_left: 'Links',
-    move_right: 'Rechts',
-    move_up: 'Oben',
-    move_down: 'Unten',
+    move_left: 'Nach links',
+    move_right: 'Nach rechts',
+    move_up: 'Nach oben',
+    move_down: 'Nach unten',
     ed_title: 'Titel',
     ed_title_helper: 'Leer lassen für „Kameras“',
     ed_icon: 'Symbol',
@@ -152,12 +152,12 @@ const HcI18n = {
     ed_aspect_ratio: 'Seitenverhältnis der Kacheln',
     ed_aspect_ratio_helper: 'Zum Beispiel 16:9 (Standard) oder 4:3',
     ed_show_summary: 'Zusammenfassung',
-    ed_show_badges: 'Privatsphäre-Abzeichen',
+    ed_show_badges: 'Privatsphäre-Badges',
     ed_language: 'Sprache',
     ed_language_helper: 'Leer lassen, um der Sprache von Home Assistant zu folgen',
     ed_cameras: 'Kameras',
     cf_name: 'Name',
-    cf_short_name: 'Kurzname (Abzeichen)',
+    cf_short_name: 'Kurzname (Badge)',
     cf_camera: 'Kamera (HD)',
     cf_sd: 'SD-Kamera',
     cf_privacy: 'Privatsphäre-Schalter (an = ausgeblendet)',
@@ -298,12 +298,19 @@ function hcLoadStream(entity) {
       if (!helpers) throw new Error('loadCardHelpers unavailable');
       helpers.createCardElement({ type: 'picture-entity', entity: entity, camera_view: 'live' });
       // whenDefined never rejects: time out so a failed load rearms hcStreamLoad instead of hanging forever.
-      await Promise.race([
-        customElements.whenDefined('ha-camera-stream'),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('ha-camera-stream not loaded')), 15000)),
-      ]);
+      let timer;
+      try {
+        await Promise.race([
+          customElements.whenDefined('ha-camera-stream'),
+          new Promise((_, reject) => {
+            timer = setTimeout(() => reject(new Error('ha-camera-stream not loaded')), 15000);
+          }),
+        ]);
+      } finally {
+        clearTimeout(timer);
+      }
     })().catch((err) => {
-      hcStreamLoad = null; // the next render tries again
+      hcStreamLoad = null; // the next hass update tries again
       throw err;
     });
   }
@@ -422,7 +429,17 @@ class HomeCameraCard extends HTMLElement {
     this._viewRendered = false;
     this._update();
     // _renderView has just synced the tiles it rendered: no second pass over them.
-    if (!this._viewRendered) this._syncTiles();
+    if (!this._viewRendered) {
+      this._syncTiles();
+      // A failed player load is retried on every update until it succeeds, not only when the grid changes.
+      this._loadStream();
+    }
+  }
+
+  // Home Assistant's player, loaded through the first tile's camera; tiles spin until it is defined.
+  _loadStream() {
+    if (!this._streamEntity || customElements.get('ha-camera-stream')) return;
+    hcLoadStream(this._streamEntity).catch(() => {});
   }
 
   getCardSize() {
@@ -642,7 +659,9 @@ class HomeCameraCard extends HTMLElement {
     const view = this.shadowRoot.querySelector('.view');
     if (!this._tiles) this._tiles = new Map();
     if (!visible.length) {
+      for (const tile of this._tiles.values()) this._dropTile(tile);
       this._tiles.clear();
+      this._streamEntity = null;
       const n = this._config.cameras?.length || 0;
       // Every camera hidden: what brings one back, where the grid would be.
       if (n && this._config.show_badges) {
@@ -656,7 +675,8 @@ class HomeCameraCard extends HTMLElement {
       }
       return;
     }
-    hcLoadStream(visible[0].camera).catch(() => {});
+    this._streamEntity = visible[0].camera;
+    this._loadStream();
     let grid = view.querySelector('.grid');
     if (!grid) {
       grid = document.createElement('div');
@@ -669,6 +689,7 @@ class HomeCameraCard extends HTMLElement {
     const keys = new Set(visible.map((cam) => cam.key));
     for (const [key, tile] of this._tiles) {
       if (keys.has(key)) continue;
+      this._dropTile(tile);
       tile.remove();
       this._tiles.delete(key);
     }
@@ -682,6 +703,12 @@ class HomeCameraCard extends HTMLElement {
       if (grid.children[i] !== tile) grid.insertBefore(tile, grid.children[i] || null);
     });
     this._syncTiles();
+  }
+
+  // A tile leaving the grid: it gives back the page scroll if it covered the screen, and stops a held arrow.
+  _dropTile(tile) {
+    if (tile === this._pseudo) this._setPseudo(tile, false);
+    if (this._repeatBtn && tile.contains(this._repeatBtn)) this._stopRepeat();
   }
 
   _tile() {
@@ -876,7 +903,16 @@ class HomeCameraCard extends HTMLElement {
   // PTZ: one press per tap, repeated while the arrow is held down.
   _move(b) {
     if (b.classList.contains('dis')) return;
-    this._hass.callService('button', 'press', { entity_id: b.dataset.entity });
+    this._call('button', 'press', { entity_id: b.dataset.entity }).catch(() => {});
+  }
+
+  // A service call as a promise, whether Home Assistant's callService throws, rejects or returns nothing.
+  _call(domain, service, data) {
+    try {
+      return Promise.resolve(this._hass.callService(domain, service, data));
+    } catch (err) {
+      return Promise.reject(err);
+    }
   }
 
   _onPointerDown(ev) {
@@ -884,17 +920,31 @@ class HomeCameraCard extends HTMLElement {
     if (!b || ev.button > 0) return;
     this._stopRepeat();
     this._move(b);
+    this._repeatBtn = b;
     this._repeat = setTimeout(() => {
-      this._repeat = setInterval(() => this._move(b), HC_PTZ_REPEAT_MS);
+      this._repeat = setInterval(() => {
+        // The arrow was re-rendered or its tile removed while held: its pointerup will never come.
+        if (!b.isConnected) this._stopRepeat();
+        else this._move(b);
+      }, HC_PTZ_REPEAT_MS);
     }, HC_PTZ_HOLD_MS);
+    // The release is heard on the window (it still arrives if the arrow is replaced meanwhile); the
+    // listeners all go away together, so none piles up on the button.
+    this._repeatAbort = new AbortController();
+    const opts = { signal: this._repeatAbort.signal };
     const stop = () => this._stopRepeat();
-    for (const type of ['pointerup', 'pointercancel', 'pointerleave']) b.addEventListener(type, stop, { once: true });
+    window.addEventListener('pointerup', stop, opts);
+    window.addEventListener('pointercancel', stop, opts);
+    b.addEventListener('pointerleave', stop, opts);
   }
 
   _stopRepeat() {
     clearTimeout(this._repeat);
     clearInterval(this._repeat);
     this._repeat = null;
+    this._repeatBtn = null;
+    this._repeatAbort?.abort();
+    this._repeatAbort = null;
   }
 
   _onKey(ev) {
@@ -1067,7 +1117,15 @@ class HomeCameraCard extends HTMLElement {
       const id = toggle.dataset.toggle;
       // One toggle at a time: taps while the switch has not answered are ignored.
       if (this._isPending(id)) return;
-      this._hass.callService(id.split('.')[0], 'toggle', { entity_id: id });
+      this._call(id.split('.')[0], 'toggle', { entity_id: id }).catch(() => {
+        // Refused (not allowed, entity gone): the badge stops waiting at once instead of spinning for 15 s.
+        const p = this._pending?.get(id);
+        if (!p) return;
+        clearTimeout(p.timer);
+        this._pending.delete(id);
+        this._headSig = null;
+        this._update();
+      });
       this._setPending(id);
       return;
     }
@@ -1092,10 +1150,10 @@ class HomeCameraCard extends HTMLElement {
     const next = !this._hd();
     if (c.quality_entity) {
       const domain = c.quality_entity.split('.')[0];
-      this._hass.callService(domain, 'select_option', {
+      this._call(domain, 'select_option', {
         entity_id: c.quality_entity,
         option: next ? c.hd_option : c.sd_option,
-      });
+      }).catch(() => {});
       return;
     }
     this._quality = next ? 'hd' : 'sd';
@@ -1132,7 +1190,7 @@ class HomeCameraCardEditor extends HTMLElement {
   }
 
   _lang() {
-    const lang = (this._config?.language || this._hass?.language || 'en').split('-')[0];
+    const lang = (this._config?.language || this._hass?.language || document.documentElement.lang || 'en').split('-')[0];
     return HcI18n[lang] ? lang : 'en';
   }
 
