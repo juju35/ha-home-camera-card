@@ -485,6 +485,14 @@ class HomeCameraCard extends HTMLElement {
     return (cam.privacy && this._state(cam.privacy) === 'on') || (cam.power && this._state(cam.power) === 'off');
   }
 
+  // The switch a tap on the camera's badge toggles: its power switch while that is off (the privacy
+  // switch cannot bring the camera back then, and is usually unavailable with the power cut), else
+  // its privacy switch, or its power switch when it has no privacy switch.
+  _target(cam) {
+    if (cam.power && this._state(cam.power) === 'off') return cam.power;
+    return cam.privacy || cam.power;
+  }
+
   // Each camera gets a unique key (the same camera listed twice gets two tiles, not one shared tile).
   _cameras() {
     const seen = new Set();
@@ -532,7 +540,7 @@ class HomeCameraCard extends HTMLElement {
       this._lang(),
       hd,
       [...(this._pending?.keys() || [])],
-      cams.map((cam) => [cam.name, cam.short, cam.privacy, cam.power, this._hidden(cam)]),
+      cams.map((cam) => [cam.name, cam.short, cam.privacy, cam.power, this._hidden(cam), this._target(cam)]),
     ]);
     if (headSig !== this._headSig) {
       this._headSig = headSig;
@@ -585,7 +593,7 @@ class HomeCameraCard extends HTMLElement {
 
     // Lock icon by state; a spinning icon while the switch toggled from the card has not answered yet.
     const lock = (cam) => {
-      const target = cam.privacy || cam.power;
+      const target = this._target(cam);
       if (this._isPending(target)) return { cls: 'pending', icon: 'mdi:loading', title: this._t('pending') };
       const off = this._hidden(cam);
       return {
@@ -603,7 +611,7 @@ class HomeCameraCard extends HTMLElement {
         .filter((cam) => cam.privacy || cam.power)
         .map((cam) => {
           const l = lock(cam);
-          const target = cam.privacy || cam.power;
+          const target = this._target(cam);
           const label = single ? this._t(this._hidden(cam) ? 'enable' : 'disable') : cam.short;
           return this._chip(l.cls, `data-toggle="${hcEsc(target)}"`, badgeIcon(l), label, l.title);
         })
@@ -624,7 +632,7 @@ class HomeCameraCard extends HTMLElement {
       const label = l.cls === 'pending' ? l.title : this._t(this._hidden(cam) ? 'enable' : 'disable');
       right = '';
       side =
-        `<span class="toggle ${l.cls}" data-toggle="${hcEsc(cam.privacy || cam.power)}" role="button" tabindex="0"` +
+        `<span class="toggle ${l.cls}" data-toggle="${hcEsc(this._target(cam))}" role="button" tabindex="0"` +
         ` title="${hcEsc(label)}" aria-label="${hcEsc(label)}">` +
         `${badgeIcon(l) ? `<ha-icon icon="${l.icon}"></ha-icon>` : '<span class="dot"></span>'}</span>`;
       if (visible.length) sub = `<div class="chips sub">${quality}</div>`;
