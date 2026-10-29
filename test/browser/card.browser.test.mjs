@@ -411,6 +411,50 @@ test("every camera hidden: no quality switch, a panel saying how to bring one ba
   assert.deepEqual(r, { tiles: 0, quality: false, panel: "Enable the camera to see it here" });
 });
 
+test("an entry without a camera entity does not count: header, tile label and hidden panel all treat the card as single", async () => {
+  const r = await page.evaluate(() => {
+    // A mistyped key: the second entry has no camera and is skipped.
+    mount(["camera.b_hd_stream", { entity_id: "camera.c" }]);
+    const head = {
+      toggle: !!el.shadowRoot.querySelector(".toggle"),
+      label: tiles()[0].querySelector(".label .text").textContent,
+    };
+    el.hass = makeHass({ ...baseStates(), "switch.b_privacy": st("switch.b_privacy", "on") });
+    return { ...head, panel: el.shadowRoot.querySelector(".asleep")?.textContent };
+  });
+  assert.deepEqual(r, { toggle: true, label: "Live", panel: "Enable the camera to see it here" });
+});
+
+test("several cameras all hidden still point to the badges", async () => {
+  const r = await page.evaluate(() => {
+    mount(["camera.b_hd_stream", "camera.b_hd_stream"]);
+    const label = tiles()[0].querySelector(".label .text").textContent;
+    el.hass = makeHass({ ...baseStates(), "switch.b_privacy": st("switch.b_privacy", "on") });
+    return { label, panel: el.shadowRoot.querySelector(".asleep")?.textContent };
+  });
+  assert.notEqual(r.label, "Live");
+  assert.equal(r.panel, "Tap a badge to show a camera");
+});
+
+test("a tile kept when the card goes from two cameras to one switches its label to Live", async () => {
+  const r = await page.evaluate(() => {
+    mount(["camera.c", "camera.b_hd_stream"]);
+    const tile = tiles()[0];
+    const before = tile.querySelector(".label .text").textContent;
+    el.setConfig({ cameras: ["camera.c"] });
+    return { before, same: tiles()[0] === tile, after: tiles()[0].querySelector(".label .text").textContent };
+  });
+  assert.deepEqual(r, { before: "camera.c", same: true, after: "Live" });
+});
+
+test("entries without any camera entity show the empty-card message, not a hint about badges", async () => {
+  const r = await page.evaluate(() => {
+    mount([{ entity_id: "camera.c" }]);
+    return { asleep: !!el.shadowRoot.querySelector(".asleep"), empty: !!el.shadowRoot.querySelector(".empty") };
+  });
+  assert.deepEqual(r, { asleep: false, empty: true });
+});
+
 test("a single camera's toggle uses the badge marks: live dot while filming, lock while hidden", async () => {
   const r = await page.evaluate(() => {
     mount(["camera.b_hd_stream"]);
