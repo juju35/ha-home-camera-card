@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.5.2 - 2026-10-29
+### Fixes
+- A camera with both a privacy switch and a `power` switch can be turned back on from the card again: while its power is off, the badge (and the single-camera toggle) switches the power on instead of the privacy switch, which could not bring the camera back and is usually unavailable with the power cut.
+
 ## 3.5.1 - 2026-10-29
 ### Fixes
 - The dashboard no longer stays unscrollable when a camera shown in the card's own fullscreen (iPhone) is hidden from elsewhere, or when the card's configuration changes.
