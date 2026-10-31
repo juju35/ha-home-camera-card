@@ -147,10 +147,13 @@ const SHOTS = [
   { file: "card-dark", theme: "dark", lang: "en", ptz: true },
   // A single camera: its name as the title, the privacy toggle on the right.
   { file: "card-single", theme: "light", lang: "en", config: { cameras: [{ camera: "camera.kids_room_hd_stream", name: "Kids' room" }] } },
+  { file: "card-single-dark", theme: "dark", lang: "en", config: { cameras: [{ camera: "camera.kids_room_hd_stream", name: "Kids' room" }] } },
   // Every camera hidden.
   { file: "card-hidden", theme: "dark", lang: "en", hidden: true },
+  { file: "card-hidden-light", theme: "light", lang: "en", hidden: true },
   // Fullscreen on the first camera, with its pan & tilt arrows: a 1280 x 720 screen in the frame.
   { file: "card-fullscreen", theme: "dark", lang: "en", fullscreen: 0, width: 1280 },
+  { file: "card-fullscreen-light", theme: "light", lang: "en", fullscreen: 0, width: 1280 },
 ];
 
 // Mount the card for one shot on a fresh page and return it (shared by the stills and the GIF).

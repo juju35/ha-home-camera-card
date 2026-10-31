@@ -16,10 +16,12 @@ List the cameras, the card finds their privacy switch, SD stream and PTZ buttons
 | Light | Dark, pan & tilt |
 |---|---|
 | ![Camera card](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card.png) | ![Camera card with the pan and tilt arrows, dark theme](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-dark.png) |
-| **Single camera** | **Every camera hidden** |
-| ![Camera card with a single camera](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-single.png) | ![Camera card with every camera hidden, dark theme](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-hidden.png) |
-
-![Fullscreen camera with the round pan and tilt pad](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-fullscreen.png)
+| **Single camera** | **Single camera, dark** |
+| ![Camera card with a single camera](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-single.png) | ![Camera card with a single camera, dark theme](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-single-dark.png) |
+| **Every camera hidden** | **Every camera hidden, dark** |
+| ![Camera card with every camera hidden](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-hidden-light.png) | ![Camera card with every camera hidden, dark theme](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-hidden.png) |
+| **Fullscreen, pan & tilt** | **Fullscreen, pan & tilt, dark** |
+| ![Fullscreen camera with the round pan and tilt pad](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-fullscreen-light.png) | ![Fullscreen camera with the round pan and tilt pad, dark theme](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-fullscreen.png) |
 
 ## Features
 
@@ -156,7 +158,7 @@ While a tile is waiting for its first frame, a spinner turns over the stream.
 
 ![loading](screenshots/loading.gif)
 
-The still states (light, dark with the pan & tilt pad, single camera, every camera hidden, fullscreen) are shown at the [top of this page](#ha-home-camera-card).
+The still states (the grid, with the pan & tilt pad in dark; a single camera; every camera hidden; fullscreen), each in light and dark, are shown at the [top of this page](#ha-home-camera-card).
 
 ## How it works
 
