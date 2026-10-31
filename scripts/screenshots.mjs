@@ -141,10 +141,13 @@ const config = {
 };
 
 // All in English, card 460 px wide. The mouse rests on a tile (its buttons only show on hover).
+// Every shot comes as a light / dark pair of the exact same state: only the theme changes.
 const SHOTS = [
   { file: "card", theme: "light", lang: "en", hover: 0 },
+  { file: "card-dark", theme: "dark", lang: "en", hover: 0 },
   // The pan & tilt arrows open on the first camera.
-  { file: "card-dark", theme: "dark", lang: "en", ptz: true },
+  { file: "card-ptz", theme: "light", lang: "en", ptz: true },
+  { file: "card-ptz-dark", theme: "dark", lang: "en", ptz: true },
   // A single camera: its name as the title, the privacy toggle on the right.
   { file: "card-single", theme: "light", lang: "en", config: { cameras: [{ camera: "camera.kids_room_hd_stream", name: "Kids' room" }] } },
   { file: "card-single-dark", theme: "dark", lang: "en", config: { cameras: [{ camera: "camera.kids_room_hd_stream", name: "Kids' room" }] } },

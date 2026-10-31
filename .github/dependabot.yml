@@ -12,5 +12,13 @@ updates:
     schedule:
       interval: monthly
     groups:
-      npm:
+      npm-dev:
+        dependency-type: development
+        patterns: ["*"]
+  - package-ecosystem: pre-commit
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      pre-commit:
         patterns: ["*"]
