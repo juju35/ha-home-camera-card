@@ -163,9 +163,14 @@ async function openCard(browser, s) {
   const page = await browser.newPage({ deviceScaleFactor: s.fullscreen !== undefined ? 1.5 : 2, viewport: { width: Math.max(1000, width + 32), height: 2000 } });
   page.on("pageerror", (err) => console.error(`pageerror (${s.file}): ${err.message}`));
   page.on("console", (msg) => msg.type() === "error" && console.error(`console (${s.file}): ${msg.text()}`));
-  // A frozen clock, installed before the content so no timer escapes it, holds a tile in its loading
-  // state: the stand-in's setTimeout("load") never fires, so the hc-spin spinner keeps running.
-  if (s.freezeClock) await page.clock.install({ time: 0 });
+  // A frozen clock, installed and paused before the content so no timer escapes it, holds every tile in
+  // its loading state: the stand-in's setTimeout("load") never fires, so the hc-spin spinner keeps
+  // running. install() alone only fakes the clock, which keeps ticking in real time: the timer fired and
+  // the tiles loaded before the first frame. CSS animations run on the document timeline, not this clock.
+  if (s.freezeClock) {
+    await page.clock.install({ time: 0 });
+    await page.clock.pauseAt(1000);
+  }
   await page.setContent(pageHtml(s.theme, width));
   await page.addScriptTag({ content: haElements });
   await page.addScriptTag({ content: cardJs });
