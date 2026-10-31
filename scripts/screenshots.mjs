@@ -163,9 +163,14 @@ async function openCard(browser, s) {
   const page = await browser.newPage({ deviceScaleFactor: s.fullscreen !== undefined ? 1.5 : 2, viewport: { width: Math.max(1000, width + 32), height: 2000 } });
   page.on("pageerror", (err) => console.error(`pageerror (${s.file}): ${err.message}`));
   page.on("console", (msg) => msg.type() === "error" && console.error(`console (${s.file}): ${msg.text()}`));
-  // A frozen clock, installed before the content so no timer escapes it, holds a tile in its loading
-  // state: the stand-in's setTimeout("load") never fires, so the hc-spin spinner keeps running.
-  if (s.freezeClock) await page.clock.install({ time: 0 });
+  // A frozen clock, installed and paused before the content so no timer escapes it, holds every tile in
+  // its loading state: the stand-in's setTimeout("load") never fires, so the hc-spin spinner keeps
+  // running. install() alone only fakes the clock, which keeps ticking in real time: the timer fired and
+  // the tiles loaded before the first frame. CSS animations run on the document timeline, not this clock.
+  if (s.freezeClock) {
+    await page.clock.install({ time: 0 });
+    await page.clock.pauseAt(1000);
+  }
   await page.setContent(pageHtml(s.theme, width));
   await page.addScriptTag({ content: haElements });
   await page.addScriptTag({ content: cardJs });
@@ -236,9 +241,12 @@ async function makeGif(browser, gif, { fps = 20, seconds = 3, freezeClock = fals
   console.log(`screenshots/${gif.file}.gif`);
 }
 
+// Each animation is rendered twice, light then dark (X-dark.gif), with the exact same setup.
 // live: the breathing red live dot on a streaming camera (hc-live).
 await makeGif(browser, { file: "live", theme: "light", lang: "en", hover: 0, width: 460 });
+await makeGif(browser, { file: "live-dark", theme: "dark", lang: "en", hover: 0, width: 460 });
 // loading: the same card with the clock frozen, so a tile never gets its first frame and the hc-spin
 // spinner runs. 2.4 s loops both hc-spin (0.8 s) and the live dot's hc-live (2.4 s) seamlessly.
 await makeGif(browser, { file: "loading", theme: "light", lang: "en", width: 460 }, { freezeClock: true, seconds: 2.4 });
+await makeGif(browser, { file: "loading-dark", theme: "dark", lang: "en", width: 460 }, { freezeClock: true, seconds: 2.4 });
 await browser.close();
