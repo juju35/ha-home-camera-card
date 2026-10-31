@@ -236,9 +236,12 @@ async function makeGif(browser, gif, { fps = 20, seconds = 3, freezeClock = fals
   console.log(`screenshots/${gif.file}.gif`);
 }
 
+// Each animation is rendered twice, light then dark (X-dark.gif), with the exact same setup.
 // live: the breathing red live dot on a streaming camera (hc-live).
 await makeGif(browser, { file: "live", theme: "light", lang: "en", hover: 0, width: 460 });
+await makeGif(browser, { file: "live-dark", theme: "dark", lang: "en", hover: 0, width: 460 });
 // loading: the same card with the clock frozen, so a tile never gets its first frame and the hc-spin
 // spinner runs. 2.4 s loops both hc-spin (0.8 s) and the live dot's hc-live (2.4 s) seamlessly.
 await makeGif(browser, { file: "loading", theme: "light", lang: "en", width: 460 }, { freezeClock: true, seconds: 2.4 });
+await makeGif(browser, { file: "loading-dark", theme: "dark", lang: "en", width: 460 }, { freezeClock: true, seconds: 2.4 });
 await browser.close();
