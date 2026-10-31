@@ -13,9 +13,11 @@ List the cameras, the card finds their privacy switch, SD stream and PTZ buttons
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=juju35&repository=ha-home-camera-card&category=plugin)
 
-| Light | Dark, pan & tilt |
+| Light | Dark |
 |---|---|
-| ![Camera card](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card.png) | ![Camera card with the pan and tilt arrows, dark theme](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-dark.png) |
+| ![Camera card](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card.png) | ![Camera card, dark theme](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-dark.png) |
+| **Pan & tilt** | **Pan & tilt, dark** |
+| ![Camera card with the pan and tilt arrows](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-ptz.png) | ![Camera card with the pan and tilt arrows, dark theme](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-ptz-dark.png) |
 | **Single camera** | **Single camera, dark** |
 | ![Camera card with a single camera](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-single.png) | ![Camera card with a single camera, dark theme](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-single-dark.png) |
 | **Every camera hidden** | **Every camera hidden, dark** |
