@@ -675,30 +675,74 @@ test("a header re-render gives the focus back without scrolling the page", async
   assert.equal(r.scrollY, 0);
 });
 
-test("in a container sized by its content (inline-block, auto grid column) the card keeps a usable width", async () => {
+// Six layouts, each with the card placed directly and wrapped in a <div> (as layout-card, button-card or a
+// custom stack do): a parent sized by its content (inline-block, an auto grid column) must not fold the card,
+// and two cards side by side in a 1fr 1fr grid (layout-card, grid card, horizontal-stack) must shrink to their
+// half instead of overflowing it, at 320, 360 and 500 px.
+test("in content-sized containers the card keeps a usable width, and in a 1fr 1fr grid it shrinks to its half", async () => {
   const r = await page.evaluate(() => {
-    const out = {};
-    for (const [name, css] of [
-      ["inline-block", "display: inline-block"],
-      ["grid auto", "display: grid; grid-template-columns: auto"],
+    const out = [];
+    for (const [name, css, width] of [
+      ["inline-block", "display: inline-block", 0],
+      ["grid auto", "display: grid; grid-template-columns: auto", 0],
+      ["grid 1fr 1fr at 320 px", "display: grid; grid-template-columns: 1fr 1fr; gap: 8px", 320],
+      ["grid 1fr 1fr at 360 px", "display: grid; grid-template-columns: 1fr 1fr; gap: 8px", 360],
+      ["grid 1fr 1fr at 500 px", "display: grid; grid-template-columns: 1fr 1fr; gap: 8px", 500],
     ]) {
-      for (const cameras of [CAMS, ["camera.c"]]) {
+      for (const wrapped of [false, true]) {
         document.body.replaceChildren();
         const box = document.createElement("div");
         box.style.cssText = css;
+        if (width) box.style.width = `${width}px`;
         document.body.appendChild(box);
-        const card = document.createElement("home-camera-card");
-        card.setConfig({ cameras });
-        box.appendChild(card);
-        card.hass = makeHass(baseStates());
-        const tile = card.shadowRoot.querySelector(".tile").getBoundingClientRect();
-        out[`${name}, ${cameras.length} camera(s)`] = { card: card.getBoundingClientRect().width, tile: tile.width, h: tile.height };
+        const cards = [];
+        for (const cameras of width ? [CAMS, ["camera.c"]] : [CAMS]) {
+          const card = document.createElement("home-camera-card");
+          card.setConfig({ cameras });
+          if (wrapped) {
+            const div = document.createElement("div");
+            div.appendChild(card);
+            box.appendChild(div);
+          } else box.appendChild(card);
+          card.hass = makeHass(baseStates());
+          // The stand-in ha-icon has no size of its own: give it Home Assistant's.
+          for (const i of card.shadowRoot.querySelectorAll("ha-icon"))
+            Object.assign(i.style, { display: "inline-block", width: "var(--mdc-icon-size, 24px)", height: "var(--mdc-icon-size, 24px)" });
+          cards.push(card);
+        }
+        const outer = box.getBoundingClientRect();
+        for (const card of cards) {
+          const c = card.getBoundingClientRect();
+          const tile = card.shadowRoot.querySelector(".tile").getBoundingClientRect();
+          out.push({
+            what: `${name}, ${wrapped ? "in a div" : "direct"}, ${card._config.cameras.length} camera(s)`,
+            split: !!width,
+            half: width ? (width - 8) / 2 : 0,
+            card: c.width,
+            overflow: Math.max(c.right - outer.right, 0),
+            tile: tile.width,
+            h: tile.height,
+            tileOut: Math.max(tile.right - c.right, 0),
+            // Content cut off by ha-card (overflow: hidden): its scroll width goes past its own.
+            clipped: (() => {
+              const ha = card.shadowRoot.querySelector("ha-card");
+              return ha.scrollWidth - ha.clientWidth;
+            })(),
+          });
+        }
       }
     }
     return out;
   });
-  for (const [what, m] of Object.entries(r)) {
-    assert.ok(m.card >= 240, `${what}: card ${m.card} px wide`);
-    assert.ok(m.tile >= 200 && m.h >= 100, `${what}: tile ${m.tile} x ${m.h} px`);
+  for (const m of r) {
+    if (m.split) {
+      assert.ok(Math.abs(m.card - m.half) < 1, `${m.what}: card ${m.card} px wide, its column ${m.half} px`);
+      assert.ok(m.overflow < 0.5, `${m.what}: ${m.overflow} px past the grid`);
+      assert.ok(m.tile > 0 && m.tileOut < 0.5, `${m.what}: tile ${m.tile} px, ${m.tileOut} px past the card`);
+      assert.ok(m.clipped <= 0, `${m.what}: ${m.clipped} px of content cut off inside the card`);
+    } else {
+      assert.ok(m.card >= 240, `${m.what}: card ${m.card} px wide`);
+      assert.ok(m.tile >= 200 && m.h >= 100, `${m.what}: tile ${m.tile} x ${m.h} px`);
+    }
   }
 });
