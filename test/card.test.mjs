@@ -163,18 +163,24 @@ test("a failed player load is retried on the next hass update, not only when the
   assert.equal(loads, 2);
 });
 
-test("I18N parity: every language has exactly the English keys and placeholders", () => {
+const LANGS = ["fr", "de", "es", "sr", "sr-Latn", "it", "nl", "pt", "pl"];
+
+test("I18N parity: every language has exactly the English keys and placeholders, and no empty value", () => {
   const { HcI18n } = loadCard("home-camera-card.js", ["HcI18n"]);
   const ref = Object.keys(HcI18n.en).sort();
   const ph = (s) => (String(s).match(/\{\w+\}/g) || []).sort();
-  for (const lang of ["fr", "de", "es", "sr", "sr-Latn"]) {
+  assert.deepEqual(Object.keys(HcI18n).sort(), ["en", ...LANGS].sort(), "dictionary languages");
+  for (const lang of LANGS) {
     assert.ok(HcI18n[lang], `missing language ${lang}`);
     assert.deepEqual(Object.keys(HcI18n[lang]).sort(), ref, `keys of ${lang}`);
-    for (const k of ref) assert.deepEqual(ph(HcI18n[lang][k]), ph(HcI18n.en[k]), `placeholders of ${lang}.${k}`);
+    for (const k of ref) {
+      assert.deepEqual(ph(HcI18n[lang][k]), ph(HcI18n.en[k]), `placeholders of ${lang}.${k}`);
+      assert.ok(String(HcI18n[lang][k]).trim(), `empty value ${lang}.${k}`);
+    }
   }
 });
 
-test("I18N parity: sr and sr-Latn have the same key paths as en, arrays of the same length", () => {
+test("I18N parity: every language has the same key paths as en, arrays of the same length", () => {
   const { HcI18n } = loadCard("home-camera-card.js", ["HcI18n"]);
   const paths = (o, p = "") =>
     Object.entries(o).flatMap(([k, v]) => {
@@ -183,7 +189,7 @@ test("I18N parity: sr and sr-Latn have the same key paths as en, arrays of the s
       return v && typeof v === "object" ? paths(v, q) : [q];
     });
   const ref = paths(HcI18n.en).sort();
-  for (const lang of ["sr", "sr-Latn"]) assert.deepEqual(paths(HcI18n[lang]).sort(), ref, `key paths of ${lang}`);
+  for (const lang of LANGS) assert.deepEqual(paths(HcI18n[lang]).sort(), ref, `key paths of ${lang}`);
 });
 
 test("the language resolves to the full tag, else its base, else en", () => {
@@ -193,7 +199,12 @@ test("the language resolves to the full tag, else its base, else en", () => {
     ["de-CH", "de"],
     ["sr-Latn", "sr-Latn"],
     ["sr", "sr"],
-    ["pt-BR", "en"],
+    ["it-IT", "it"],
+    ["nl-BE", "nl"],
+    ["pt", "pt"],
+    ["pt-BR", "pt"],
+    ["pl-PL", "pl"],
+    ["ja", "en"],
   ];
   for (const [language, want] of cases) assert.equal(hcLang(language), want, language);
   // Card and editor: config.language first, then the Home Assistant language.
@@ -215,12 +226,26 @@ test("the language resolves to the full tag, else its base, else en", () => {
 test("the card accepts de and es, and falls back to en", () => {
   const { customElements } = loadCard("home-camera-card.js", []);
   const card = new (customElements.get("home-camera-card"))();
-  for (const [language, want] of [["de", "de"], ["es-ES", "es"], ["it", "en"]]) {
+  for (const [language, want] of [["de", "de"], ["es-ES", "es"], ["it", "it"], ["ja", "en"]]) {
     card.setConfig({ cameras: [], language });
     assert.equal(card._lang(), want);
   }
   card.setConfig({ cameras: [], language: "de" });
   assert.equal(card._t("live_many", { n: 3 }), "3 Kameras live");
+});
+
+test("the editor language selector offers every dictionary language", () => {
+  const { HcI18n, customElements } = loadCard("home-camera-card.js", ["HcI18n"]);
+  const editor = new (customElements.get("home-camera-card-editor"))();
+  editor._config = { cameras: [] };
+  const field = editor._schema().find((f) => f.name === "language");
+  const options = field.selector.select.options;
+  assert.deepEqual([...options.map((o) => o.value)].sort(), [...Object.keys(HcI18n)].sort());
+  const labels = Object.fromEntries(options.map((o) => [o.value, o.label]));
+  assert.deepEqual(
+    [labels.it, labels.nl, labels.pt, labels.pl],
+    ["Italiano", "Nederlands", "Português", "Polski"],
+  );
 });
 
 // A card whose header renders into a stub, and whose taps reach a recorded callService.
