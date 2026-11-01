@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.5.5 - 2026-11-01
+### What's new
+- Serbian translations, in Cyrillic (`sr`) and Latin (`sr-Latn`) script: the card and its visual editor (including the language selector). Serbian translations by @cpmarexel2f (#28).
+
+### Fixes
+- Language detection now uses the full language tag when the card has it (`sr-Latn`), then the part before the dash (`fr-FR` gives French), then English, in both the card and the visual editor.
+
 ## 3.5.4 - 2026-11-01
 ### Fixes
 - The green "hidden" badges, and the lock of a single hidden camera, are easier to read in the light theme: their text and icon now use a deeper green (a lighter one in the dark theme), while the badge keeps its green tint.

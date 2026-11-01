@@ -167,10 +167,48 @@ test("I18N parity: every language has exactly the English keys and placeholders"
   const { HcI18n } = loadCard("home-camera-card.js", ["HcI18n"]);
   const ref = Object.keys(HcI18n.en).sort();
   const ph = (s) => (String(s).match(/\{\w+\}/g) || []).sort();
-  for (const lang of ["fr", "de", "es"]) {
+  for (const lang of ["fr", "de", "es", "sr", "sr-Latn"]) {
     assert.ok(HcI18n[lang], `missing language ${lang}`);
     assert.deepEqual(Object.keys(HcI18n[lang]).sort(), ref, `keys of ${lang}`);
     for (const k of ref) assert.deepEqual(ph(HcI18n[lang][k]), ph(HcI18n.en[k]), `placeholders of ${lang}.${k}`);
+  }
+});
+
+test("I18N parity: sr and sr-Latn have the same key paths as en, arrays of the same length", () => {
+  const { HcI18n } = loadCard("home-camera-card.js", ["HcI18n"]);
+  const paths = (o, p = "") =>
+    Object.entries(o).flatMap(([k, v]) => {
+      const q = p ? `${p}.${k}` : k;
+      if (Array.isArray(v)) return [`${q}[${v.length}]`, ...paths(Object.assign({}, v), q)];
+      return v && typeof v === "object" ? paths(v, q) : [q];
+    });
+  const ref = paths(HcI18n.en).sort();
+  for (const lang of ["sr", "sr-Latn"]) assert.deepEqual(paths(HcI18n[lang]).sort(), ref, `key paths of ${lang}`);
+});
+
+test("the language resolves to the full tag, else its base, else en", () => {
+  const { hcLang, customElements } = loadCard("home-camera-card.js", ["hcLang"]);
+  const cases = [
+    ["fr-FR", "fr"],
+    ["de-CH", "de"],
+    ["sr-Latn", "sr-Latn"],
+    ["sr", "sr"],
+    ["pt-BR", "en"],
+  ];
+  for (const [language, want] of cases) assert.equal(hcLang(language), want, language);
+  // Card and editor: config.language first, then the Home Assistant language.
+  for (const tag of ["home-camera-card", "home-camera-card-editor"]) {
+    const el = new (customElements.get(tag))();
+    for (const [language, want] of cases) {
+      el._config = { cameras: [], language };
+      assert.equal(el._lang(), want, `${tag} ${language}`);
+      el._config = { cameras: [] };
+      el._hass = { language };
+      assert.equal(el._lang(), want, `${tag} hass ${language}`);
+    }
+    el._config = { cameras: [], language: "de" };
+    el._hass = { language: "sr-Latn" };
+    assert.equal(el._lang(), "de", `${tag}: config.language wins`);
   }
 });
 
