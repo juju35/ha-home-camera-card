@@ -164,7 +164,7 @@ While a tile is waiting for its first frame, a spinner turns over the stream.
 |---|---|
 | ![loading](screenshots/loading.gif) | ![loading dark](screenshots/loading-dark.gif) |
 
-The still states (the grid, with the pan & tilt pad in dark; a single camera; every camera hidden; fullscreen), each in light and dark, are shown at the [top of this page](#ha-home-camera-card).
+The still states (the grid; pan & tilt; a single camera; every camera hidden; fullscreen), each in light and dark, are shown at the [top of this page](#ha-home-camera-card).
 
 ## How it works
 

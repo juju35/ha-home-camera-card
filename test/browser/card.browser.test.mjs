@@ -531,3 +531,60 @@ test("a refused privacy toggle stops the badge spinning at once", async () => {
   });
   assert.deepEqual(r, { pending: true, after: false, unhandled: [] });
 });
+
+// WCAG contrast of the hidden camera's badge and toggle over the card, in HA's default light and dark themes:
+// the label is 11 px text (4.5:1), the toggle's lock an icon that carries the state on its own (3:1).
+const THEMES = {
+  light: { "--success-color": "#43a047", "--primary-text-color": "#212121", "--card-background-color": "#ffffff" },
+  dark: { "--success-color": "#43a047", "--primary-text-color": "#e1e1e1", "--card-background-color": "#1c1c1c" },
+  // A theme that leaves --success-color out: the card's own green fallback.
+  "light (no --success-color)": { "--primary-text-color": "#212121", "--card-background-color": "#ffffff" },
+};
+const parseColor = (s) => {
+  let m = s.match(/^rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\)$/);
+  if (m) return { rgb: [+m[1], +m[2], +m[3]], a: m[4] === undefined ? 1 : +m[4] };
+  m = s.match(/^color\(srgb ([\d.e-]+) ([\d.e-]+) ([\d.e-]+)(?: \/ ([\d.]+))?\)$/);
+  if (m) return { rgb: [+m[1] * 255, +m[2] * 255, +m[3] * 255], a: m[4] === undefined ? 1 : +m[4] };
+  throw new Error(`unparsed colour ${s}`);
+};
+const over = (top, under) => top.rgb.map((c, i) => c * top.a + under[i] * (1 - top.a));
+const lum = (rgb) => {
+  const [r, g, b] = rgb.map((c) => {
+    const v = c / 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const contrast = (a, b) => {
+  const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+};
+
+for (const [name, vars] of Object.entries(THEMES)) {
+  test(`a hidden camera's badge text and toggle icon stay readable in the ${name} theme`, async () => {
+    const styles = await page.evaluate((vars) => {
+      const read = (cameras) => {
+        mount(cameras);
+        for (const [k, v] of Object.entries(vars)) el.style.setProperty(k, v);
+        el.hass = makeHass({ ...baseStates(), "switch.b_privacy": st("switch.b_privacy", "on") });
+        return el.shadowRoot;
+      };
+      let root = read(["camera.b_hd_stream", "camera.c"]);
+      const chip = root.querySelector(".chip.private");
+      const badge = { text: getComputedStyle(chip.querySelector("span")).color, bg: getComputedStyle(chip).backgroundColor };
+      root = read(["camera.b_hd_stream"]);
+      const t = root.querySelector(".toggle.private");
+      const toggle = { text: getComputedStyle(t.querySelector("ha-icon")).color, bg: getComputedStyle(t).backgroundColor };
+      return { badge, toggle };
+    }, vars);
+    const card = parseColor(vars["--card-background-color"].replace(/^#(..)(..)(..)$/, (_, r, g, b) => `rgb(${parseInt(r, 16)}, ${parseInt(g, 16)}, ${parseInt(b, 16)})`)).rgb;
+    const ratio = ({ text, bg }) => {
+      const back = over(parseColor(bg), card);
+      return contrast(over(parseColor(text), back), back);
+    };
+    const badge = ratio(styles.badge);
+    const toggle = ratio(styles.toggle);
+    assert.ok(badge >= 4.5, `badge label ${badge.toFixed(2)}:1 < 4.5:1 (${JSON.stringify(styles.badge)})`);
+    assert.ok(toggle >= 3, `toggle icon ${toggle.toFixed(2)}:1 < 3:1 (${JSON.stringify(styles.toggle)})`);
+  });
+}
