@@ -1,5 +1,20 @@
 # Changelog
 
+## 3.5.6 - 2026-11-01
+### What's new
+- Added Italian, Dutch, European Portuguese and Polish translations: the card and its visual editor (including the language selector). Brazilian Portuguese (`pt-BR`) falls back to European Portuguese.
+
+## 3.5.5 - 2026-11-01
+### What's new
+- Serbian translations, in Cyrillic (`sr`) and Latin (`sr-Latn`) script: the card and its visual editor (including the language selector). Serbian translations by @cpmarexel2f (#28).
+
+### Fixes
+- Language detection now uses the full language tag when the card has it (`sr-Latn`), then the part before the dash (`fr-FR` gives French), then English, in both the card and the visual editor.
+
+## 3.5.4 - 2026-11-01
+### Fixes
+- The green "hidden" badges, and the lock of a single hidden camera, are easier to read in the light theme: their text and icon now use a deeper green (a lighter one in the dark theme), while the badge keeps its green tint.
+
 ## 3.5.3 - 2026-10-29
 ### Fixes
 - An entry without a camera entity (for example a mistyped `entity_id:` key) no longer counts as a camera: with one real camera left, its image says "Live" like the title already showed, and once it is hidden the panel says "Enable the camera to see it here" instead of pointing to badges that are not shown. A card whose entries have no camera at all shows "No camera configured".
