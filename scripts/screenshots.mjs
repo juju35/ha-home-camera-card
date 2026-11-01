@@ -1,7 +1,7 @@
 // Renders the card with mock cameras and saves the README screenshots.
 // Usage: npm install && npm run screenshots (CHROMIUM_PATH=... to use an installed Chromium)
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -9,6 +9,20 @@ import * as mdi from "@mdi/js";
 import { chromium } from "playwright";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
+
+// The decoded pixels of a PNG or GIF (every frame, with its size and timing), as ffmpeg's per-frame checksums:
+// two files with the same pixels give the same text, whatever their bytes (compression, palette order, metadata).
+const pixels = (input) =>
+  execFileSync("ffmpeg", ["-loglevel", "error", "-i", Buffer.isBuffer(input) ? "pipe:0" : input, "-pix_fmt", "rgba", "-f", "framemd5", "pipe:1"],
+    Buffer.isBuffer(input) ? { input, encoding: "utf8" } : { encoding: "utf8" });
+// Writes a screenshot only when its pixels changed: a re-run on an unchanged card leaves the files (and git) untouched.
+function save(file, data) {
+  const path = `${root}screenshots/${file}`;
+  const fresh = Buffer.isBuffer(data) ? data : readFileSync(data);
+  if (existsSync(path) && pixels(path) === pixels(fresh)) return console.log(`screenshots/${file} (unchanged)`);
+  writeFileSync(path, fresh);
+  console.log(`screenshots/${file}`);
+}
 const cardJs = readFileSync(`${root}dist/home-camera-card.js`, "utf8");
 
 // Every mdi:* icon the card and the mock camera view use, as SVG paths for the <ha-icon> stand-in.
@@ -210,17 +224,20 @@ for (const s of SHOTS) {
   await page.waitForTimeout(400);
   // The card (or the screen) and the 16 px frame of theme background around it.
   const box = await page.locator("#root").boundingBox();
-  await page.screenshot({
-    path: `${root}screenshots/${s.file}.png`,
+  const png = await page.screenshot({
     clip: { x: 0, y: 0, width: width + 32, height: Math.ceil(box.height) + 32 },
     animations: "disabled",
   });
-  console.log(`screenshots/${s.file}.png`);
+  save(`${s.file}.png`, png);
   await page.close();
 }
 
 // A looping GIF of the card's animations. Needs ffmpeg on PATH. Every animation is paused and stepped
-// frame by frame, so the GIF is identical whatever the machine's speed. With freezeClock a tile stays
+// frame by frame, so the GIF is identical whatever the machine's speed. The card's animations live in its
+// shadow root, which document.getAnimations() does not see: they are gathered from every shadow root, or they
+// would keep running in real time and each run would catch them at another point (a GIF different every time).
+// The palette is computed from the frames and the dithering is ordered (Bayer), so the same frames always give
+// the same GIF. With freezeClock a tile stays
 // loading, so hc-spin keeps spinning; without it the stream loads and hc-live breathes on it.
 async function makeGif(browser, gif, { fps = 20, seconds = 3, freezeClock = false } = {}) {
   const page = await openCard(browser, { ...gif, freezeClock });
@@ -230,18 +247,28 @@ async function makeGif(browser, gif, { fps = 20, seconds = 3, freezeClock = fals
   const dir = mkdtempSync(join(tmpdir(), "hc-frames-"));
   const frames = Math.round(fps * seconds);
   for (let i = 0; i < frames; i++) {
-    await page.evaluate((t) => { for (const a of document.getAnimations()) { a.pause(); a.currentTime = t; } }, (i * 1000) / fps);
+    const n = await page.evaluate((t) => {
+      const all = [];
+      const walk = (root) => {
+        all.push(...root.getAnimations());
+        for (const el of root.querySelectorAll("*")) if (el.shadowRoot) walk(el.shadowRoot);
+      };
+      walk(document);
+      for (const a of all) { a.pause(); a.currentTime = t; }
+      return all.length;
+    }, (i * 1000) / fps);
+    if (!n) throw new Error(`${gif.file}: no animation to step`);
     await page.screenshot({ path: join(dir, `f${String(i).padStart(3, "0")}.png`), clip });
   }
   await page.close();
-  const out = `${root}screenshots/${gif.file}.gif`;
+  const out = join(dir, "out.gif");
   execFileSync("ffmpeg", [
     "-y", "-loglevel", "error", "-framerate", String(fps), "-i", join(dir, "f%03d.png"),
     "-vf", `scale=${clip.width}:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=128[p];[b][p]paletteuse=dither=bayer:bayer_scale=4`,
     "-loop", "0", out,
   ]);
+  save(`${gif.file}.gif`, out);
   rmSync(dir, { recursive: true });
-  console.log(`screenshots/${gif.file}.gif`);
 }
 
 // Each animation is rendered twice, light then dark (X-dark.gif), with the exact same setup.
