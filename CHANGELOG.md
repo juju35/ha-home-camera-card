@@ -7,6 +7,7 @@
 - On a narrow card (half the width of a Sections view, or a narrow column), the title keeps a few letters instead of disappearing, the HD / SD switch moves under it instead of being cut off, and long badge names end with an ellipsis instead of running out of the card.
 - Toggling HD / SD or a privacy badge with the keyboard no longer scrolls the page back to the card when Home Assistant updates it: the focus returns to the control without moving the page.
 - In a container that sizes itself to its content (a custom layout card, an `auto` grid column), the card no longer folds to a thin strip: its images keep a usable width.
+- Two cards side by side in a custom layout (for example a layout card with two equal columns) now each keep to their half, even with a long title, a single camera's long name or its privacy badge: the text ends with an ellipsis instead of pushing the card out of its column.
 
 ## 3.5.6 - 2026-11-01
 ### What's new

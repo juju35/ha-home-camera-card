@@ -1340,7 +1340,10 @@ class HomeCameraCard extends HTMLElement {
       // --hc-glass: the smoked glass of everything laid over the images (labels, buttons, arrows).
       // --hc-on-ink: the hidden state's green for text and lone icons, pulled toward the text colour so it
       // stays readable on its tinted badge (darker in a light theme, lighter in a dark one).
-      ':host { display: block; --hc-on: var(--success-color, #43a047);' +
+      // A one-column grid whose track may shrink to 0: the card takes its width from its parent (its header and tiles
+      // never set a minimum width, so in a 1fr 1fr grid it keeps to its half, placed directly or in a <div>), while a
+      // parent sized by its content (inline-block, an auto grid column) still gets the card's natural width.
+      ':host { display: grid; grid-template-columns: minmax(0, 1fr); --hc-on: var(--success-color, #43a047);' +
       ' --hc-on-ink: color-mix(in srgb, var(--hc-on) 60%, var(--primary-text-color, #212121));' +
       ' --hc-live: var(--error-color, #db4437); --hc-glass: rgba(14, 16, 20, 0.46); --hc-glass-line: rgba(255, 255, 255, 0.14); }' +
       'ha-card { box-sizing: border-box; padding: 12px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }' +
