@@ -746,3 +746,80 @@ test("in content-sized containers the card keeps a usable width, and in a 1fr 1f
     }
   }
 });
+
+// The header's text must not set the card's minimum width: `.name` and the badges are nowrap, and overflow: hidden
+// does not lower an element's min-content width, so a long title, a single camera's long name or its privacy badge
+// made the card refuse its half of a 1fr 1fr grid (layout-card) and run 35 to 395 px past it, placed directly or
+// wrapped in a <div>. Each header ends with an ellipsis instead, and content-sized parents keep their width.
+test("a long title, a single camera's long name or its privacy badge never widens the card past its grid column", async () => {
+  const r = await page.evaluate(() => {
+    const out = [];
+    const configs = [
+      ["long title", { title: "Cameras of the house and garden", cameras: [{ camera: "camera.a_hd_stream", short_name: "Living room by the window", privacy: "switch.b_privacy" }, "camera.b_hd_stream", "camera.c"] }],
+      ["single camera, long name", { cameras: [{ camera: "camera.c", name: "Living room camera by the window", privacy: "switch.b_privacy" }] }],
+      ["single camera, privacy off", { cameras: [{ camera: "camera.c", privacy: "switch.b_privacy" }] }],
+      ["single camera, privacy unavailable", { cameras: [{ camera: "camera.c", privacy: "switch.u" }] }],
+    ];
+    for (const [name, css, width] of [
+      ["inline-block", "display: inline-block", 0],
+      ["grid auto", "display: grid; grid-template-columns: auto", 0],
+      ["grid 1fr 1fr at 320 px", "display: grid; grid-template-columns: 1fr 1fr; gap: 8px", 320],
+      ["grid 1fr 1fr at 360 px", "display: grid; grid-template-columns: 1fr 1fr; gap: 8px", 360],
+      ["grid 1fr 1fr at 500 px", "display: grid; grid-template-columns: 1fr 1fr; gap: 8px", 500],
+    ]) {
+      for (const wrapped of [false, true]) {
+        for (const [cfgName, cfg] of configs) {
+          document.body.replaceChildren();
+          const box = document.createElement("div");
+          box.style.cssText = css;
+          if (width) box.style.width = `${width}px`;
+          document.body.appendChild(box);
+          const cards = [];
+          for (let i = 0; i < (width ? 2 : 1); i++) {
+            const card = document.createElement("home-camera-card");
+            card.setConfig(cfg);
+            if (wrapped) {
+              const div = document.createElement("div");
+              div.appendChild(card);
+              box.appendChild(div);
+            } else box.appendChild(card);
+            const states = baseStates();
+            states["switch.u"] = st("switch.u", "unavailable");
+            card.hass = makeHass(states);
+            for (const ic of card.shadowRoot.querySelectorAll("ha-icon"))
+              Object.assign(ic.style, { display: "inline-block", width: "var(--mdc-icon-size, 24px)", height: "var(--mdc-icon-size, 24px)" });
+            cards.push(card);
+          }
+          const outer = box.getBoundingClientRect();
+          for (const card of cards) {
+            const c = card.getBoundingClientRect();
+            const ha = card.shadowRoot.querySelector("ha-card");
+            const head = card.shadowRoot.querySelector(".header").getBoundingClientRect();
+            const title = card.shadowRoot.querySelector(".name");
+            out.push({
+              what: `${cfgName}, ${name}, ${wrapped ? "in a div" : "direct"}`,
+              split: !!width,
+              half: width ? (width - 8) / 2 : 0,
+              card: c.width,
+              overflow: Math.max(c.right - outer.right, 0),
+              headOut: Math.max(head.right - c.right, 0),
+              clipped: ha.scrollWidth - ha.clientWidth,
+              title: title ? title.getBoundingClientRect().width : null,
+            });
+          }
+        }
+      }
+    }
+    return out;
+  });
+  assert.equal(r.length, 4 * (2 + 3 * 2) * 2);
+  for (const m of r) {
+    if (m.split) {
+      assert.ok(Math.abs(m.card - m.half) < 1, `${m.what}: card ${m.card} px wide, its column ${m.half} px`);
+      assert.ok(m.overflow < 0.5, `${m.what}: ${m.overflow} px past the grid`);
+    } else assert.ok(m.card >= 240, `${m.what}: card ${m.card} px wide`);
+    assert.ok(m.headOut < 0.5 && m.clipped <= 0, `${m.what}: header ${m.headOut} px past the card, ${m.clipped} px cut off`);
+    // The title keeps a few letters (min-width: 4ch on .name, about 30 px at 16 px).
+    if (m.title !== null) assert.ok(m.title >= 28, `${m.what}: title ${m.title} px`);
+  }
+});
