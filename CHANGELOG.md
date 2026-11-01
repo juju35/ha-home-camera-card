@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.5.7 - 2026-11-01
+### Fixes
+- Serbian: the header now counts 2 to 4 cameras correctly ("Kamere uživo: 3 · Skrivene: 2" instead of "3 kamera uživo · 2 skrivenih").
+- A camera whose privacy switch (or power switch) is unavailable, for example a camera gone offline, no longer shows a "visible, tap to hide it" badge that spins for 15 seconds when tapped: the badge is greyed out, says the switch is unavailable, and ignores taps until the switch is back.
+- On a narrow card (half the width of a Sections view, or a narrow column), the title keeps a few letters instead of disappearing, the HD / SD switch moves under it instead of being cut off, and long badge names end with an ellipsis instead of running out of the card.
+
 ## 3.5.6 - 2026-11-01
 ### What's new
 - Added Italian, Dutch, European Portuguese and Polish translations: the card and its visual editor (including the language selector). Brazilian Portuguese (`pt-BR`) falls back to European Portuguese.
