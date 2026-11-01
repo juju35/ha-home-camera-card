@@ -588,3 +588,54 @@ for (const [name, vars] of Object.entries(THEMES)) {
     assert.ok(toggle >= 3, `toggle icon ${toggle.toFixed(2)}:1 < 3:1 (${JSON.stringify(styles.toggle)})`);
   });
 }
+
+// Narrow header (Sections view, 4 to 6 columns: about 160 to 250 px): the title keeps a few letters, and no
+// badge, toggle or HD / SD switch sticks out of the card, with a long title and long badge names.
+for (const width of [160, 245]) {
+  test(`at ${width} px the header keeps its title readable and every control inside the card`, async () => {
+    const r = await page.evaluate((width) => {
+      const out = [];
+      for (const language of ["en", "pl", "sr-Latn"]) {
+        for (const cameras of [
+          [{ camera: "camera.b_hd_stream", name: "Living room camera by the window", privacy: "switch.b_privacy" }],
+          [
+            { camera: "camera.a_hd_stream", short_name: "Living room by the window", privacy: "switch.a_privacy" },
+            { camera: "camera.b_hd_stream", short_name: "Garden and terrace", privacy: "switch.b_privacy" },
+            "camera.c",
+          ],
+        ]) {
+          document.body.replaceChildren();
+          const box = document.createElement("div");
+          box.style.width = `${width}px`;
+          document.body.appendChild(box);
+          const card = document.createElement("home-camera-card");
+          card.setConfig({ cameras, language, title: cameras.length > 1 ? "Cameras of the house and garden" : undefined });
+          box.appendChild(card);
+          const states = baseStates();
+          states["switch.a_privacy"] = st("switch.a_privacy", "off");
+          card.hass = makeHass(states);
+          const root = card.shadowRoot;
+          // The stand-in ha-icon has no size of its own: give it Home Assistant's.
+          for (const i of root.querySelectorAll("ha-icon"))
+            Object.assign(i.style, { display: "inline-block", width: "var(--mdc-icon-size, 24px)", height: "var(--mdc-icon-size, 24px)" });
+          const inner = root.querySelector(".head").getBoundingClientRect();
+          const name = root.querySelector(".name");
+          const outside = [...root.querySelectorAll(".head *")]
+            .filter((n) => {
+              const b = n.getBoundingClientRect();
+              return b.width && (b.right > inner.right + 0.5 || b.left < inner.left - 0.5);
+            })
+            .map((n) => n.className || n.tagName);
+          const ch = parseFloat(getComputedStyle(name).fontSize) * 0.5;
+          out.push({ language, cameras: cameras.length, name: name.getBoundingClientRect().width, ch, outside });
+        }
+      }
+      return out;
+    }, width);
+    for (const m of r) {
+      const what = `${m.language}, ${m.cameras} camera(s)`;
+      assert.ok(m.name >= 4 * m.ch, `${what}: title ${m.name.toFixed(1)} px, under 4 characters`);
+      assert.deepEqual(m.outside, [], `${what}: outside the card`);
+    }
+  });
+}
