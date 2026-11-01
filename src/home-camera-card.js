@@ -19,6 +19,7 @@ const HcI18n = {
     quality_hint: 'Basculer entre HD et SD',
     privacy_on: '{c} : masquée, toucher pour l\'afficher',
     privacy_off: '{c} : visible, toucher pour la masquer',
+    privacy_unavailable: '{c} : indisponible',
     enable: 'Activer',
     disable: 'Désactiver',
     unavailable: 'Indisponible',
@@ -73,6 +74,7 @@ const HcI18n = {
     quality_hint: 'Switch between HD and SD',
     privacy_on: '{c}: hidden, tap to show it',
     privacy_off: '{c}: visible, tap to hide it',
+    privacy_unavailable: '{c}: unavailable',
     enable: 'Enable',
     disable: 'Disable',
     unavailable: 'Unavailable',
@@ -127,6 +129,7 @@ const HcI18n = {
     quality_hint: 'Zwischen HD und SD wechseln',
     privacy_on: '{c}: ausgeblendet, tippen zum Anzeigen',
     privacy_off: '{c}: sichtbar, tippen zum Ausblenden',
+    privacy_unavailable: '{c}: nicht verfügbar',
     enable: 'Aktivieren',
     disable: 'Deaktivieren',
     unavailable: 'Nicht verfügbar',
@@ -181,6 +184,7 @@ const HcI18n = {
     quality_hint: 'Cambiar entre HD y SD',
     privacy_on: '{c}: oculta, toca para mostrarla',
     privacy_off: '{c}: visible, toca para ocultarla',
+    privacy_unavailable: '{c}: no disponible',
     enable: 'Activar',
     disable: 'Desactivar',
     unavailable: 'No disponible',
@@ -235,6 +239,7 @@ const HcI18n = {
     quality_hint: 'Пребацивање између HD и SD квалитета',
     privacy_on: '{c}: скривена, додирните да је прикажете',
     privacy_off: '{c}: видљива, додирните да је сакријете',
+    privacy_unavailable: '{c}: недоступна',
     enable: 'Омогући',
     disable: 'Онемогући',
     unavailable: 'Недоступно',
@@ -289,6 +294,7 @@ const HcI18n = {
     quality_hint: 'Prebacivanje između HD i SD kvaliteta',
     privacy_on: '{c}: skrivena, dodirnite da je prikažete',
     privacy_off: '{c}: vidljiva, dodirnite da je sakrijete',
+    privacy_unavailable: '{c}: nedostupna',
     enable: 'Omogući',
     disable: 'Onemogući',
     unavailable: 'Nedostupno',
@@ -343,6 +349,7 @@ const HcI18n = {
     quality_hint: 'Passa da HD a SD e viceversa',
     privacy_on: '{c}: nascosta, tocca per mostrarla',
     privacy_off: '{c}: visibile, tocca per nasconderla',
+    privacy_unavailable: '{c}: non disponibile',
     enable: 'Attiva',
     disable: 'Disattiva',
     unavailable: 'Non disponibile',
@@ -397,6 +404,7 @@ const HcI18n = {
     quality_hint: 'Wisselen tussen HD en SD',
     privacy_on: '{c}: verborgen, tik om te tonen',
     privacy_off: '{c}: zichtbaar, tik om te verbergen',
+    privacy_unavailable: '{c}: niet beschikbaar',
     enable: 'Inschakelen',
     disable: 'Uitschakelen',
     unavailable: 'Niet beschikbaar',
@@ -451,6 +459,7 @@ const HcI18n = {
     quality_hint: 'Alternar entre HD e SD',
     privacy_on: '{c}: oculta, toque para a mostrar',
     privacy_off: '{c}: visível, toque para a ocultar',
+    privacy_unavailable: '{c}: indisponível',
     enable: 'Ativar',
     disable: 'Desativar',
     unavailable: 'Indisponível',
@@ -505,6 +514,7 @@ const HcI18n = {
     quality_hint: 'Przełącz między HD a SD',
     privacy_on: '{c}: ukryta, dotknij, aby pokazać',
     privacy_off: '{c}: widoczna, dotknij, aby ukryć',
+    privacy_unavailable: '{c}: niedostępna',
     enable: 'Włącz',
     disable: 'Wyłącz',
     unavailable: 'Niedostępna',
@@ -815,6 +825,13 @@ class HomeCameraCard extends HTMLElement {
     return (cam.privacy && this._state(cam.privacy) === 'on') || (cam.power && this._state(cam.power) === 'off');
   }
 
+  // False for a switch that is unavailable, unknown or missing: toggling it would do nothing (Home Assistant
+  // skips unavailable entities without an error), so its badge is shown disabled instead.
+  _usable(id) {
+    const state = this._state(id);
+    return state !== undefined && state !== 'unavailable' && state !== 'unknown';
+  }
+
   // The switch a tap on the camera's badge toggles: its power switch while that is off (the privacy
   // switch cannot bring the camera back then, and is usually unavailable with the power cut), else
   // its privacy switch, or its power switch when it has no privacy switch.
@@ -870,7 +887,15 @@ class HomeCameraCard extends HTMLElement {
       this._lang(),
       hd,
       [...(this._pending?.keys() || [])],
-      cams.map((cam) => [cam.name, cam.short, cam.privacy, cam.power, this._hidden(cam), this._target(cam)]),
+      cams.map((cam) => [
+        cam.name,
+        cam.short,
+        cam.privacy,
+        cam.power,
+        this._hidden(cam),
+        this._target(cam),
+        this._usable(this._target(cam)),
+      ]),
     ]);
     if (headSig !== this._headSig) {
       this._headSig = headSig;
@@ -926,6 +951,8 @@ class HomeCameraCard extends HTMLElement {
     const lock = (cam) => {
       const target = this._target(cam);
       if (this._isPending(target)) return { cls: 'pending', icon: 'mdi:loading', title: this._t('pending') };
+      // Its switch unavailable (camera offline): a tap would do nothing, the badge says so instead of "visible".
+      if (!this._usable(target)) return { cls: 'dis', icon: 'mdi:cancel', title: this._t('privacy_unavailable', { c: cam.name }) };
       const off = this._hidden(cam);
       return {
         cls: off ? 'private' : 'exposed',
@@ -944,7 +971,8 @@ class HomeCameraCard extends HTMLElement {
           const l = lock(cam);
           const target = this._target(cam);
           const label = single ? this._t(this._hidden(cam) ? 'enable' : 'disable') : cam.short;
-          return this._chip(l.cls, `data-toggle="${hcEsc(target)}"`, badgeIcon(l), label, l.title);
+          const attrs = `data-toggle="${hcEsc(target)}"${l.cls === 'dis' ? ' aria-disabled="true"' : ''}`;
+          return this._chip(l.cls, attrs, badgeIcon(l), label, l.title);
         })
         .join('');
     }
@@ -960,10 +988,11 @@ class HomeCameraCard extends HTMLElement {
       // Same marks as the badges: the red live dot while the camera films, the lock while it is hidden.
       const cam = cams[0];
       const l = lock(cam);
-      const label = l.cls === 'pending' ? l.title : this._t(this._hidden(cam) ? 'enable' : 'disable');
+      const label = l.cls === 'pending' || l.cls === 'dis' ? l.title : this._t(this._hidden(cam) ? 'enable' : 'disable');
       right = '';
       side =
         `<span class="toggle ${l.cls}" data-toggle="${hcEsc(this._target(cam))}" role="button" tabindex="0"` +
+        (l.cls === 'dis' ? ' aria-disabled="true"' : '') +
         ` title="${hcEsc(label)}" aria-label="${hcEsc(label)}">` +
         `${badgeIcon(l) ? `<ha-icon icon="${l.icon}"></ha-icon>` : '<span class="dot"></span>'}</span>`;
       if (visible.length) sub = `<div class="chips sub">${quality}</div>`;
@@ -1351,6 +1380,8 @@ class HomeCameraCard extends HTMLElement {
       '.chip.private { background: color-mix(in srgb, var(--hc-on) 16%, transparent); color: var(--hc-on-ink); }' +
       ':is(.chip, .toggle).private:hover { background: color-mix(in srgb, var(--hc-on) 24%, transparent); }' +
       '.chip.pending { cursor: progress; color: var(--secondary-text-color); }' +
+      // Switch unavailable: greyed out, and a tap does nothing.
+      ':is(.chip, .toggle).dis { opacity: 0.5; cursor: not-allowed; color: var(--secondary-text-color); }' +
       '.chip:focus-visible, .toggle:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 1px; }' +
       '.dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; background: var(--hc-live); }' +
       '.pending ha-icon { animation: hc-spin 0.9s linear infinite; }' +
@@ -1457,8 +1488,9 @@ class HomeCameraCard extends HTMLElement {
     const toggle = path.find((n) => n.dataset?.toggle);
     if (toggle) {
       const id = toggle.dataset.toggle;
-      // One toggle at a time: taps while the switch has not answered are ignored.
-      if (this._isPending(id)) return;
+      // One toggle at a time: taps while the switch has not answered are ignored, and so are taps on an
+      // unavailable switch (its badge is disabled).
+      if (this._isPending(id) || !this._usable(id)) return;
       this._call(id.split('.')[0], 'toggle', { entity_id: id }).catch(() => {
         // Refused (not allowed, entity gone): the badge stops waiting at once instead of spinning for 15 s.
         const p = this._pending?.get(id);

@@ -370,3 +370,68 @@ test("plurals: 1 is singular in every language, 2, 5, 21 and 22 use a form valid
     for (const k of ["live_many", "hidden_many"]) assert.match(HcI18n[lang][k], /: \{n\}$/, `${lang}.${k}`);
   }
 });
+
+// A camera whose privacy switch is unavailable, unknown or missing (offline Tapo camera, entity still cached).
+for (const [what, state] of [["unavailable", "unavailable"], ["unknown", "unknown"], ["missing", undefined]]) {
+  test(`privacy switch ${what}: a disabled badge says so, and taps on it are ignored`, () => {
+    const states = { "camera.salon": "idle", "camera.garage": "idle", "switch.garage_privacy": "off" };
+    if (state) states["switch.salon_privacy"] = state;
+    const salon = { camera: "camera.salon", name: "Salon", privacy: "switch.salon_privacy" };
+    const garage = { camera: "camera.garage", name: "Garage", privacy: "switch.garage_privacy" };
+
+    // Several cameras: the badge row.
+    const many = headCard([salon, garage], states);
+    many.render();
+    const html = many.card.shadowRoot.querySelector(".head").innerHTML;
+    const chip = /<span class="chip ([^"]*)" data-toggle="switch\.salon_privacy"([^>]*)>/.exec(html);
+    assert.ok(chip, html);
+    assert.equal(chip[1], "dis");
+    assert.match(chip[2], /aria-disabled="true"/);
+    assert.match(chip[2], /title="Salon: unavailable"/);
+    // The other camera's badge is unaffected.
+    assert.match(html, /<span class="chip exposed" data-toggle="switch\.garage_privacy"[^>]*role="button" tabindex="0" title="Garage: visible, tap to hide it">/);
+    many.tap("switch.salon_privacy");
+    assert.deepEqual(many.calls, []);
+    assert.equal(many.card._isPending("switch.salon_privacy"), false);
+    many.tap("switch.garage_privacy");
+    assert.deepEqual(many.calls, ["switch.toggle switch.garage_privacy"]);
+
+    // A single camera: the round toggle beside the title.
+    const one = headCard([salon], states);
+    one.render();
+    const toggle = /<span class="toggle ([^"]*)" data-toggle="switch\.salon_privacy"([^>]*)>/.exec(one.card.shadowRoot.querySelector(".head").innerHTML);
+    assert.ok(toggle);
+    assert.equal(toggle[1], "dis");
+    assert.match(toggle[2], /aria-disabled="true"/);
+    assert.match(toggle[2], /aria-label="Salon: unavailable"/);
+    one.tap("switch.salon_privacy");
+    assert.deepEqual(one.calls, []);
+  });
+}
+
+test("a privacy switch back from unavailable gives its badge back, in the header too", () => {
+  const states = { "camera.salon": "idle", "switch.salon_privacy": "unavailable" };
+  const { card, tap, calls } = headCard([{ camera: "camera.salon", name: "Salon", privacy: "switch.salon_privacy" }], states);
+  const head = () => card.shadowRoot.querySelector(".head").innerHTML;
+  card._update();
+  assert.match(head(), /class="toggle dis"/);
+  card._hass = { ...card._hass, states: { ...card._hass.states, "switch.salon_privacy": { state: "on", attributes: {} } } };
+  card._update();
+  assert.match(head(), /class="toggle private"/);
+  assert.doesNotMatch(head(), /aria-disabled/);
+  tap("switch.salon_privacy");
+  assert.deepEqual(calls, ["switch.toggle switch.salon_privacy"]);
+});
+
+test("a privacy switch going unavailable while its badge waits stops the spinner and disables the badge", () => {
+  const states = { "camera.salon": "idle", "switch.salon_privacy": "off" };
+  const { card, tap } = headCard([{ camera: "camera.salon", name: "Salon", privacy: "switch.salon_privacy" }], states);
+  const head = () => card.shadowRoot.querySelector(".head").innerHTML;
+  card._update();
+  tap("switch.salon_privacy");
+  assert.match(head(), /class="toggle pending"/);
+  card._hass = { ...card._hass, states: { ...card._hass.states, "switch.salon_privacy": { state: "unavailable", attributes: {} } } };
+  card._update();
+  assert.equal(card._isPending("switch.salon_privacy"), false);
+  assert.match(head(), /class="toggle dis"/);
+});
