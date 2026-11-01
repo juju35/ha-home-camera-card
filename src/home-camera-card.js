@@ -221,9 +221,9 @@ const HcI18n = {
   sr: {
     title: 'Камере',
     live_one: '{n} камера уживо',
-    live_many: '{n} камера уживо',
+    live_many: 'Камере уживо: {n}',
     hidden_one: '{n} скривена',
-    hidden_many: '{n} скривених',
+    hidden_many: 'Скривене: {n}',
     all_hidden: 'Све камере су скривене',
     one_hidden: 'Камера је онемогућена',
     no_cameras: 'Нема подешених камера',
@@ -275,9 +275,9 @@ const HcI18n = {
   'sr-Latn': {
     title: 'Kamere',
     live_one: '{n} kamera uživo',
-    live_many: '{n} kamera uživo',
+    live_many: 'Kamere uživo: {n}',
     hidden_one: '{n} skrivena',
-    hidden_many: '{n} skrivenih',
+    hidden_many: 'Skrivene: {n}',
     all_hidden: 'Sve kamere su skrivene',
     one_hidden: 'Kamera je onemogućena',
     no_cameras: 'Nema podešenih kamera',

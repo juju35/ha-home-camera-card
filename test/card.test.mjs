@@ -249,13 +249,15 @@ test("the editor language selector offers every dictionary language", () => {
 });
 
 // A card whose header renders into a stub, and whose taps reach a recorded callService.
-function headCard(cameras, states) {
+function headCard(cameras, states, config = {}) {
   const { customElements } = loadCard("home-camera-card.js", []);
   const card = new (customElements.get("home-camera-card"))();
-  card.setConfig({ cameras });
+  card.setConfig({ cameras, ...config });
   const head = { innerHTML: "", contains: () => false, querySelectorAll: () => [] };
   const view = { innerHTML: "" };
   card.shadowRoot.querySelector = (sel) => (sel === ".head" ? head : sel === ".view" ? view : null);
+  // Header only: the grid of players needs a DOM (covered by the browser tests).
+  card._renderView = () => {};
   const calls = [];
   card._hass = {
     states: Object.fromEntries(Object.entries(states).map(([id, state]) => [id, { entity_id: id, state, attributes: {} }])),
@@ -328,4 +330,43 @@ test("the header follows the badge target when the power comes back elsewhere wh
   card._hass = { ...card._hass, states: { ...card._hass.states, "switch.terrace_plug": { state: "on", attributes: {} } } };
   card._update();
   assert.deepEqual(toggles(), ["switch.terrace_privacy"]);
+});
+
+// The header summary of a card with `live` cameras filming and `hidden` ones hidden by their privacy switch.
+function summaryOf(language, live, hidden) {
+  const cameras = [];
+  const states = {};
+  for (let i = 0; i < live + hidden; i++) {
+    cameras.push({ camera: `camera.c${i}`, privacy: `switch.c${i}_privacy` });
+    states[`camera.c${i}`] = "idle";
+    states[`switch.c${i}_privacy`] = i < live ? "off" : "on";
+  }
+  const { card, render } = headCard(cameras, states, { language });
+  render();
+  return /<div class="summary">([^<]*)<\/div>/.exec(card.shadowRoot.querySelector(".head").innerHTML)?.[1].replace(/&#39;/g, "'");
+}
+
+test("Serbian counts 2 to 4 cameras with the right form (the counter goes after the label)", () => {
+  assert.equal(summaryOf("sr-Latn", 3, 2), "Kamere uživo: 3 · Skrivene: 2");
+  assert.equal(summaryOf("sr", 3, 2), "Камере уживо: 3 · Скривене: 2");
+  assert.equal(summaryOf("sr-Latn", 1, 1), "1 kamera uživo · 1 skrivena");
+});
+
+test("plurals: 1 is singular in every language, 2, 5, 21 and 22 use a form valid for any count", () => {
+  const { HcI18n } = loadCard("home-camera-card.js", ["HcI18n"]);
+  for (const lang of ["en", ...LANGS]) {
+    const s = HcI18n[lang];
+    for (const n of [1, 2, 5, 21, 22]) {
+      const one = (k) => s[`${k}_one`].replace("{n}", 1);
+      const of = (k) => s[`${k}_${n > 1 ? "many" : "one"}`].replace("{n}", n);
+      // One camera on the other side, so both halves of the summary show.
+      assert.equal(summaryOf(lang, n, 1), `${of("live")} · ${one("hidden")}`, `${lang} live ${n}`);
+      assert.equal(summaryOf(lang, 1, n), `${one("live")} · ${of("hidden")}`, `${lang} hidden ${n}`);
+    }
+  }
+  // Serbian and Polish have three forms (1 / 2-4 / 5+, and 21 is singular in Serbian): one string cannot fit
+  // every count after the number, so the counter follows a label.
+  for (const lang of ["sr", "sr-Latn", "pl"]) {
+    for (const k of ["live_many", "hidden_many"]) assert.match(HcI18n[lang][k], /: \{n\}$/, `${lang}.${k}`);
+  }
 });
