@@ -244,7 +244,7 @@ test("the editor language selector offers every dictionary language", () => {
   const labels = Object.fromEntries(options.map((o) => [o.value, o.label]));
   assert.deepEqual(
     [labels.it, labels.nl, labels.pt, labels.pl],
-    ["Italiano", "Nederlands", "Português", "Polski"],
+    ["Italiano", "Nederlands", "Português (Portugal)", "Polski"],
   );
 });
 

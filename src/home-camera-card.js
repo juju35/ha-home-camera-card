@@ -1597,7 +1597,7 @@ class HomeCameraCardEditor extends HTMLElement {
               { value: 'sr-Latn', label: 'Srpski (latinica)' },
               { value: 'it', label: 'Italiano' },
               { value: 'nl', label: 'Nederlands' },
-              { value: 'pt', label: 'Português' },
+              { value: 'pt', label: 'Português (Portugal)' },
               { value: 'pl', label: 'Polski' },
             ],
           },
