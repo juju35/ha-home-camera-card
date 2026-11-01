@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.5.6 - 2026-11-01
+### What's new
+- Added Italian, Dutch, European Portuguese and Polish translations: the card and its visual editor (including the language selector). Brazilian Portuguese (`pt-BR`) falls back to European Portuguese.
+
 ## 3.5.5 - 2026-11-01
 ### What's new
 - Serbian translations, in Cyrillic (`sr`) and Latin (`sr-Latn`) script: the card and its visual editor (including the language selector). Serbian translations by @cpmarexel2f (#28).
