@@ -1014,7 +1014,7 @@ class HomeCameraCard extends HTMLElement {
     if (kind) {
       for (const el of head.querySelectorAll(`[data-${kind}]`)) {
         if (el.dataset[kind] !== focused.dataset[kind]) continue;
-        el.focus();
+        el.focus({ preventScroll: true });
         break;
       }
     }
@@ -1396,7 +1396,11 @@ class HomeCameraCard extends HTMLElement {
       '@keyframes hc-live { 50% { opacity: 0.35; } }' +
       '.view:empty { display: none; }' +
       '.grid { display: grid; gap: 8px; }' +
-      '.tile { position: relative; aspect-ratio: var(--hc-ratio, 1.7778); border-radius: 12px; overflow: hidden; background: #0d0f12; container-type: size; }' +
+      // container-type: size gives the tile no width of its own: in a parent sized by its content (inline-block,
+      // an auto grid column) the card would fold to its padding. contain-intrinsic-width stands in for the image
+      // there, and changes nothing where the card is given its width (the Sections view, a stack).
+      '.tile { position: relative; aspect-ratio: var(--hc-ratio, 1.7778); border-radius: 12px; overflow: hidden; background: #0d0f12; container-type: size;' +
+      ' contain-intrinsic-width: 240px; }' +
       // A hairline ring over the image, so dark scenes keep their edge on a dark card.
       '.tile::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.07); pointer-events: none; }' +
       ':is(.tile:fullscreen, .tile.pseudo)::after { display: none; }' +

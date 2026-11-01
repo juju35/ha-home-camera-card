@@ -639,3 +639,66 @@ for (const width of [160, 245]) {
     }
   });
 }
+
+test("a header re-render gives the focus back without scrolling the page", async () => {
+  const r = await page.evaluate(() => {
+    document.body.replaceChildren();
+    // The card below the fold, its badge focused, the page scrolled back to the top.
+    const spacer = document.createElement("div");
+    spacer.style.height = "3000px";
+    document.body.appendChild(spacer);
+    const card = document.createElement("home-camera-card");
+    card.setConfig({ cameras: CAMS });
+    document.body.appendChild(card);
+    card.hass = makeHass(baseStates());
+    card.shadowRoot.querySelector('.chip[data-toggle="switch.b_privacy"]').focus({ preventScroll: true });
+    window.scrollTo(0, 0);
+    const args = [];
+    const focus = HTMLElement.prototype.focus;
+    HTMLElement.prototype.focus = function (...a) {
+      args.push(a[0] ?? null);
+      return focus.apply(this, a);
+    };
+    try {
+      // The switch turns on: the header is rebuilt and the new badge takes the focus back.
+      const states = baseStates();
+      states["switch.b_privacy"] = st("switch.b_privacy", "on");
+      card.hass = makeHass(states);
+    } finally {
+      HTMLElement.prototype.focus = focus;
+    }
+    const active = card.shadowRoot.activeElement;
+    return { args, scrollY: window.scrollY, toggle: active?.dataset?.toggle };
+  });
+  assert.equal(r.toggle, "switch.b_privacy");
+  assert.deepEqual(r.args, [{ preventScroll: true }]);
+  assert.equal(r.scrollY, 0);
+});
+
+test("in a container sized by its content (inline-block, auto grid column) the card keeps a usable width", async () => {
+  const r = await page.evaluate(() => {
+    const out = {};
+    for (const [name, css] of [
+      ["inline-block", "display: inline-block"],
+      ["grid auto", "display: grid; grid-template-columns: auto"],
+    ]) {
+      for (const cameras of [CAMS, ["camera.c"]]) {
+        document.body.replaceChildren();
+        const box = document.createElement("div");
+        box.style.cssText = css;
+        document.body.appendChild(box);
+        const card = document.createElement("home-camera-card");
+        card.setConfig({ cameras });
+        box.appendChild(card);
+        card.hass = makeHass(baseStates());
+        const tile = card.shadowRoot.querySelector(".tile").getBoundingClientRect();
+        out[`${name}, ${cameras.length} camera(s)`] = { card: card.getBoundingClientRect().width, tile: tile.width, h: tile.height };
+      }
+    }
+    return out;
+  });
+  for (const [what, m] of Object.entries(r)) {
+    assert.ok(m.card >= 240, `${what}: card ${m.card} px wide`);
+    assert.ok(m.tile >= 200 && m.h >= 100, `${what}: tile ${m.tile} x ${m.h} px`);
+  }
+});
