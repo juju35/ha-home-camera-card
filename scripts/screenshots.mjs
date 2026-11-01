@@ -1,27 +1,20 @@
 // Renders the card with mock cameras and saves the README screenshots.
 // Usage: npm install && npm run screenshots (CHROMIUM_PATH=... to use an installed Chromium)
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as mdi from "@mdi/js";
 import { chromium } from "playwright";
+import { saveIfChanged } from "./pixels.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 
-// The decoded pixels of a PNG or GIF (every frame, with its size and timing), as ffmpeg's per-frame checksums:
-// two files with the same pixels give the same text, whatever their bytes (compression, palette order, metadata).
-const pixels = (input) =>
-  execFileSync("ffmpeg", ["-loglevel", "error", "-i", Buffer.isBuffer(input) ? "pipe:0" : input, "-pix_fmt", "rgba", "-f", "framemd5", "pipe:1"],
-    Buffer.isBuffer(input) ? { input, encoding: "utf8" } : { encoding: "utf8" });
-// Writes a screenshot only when its pixels changed: a re-run on an unchanged card leaves the files (and git) untouched.
+// Writes a screenshot only when its pixels changed (all channels compared, see pixels.mjs).
 function save(file, data) {
-  const path = `${root}screenshots/${file}`;
-  const fresh = Buffer.isBuffer(data) ? data : readFileSync(data);
-  if (existsSync(path) && pixels(path) === pixels(fresh)) return console.log(`screenshots/${file} (unchanged)`);
-  writeFileSync(path, fresh);
-  console.log(`screenshots/${file}`);
+  const written = saveIfChanged(`${root}screenshots/${file}`, data);
+  console.log(`screenshots/${file}${written ? "" : " (unchanged)"}`);
 }
 const cardJs = readFileSync(`${root}dist/home-camera-card.js`, "utf8");
 
