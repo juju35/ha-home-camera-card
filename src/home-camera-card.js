@@ -979,7 +979,10 @@ class HomeCameraCard extends HTMLElement {
     return (
       '<style>' +
       // --hc-glass: the smoked glass of everything laid over the images (labels, buttons, arrows).
+      // --hc-on-ink: the hidden state's green for text and lone icons, pulled toward the text colour so it
+      // stays readable on its tinted badge (darker in a light theme, lighter in a dark one).
       ':host { display: block; --hc-on: var(--success-color, #43a047);' +
+      ' --hc-on-ink: color-mix(in srgb, var(--hc-on) 60%, var(--primary-text-color, #212121));' +
       ' --hc-live: var(--error-color, #db4437); --hc-glass: rgba(14, 16, 20, 0.46); --hc-glass-line: rgba(255, 255, 255, 0.14); }' +
       'ha-card { box-sizing: border-box; padding: 12px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }' +
       // Icon and single-camera toggle at the top of the header row (12 px from the card's edge), the titles
@@ -1007,7 +1010,7 @@ class HomeCameraCard extends HTMLElement {
       // green-tinted with the lock).
       '.toggle { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer;' +
       ' background: var(--secondary-background-color, rgba(128,128,128,0.12)); color: var(--primary-text-color); }' +
-      '.toggle.private { background: color-mix(in srgb, var(--hc-on) 16%, transparent); color: var(--hc-on); }' +
+      '.toggle.private { background: color-mix(in srgb, var(--hc-on) 16%, transparent); color: var(--hc-on-ink); }' +
       '.toggle.pending { color: var(--secondary-text-color); cursor: progress; }' +
       '.toggle ha-icon { --mdc-icon-size: 22px; }' +
       '.toggle .dot { width: 12px; height: 12px; }' +
@@ -1015,7 +1018,7 @@ class HomeCameraCard extends HTMLElement {
       '.chip { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; line-height: 18px; padding: 1px 9px 1px 7px; border-radius: 12px;' +
       ' cursor: pointer; white-space: nowrap; user-select: none; background: var(--secondary-background-color, rgba(128,128,128,0.12)); color: var(--primary-text-color); }' +
       '.chip ha-icon { --mdc-icon-size: 13px; }' +
-      '.chip.private { background: color-mix(in srgb, var(--hc-on) 16%, transparent); color: var(--hc-on); }' +
+      '.chip.private { background: color-mix(in srgb, var(--hc-on) 16%, transparent); color: var(--hc-on-ink); }' +
       ':is(.chip, .toggle).private:hover { background: color-mix(in srgb, var(--hc-on) 24%, transparent); }' +
       '.chip.pending { cursor: progress; color: var(--secondary-text-color); }' +
       '.chip:focus-visible, .toggle:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 1px; }' +
