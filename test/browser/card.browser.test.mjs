@@ -588,3 +588,238 @@ for (const [name, vars] of Object.entries(THEMES)) {
     assert.ok(toggle >= 3, `toggle icon ${toggle.toFixed(2)}:1 < 3:1 (${JSON.stringify(styles.toggle)})`);
   });
 }
+
+// Narrow header (Sections view, 4 to 6 columns: about 160 to 250 px): the title keeps a few letters, and no
+// badge, toggle or HD / SD switch sticks out of the card, with a long title and long badge names.
+for (const width of [160, 245]) {
+  test(`at ${width} px the header keeps its title readable and every control inside the card`, async () => {
+    const r = await page.evaluate((width) => {
+      const out = [];
+      for (const language of ["en", "pl", "sr-Latn"]) {
+        for (const cameras of [
+          [{ camera: "camera.b_hd_stream", name: "Living room camera by the window", privacy: "switch.b_privacy" }],
+          [
+            { camera: "camera.a_hd_stream", short_name: "Living room by the window", privacy: "switch.a_privacy" },
+            { camera: "camera.b_hd_stream", short_name: "Garden and terrace", privacy: "switch.b_privacy" },
+            "camera.c",
+          ],
+        ]) {
+          document.body.replaceChildren();
+          const box = document.createElement("div");
+          box.style.width = `${width}px`;
+          document.body.appendChild(box);
+          const card = document.createElement("home-camera-card");
+          card.setConfig({ cameras, language, title: cameras.length > 1 ? "Cameras of the house and garden" : undefined });
+          box.appendChild(card);
+          const states = baseStates();
+          states["switch.a_privacy"] = st("switch.a_privacy", "off");
+          card.hass = makeHass(states);
+          const root = card.shadowRoot;
+          // The stand-in ha-icon has no size of its own: give it Home Assistant's.
+          for (const i of root.querySelectorAll("ha-icon"))
+            Object.assign(i.style, { display: "inline-block", width: "var(--mdc-icon-size, 24px)", height: "var(--mdc-icon-size, 24px)" });
+          const inner = root.querySelector(".head").getBoundingClientRect();
+          const name = root.querySelector(".name");
+          const outside = [...root.querySelectorAll(".head *")]
+            .filter((n) => {
+              const b = n.getBoundingClientRect();
+              return b.width && (b.right > inner.right + 0.5 || b.left < inner.left - 0.5);
+            })
+            .map((n) => n.className || n.tagName);
+          const ch = parseFloat(getComputedStyle(name).fontSize) * 0.5;
+          out.push({ language, cameras: cameras.length, name: name.getBoundingClientRect().width, ch, outside });
+        }
+      }
+      return out;
+    }, width);
+    for (const m of r) {
+      const what = `${m.language}, ${m.cameras} camera(s)`;
+      assert.ok(m.name >= 4 * m.ch, `${what}: title ${m.name.toFixed(1)} px, under 4 characters`);
+      assert.deepEqual(m.outside, [], `${what}: outside the card`);
+    }
+  });
+}
+
+test("a header re-render gives the focus back without scrolling the page", async () => {
+  const r = await page.evaluate(() => {
+    document.body.replaceChildren();
+    // The card below the fold, its badge focused, the page scrolled back to the top.
+    const spacer = document.createElement("div");
+    spacer.style.height = "3000px";
+    document.body.appendChild(spacer);
+    const card = document.createElement("home-camera-card");
+    card.setConfig({ cameras: CAMS });
+    document.body.appendChild(card);
+    card.hass = makeHass(baseStates());
+    card.shadowRoot.querySelector('.chip[data-toggle="switch.b_privacy"]').focus({ preventScroll: true });
+    window.scrollTo(0, 0);
+    const args = [];
+    const focus = HTMLElement.prototype.focus;
+    HTMLElement.prototype.focus = function (...a) {
+      args.push(a[0] ?? null);
+      return focus.apply(this, a);
+    };
+    try {
+      // The switch turns on: the header is rebuilt and the new badge takes the focus back.
+      const states = baseStates();
+      states["switch.b_privacy"] = st("switch.b_privacy", "on");
+      card.hass = makeHass(states);
+    } finally {
+      HTMLElement.prototype.focus = focus;
+    }
+    const active = card.shadowRoot.activeElement;
+    return { args, scrollY: window.scrollY, toggle: active?.dataset?.toggle };
+  });
+  assert.equal(r.toggle, "switch.b_privacy");
+  assert.deepEqual(r.args, [{ preventScroll: true }]);
+  assert.equal(r.scrollY, 0);
+});
+
+// Six layouts, each with the card placed directly and wrapped in a <div> (as layout-card, button-card or a
+// custom stack do): a parent sized by its content (inline-block, an auto grid column) must not fold the card,
+// and two cards side by side in a 1fr 1fr grid (layout-card, grid card, horizontal-stack) must shrink to their
+// half instead of overflowing it, at 320, 360 and 500 px.
+test("in content-sized containers the card keeps a usable width, and in a 1fr 1fr grid it shrinks to its half", async () => {
+  const r = await page.evaluate(() => {
+    const out = [];
+    for (const [name, css, width] of [
+      ["inline-block", "display: inline-block", 0],
+      ["grid auto", "display: grid; grid-template-columns: auto", 0],
+      ["grid 1fr 1fr at 320 px", "display: grid; grid-template-columns: 1fr 1fr; gap: 8px", 320],
+      ["grid 1fr 1fr at 360 px", "display: grid; grid-template-columns: 1fr 1fr; gap: 8px", 360],
+      ["grid 1fr 1fr at 500 px", "display: grid; grid-template-columns: 1fr 1fr; gap: 8px", 500],
+    ]) {
+      for (const wrapped of [false, true]) {
+        document.body.replaceChildren();
+        const box = document.createElement("div");
+        box.style.cssText = css;
+        if (width) box.style.width = `${width}px`;
+        document.body.appendChild(box);
+        const cards = [];
+        for (const cameras of width ? [CAMS, ["camera.c"]] : [CAMS]) {
+          const card = document.createElement("home-camera-card");
+          card.setConfig({ cameras });
+          if (wrapped) {
+            const div = document.createElement("div");
+            div.appendChild(card);
+            box.appendChild(div);
+          } else box.appendChild(card);
+          card.hass = makeHass(baseStates());
+          // The stand-in ha-icon has no size of its own: give it Home Assistant's.
+          for (const i of card.shadowRoot.querySelectorAll("ha-icon"))
+            Object.assign(i.style, { display: "inline-block", width: "var(--mdc-icon-size, 24px)", height: "var(--mdc-icon-size, 24px)" });
+          cards.push(card);
+        }
+        const outer = box.getBoundingClientRect();
+        for (const card of cards) {
+          const c = card.getBoundingClientRect();
+          const tile = card.shadowRoot.querySelector(".tile").getBoundingClientRect();
+          out.push({
+            what: `${name}, ${wrapped ? "in a div" : "direct"}, ${card._config.cameras.length} camera(s)`,
+            split: !!width,
+            half: width ? (width - 8) / 2 : 0,
+            card: c.width,
+            overflow: Math.max(c.right - outer.right, 0),
+            tile: tile.width,
+            h: tile.height,
+            tileOut: Math.max(tile.right - c.right, 0),
+            // Content cut off by ha-card (overflow: hidden): its scroll width goes past its own.
+            clipped: (() => {
+              const ha = card.shadowRoot.querySelector("ha-card");
+              return ha.scrollWidth - ha.clientWidth;
+            })(),
+          });
+        }
+      }
+    }
+    return out;
+  });
+  for (const m of r) {
+    if (m.split) {
+      assert.ok(Math.abs(m.card - m.half) < 1, `${m.what}: card ${m.card} px wide, its column ${m.half} px`);
+      assert.ok(m.overflow < 0.5, `${m.what}: ${m.overflow} px past the grid`);
+      assert.ok(m.tile > 0 && m.tileOut < 0.5, `${m.what}: tile ${m.tile} px, ${m.tileOut} px past the card`);
+      assert.ok(m.clipped <= 0, `${m.what}: ${m.clipped} px of content cut off inside the card`);
+    } else {
+      assert.ok(m.card >= 240, `${m.what}: card ${m.card} px wide`);
+      assert.ok(m.tile >= 200 && m.h >= 100, `${m.what}: tile ${m.tile} x ${m.h} px`);
+    }
+  }
+});
+
+// The header's text must not set the card's minimum width: `.name` and the badges are nowrap, and overflow: hidden
+// does not lower an element's min-content width, so a long title, a single camera's long name or its privacy badge
+// made the card refuse its half of a 1fr 1fr grid (layout-card) and run 35 to 395 px past it, placed directly or
+// wrapped in a <div>. Each header ends with an ellipsis instead, and content-sized parents keep their width.
+test("a long title, a single camera's long name or its privacy badge never widens the card past its grid column", async () => {
+  const r = await page.evaluate(() => {
+    const out = [];
+    const configs = [
+      ["long title", { title: "Cameras of the house and garden", cameras: [{ camera: "camera.a_hd_stream", short_name: "Living room by the window", privacy: "switch.b_privacy" }, "camera.b_hd_stream", "camera.c"] }],
+      ["single camera, long name", { cameras: [{ camera: "camera.c", name: "Living room camera by the window", privacy: "switch.b_privacy" }] }],
+      ["single camera, privacy off", { cameras: [{ camera: "camera.c", privacy: "switch.b_privacy" }] }],
+      ["single camera, privacy unavailable", { cameras: [{ camera: "camera.c", privacy: "switch.u" }] }],
+    ];
+    for (const [name, css, width] of [
+      ["inline-block", "display: inline-block", 0],
+      ["grid auto", "display: grid; grid-template-columns: auto", 0],
+      ["grid 1fr 1fr at 320 px", "display: grid; grid-template-columns: 1fr 1fr; gap: 8px", 320],
+      ["grid 1fr 1fr at 360 px", "display: grid; grid-template-columns: 1fr 1fr; gap: 8px", 360],
+      ["grid 1fr 1fr at 500 px", "display: grid; grid-template-columns: 1fr 1fr; gap: 8px", 500],
+    ]) {
+      for (const wrapped of [false, true]) {
+        for (const [cfgName, cfg] of configs) {
+          document.body.replaceChildren();
+          const box = document.createElement("div");
+          box.style.cssText = css;
+          if (width) box.style.width = `${width}px`;
+          document.body.appendChild(box);
+          const cards = [];
+          for (let i = 0; i < (width ? 2 : 1); i++) {
+            const card = document.createElement("home-camera-card");
+            card.setConfig(cfg);
+            if (wrapped) {
+              const div = document.createElement("div");
+              div.appendChild(card);
+              box.appendChild(div);
+            } else box.appendChild(card);
+            const states = baseStates();
+            states["switch.u"] = st("switch.u", "unavailable");
+            card.hass = makeHass(states);
+            for (const ic of card.shadowRoot.querySelectorAll("ha-icon"))
+              Object.assign(ic.style, { display: "inline-block", width: "var(--mdc-icon-size, 24px)", height: "var(--mdc-icon-size, 24px)" });
+            cards.push(card);
+          }
+          const outer = box.getBoundingClientRect();
+          for (const card of cards) {
+            const c = card.getBoundingClientRect();
+            const ha = card.shadowRoot.querySelector("ha-card");
+            const head = card.shadowRoot.querySelector(".header").getBoundingClientRect();
+            const title = card.shadowRoot.querySelector(".name");
+            out.push({
+              what: `${cfgName}, ${name}, ${wrapped ? "in a div" : "direct"}`,
+              split: !!width,
+              half: width ? (width - 8) / 2 : 0,
+              card: c.width,
+              overflow: Math.max(c.right - outer.right, 0),
+              headOut: Math.max(head.right - c.right, 0),
+              clipped: ha.scrollWidth - ha.clientWidth,
+              title: title ? title.getBoundingClientRect().width : null,
+            });
+          }
+        }
+      }
+    }
+    return out;
+  });
+  assert.equal(r.length, 4 * (2 + 3 * 2) * 2);
+  for (const m of r) {
+    if (m.split) {
+      assert.ok(Math.abs(m.card - m.half) < 1, `${m.what}: card ${m.card} px wide, its column ${m.half} px`);
+      assert.ok(m.overflow < 0.5, `${m.what}: ${m.overflow} px past the grid`);
+    } else assert.ok(m.card >= 240, `${m.what}: card ${m.card} px wide`);
+    assert.ok(m.headOut < 0.5 && m.clipped <= 0, `${m.what}: header ${m.headOut} px past the card, ${m.clipped} px cut off`);
+    // The title keeps a few letters (min-width: 4ch on .name, about 30 px at 16 px).
+    if (m.title !== null) assert.ok(m.title >= 28, `${m.what}: title ${m.title} px`);
+  }
+});

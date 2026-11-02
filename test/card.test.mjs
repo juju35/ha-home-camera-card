@@ -249,13 +249,15 @@ test("the editor language selector offers every dictionary language", () => {
 });
 
 // A card whose header renders into a stub, and whose taps reach a recorded callService.
-function headCard(cameras, states) {
+function headCard(cameras, states, config = {}) {
   const { customElements } = loadCard("home-camera-card.js", []);
   const card = new (customElements.get("home-camera-card"))();
-  card.setConfig({ cameras });
+  card.setConfig({ cameras, ...config });
   const head = { innerHTML: "", contains: () => false, querySelectorAll: () => [] };
   const view = { innerHTML: "" };
   card.shadowRoot.querySelector = (sel) => (sel === ".head" ? head : sel === ".view" ? view : null);
+  // Header only: the grid of players needs a DOM (covered by the browser tests).
+  card._renderView = () => {};
   const calls = [];
   card._hass = {
     states: Object.fromEntries(Object.entries(states).map(([id, state]) => [id, { entity_id: id, state, attributes: {} }])),
@@ -328,4 +330,108 @@ test("the header follows the badge target when the power comes back elsewhere wh
   card._hass = { ...card._hass, states: { ...card._hass.states, "switch.terrace_plug": { state: "on", attributes: {} } } };
   card._update();
   assert.deepEqual(toggles(), ["switch.terrace_privacy"]);
+});
+
+// The header summary of a card with `live` cameras filming and `hidden` ones hidden by their privacy switch.
+function summaryOf(language, live, hidden) {
+  const cameras = [];
+  const states = {};
+  for (let i = 0; i < live + hidden; i++) {
+    cameras.push({ camera: `camera.c${i}`, privacy: `switch.c${i}_privacy` });
+    states[`camera.c${i}`] = "idle";
+    states[`switch.c${i}_privacy`] = i < live ? "off" : "on";
+  }
+  const { card, render } = headCard(cameras, states, { language });
+  render();
+  return /<div class="summary">([^<]*)<\/div>/.exec(card.shadowRoot.querySelector(".head").innerHTML)?.[1].replace(/&#39;/g, "'");
+}
+
+test("Serbian counts 2 to 4 cameras with the right form (the counter goes after the label)", () => {
+  assert.equal(summaryOf("sr-Latn", 3, 2), "Kamere uživo: 3 · Skrivene: 2");
+  assert.equal(summaryOf("sr", 3, 2), "Камере уживо: 3 · Скривене: 2");
+  assert.equal(summaryOf("sr-Latn", 1, 1), "1 kamera uživo · 1 skrivena");
+});
+
+test("plurals: 1 is singular in every language, 2, 5, 21 and 22 use a form valid for any count", () => {
+  const { HcI18n } = loadCard("home-camera-card.js", ["HcI18n"]);
+  for (const lang of ["en", ...LANGS]) {
+    const s = HcI18n[lang];
+    for (const n of [1, 2, 5, 21, 22]) {
+      const one = (k) => s[`${k}_one`].replace("{n}", 1);
+      const of = (k) => s[`${k}_${n > 1 ? "many" : "one"}`].replace("{n}", n);
+      // One camera on the other side, so both halves of the summary show.
+      assert.equal(summaryOf(lang, n, 1), `${of("live")} · ${one("hidden")}`, `${lang} live ${n}`);
+      assert.equal(summaryOf(lang, 1, n), `${one("live")} · ${of("hidden")}`, `${lang} hidden ${n}`);
+    }
+  }
+  // Serbian and Polish have three forms (1 / 2-4 / 5+, and 21 is singular in Serbian): one string cannot fit
+  // every count after the number, so the counter follows a label.
+  for (const lang of ["sr", "sr-Latn", "pl"]) {
+    for (const k of ["live_many", "hidden_many"]) assert.match(HcI18n[lang][k], /: \{n\}$/, `${lang}.${k}`);
+  }
+});
+
+// A camera whose privacy switch is unavailable, unknown or missing (offline Tapo camera, entity still cached).
+for (const [what, state] of [["unavailable", "unavailable"], ["unknown", "unknown"], ["missing", undefined]]) {
+  test(`privacy switch ${what}: a disabled badge says so, and taps on it are ignored`, () => {
+    const states = { "camera.salon": "idle", "camera.garage": "idle", "switch.garage_privacy": "off" };
+    if (state) states["switch.salon_privacy"] = state;
+    const salon = { camera: "camera.salon", name: "Salon", privacy: "switch.salon_privacy" };
+    const garage = { camera: "camera.garage", name: "Garage", privacy: "switch.garage_privacy" };
+
+    // Several cameras: the badge row.
+    const many = headCard([salon, garage], states);
+    many.render();
+    const html = many.card.shadowRoot.querySelector(".head").innerHTML;
+    const chip = /<span class="chip ([^"]*)" data-toggle="switch\.salon_privacy"([^>]*)>/.exec(html);
+    assert.ok(chip, html);
+    assert.equal(chip[1], "dis");
+    assert.match(chip[2], /aria-disabled="true"/);
+    assert.match(chip[2], /title="Salon: unavailable"/);
+    // The other camera's badge is unaffected.
+    assert.match(html, /<span class="chip exposed" data-toggle="switch\.garage_privacy"[^>]*role="button" tabindex="0" title="Garage: visible, tap to hide it">/);
+    many.tap("switch.salon_privacy");
+    assert.deepEqual(many.calls, []);
+    assert.equal(many.card._isPending("switch.salon_privacy"), false);
+    many.tap("switch.garage_privacy");
+    assert.deepEqual(many.calls, ["switch.toggle switch.garage_privacy"]);
+
+    // A single camera: the round toggle beside the title.
+    const one = headCard([salon], states);
+    one.render();
+    const toggle = /<span class="toggle ([^"]*)" data-toggle="switch\.salon_privacy"([^>]*)>/.exec(one.card.shadowRoot.querySelector(".head").innerHTML);
+    assert.ok(toggle);
+    assert.equal(toggle[1], "dis");
+    assert.match(toggle[2], /aria-disabled="true"/);
+    assert.match(toggle[2], /aria-label="Salon: unavailable"/);
+    one.tap("switch.salon_privacy");
+    assert.deepEqual(one.calls, []);
+  });
+}
+
+test("a privacy switch back from unavailable gives its badge back, in the header too", () => {
+  const states = { "camera.salon": "idle", "switch.salon_privacy": "unavailable" };
+  const { card, tap, calls } = headCard([{ camera: "camera.salon", name: "Salon", privacy: "switch.salon_privacy" }], states);
+  const head = () => card.shadowRoot.querySelector(".head").innerHTML;
+  card._update();
+  assert.match(head(), /class="toggle dis"/);
+  card._hass = { ...card._hass, states: { ...card._hass.states, "switch.salon_privacy": { state: "on", attributes: {} } } };
+  card._update();
+  assert.match(head(), /class="toggle private"/);
+  assert.doesNotMatch(head(), /aria-disabled/);
+  tap("switch.salon_privacy");
+  assert.deepEqual(calls, ["switch.toggle switch.salon_privacy"]);
+});
+
+test("a privacy switch going unavailable while its badge waits stops the spinner and disables the badge", () => {
+  const states = { "camera.salon": "idle", "switch.salon_privacy": "off" };
+  const { card, tap } = headCard([{ camera: "camera.salon", name: "Salon", privacy: "switch.salon_privacy" }], states);
+  const head = () => card.shadowRoot.querySelector(".head").innerHTML;
+  card._update();
+  tap("switch.salon_privacy");
+  assert.match(head(), /class="toggle pending"/);
+  card._hass = { ...card._hass, states: { ...card._hass.states, "switch.salon_privacy": { state: "unavailable", attributes: {} } } };
+  card._update();
+  assert.equal(card._isPending("switch.salon_privacy"), false);
+  assert.match(head(), /class="toggle dis"/);
 });

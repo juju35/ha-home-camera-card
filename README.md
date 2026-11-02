@@ -28,7 +28,7 @@ List the cameras, the card finds their privacy switch, SD stream and PTZ buttons
 ## Features
 
 - Header with the number of cameras live and hidden, and an **HD / SD** switch
-- One badge per camera: a red live dot while it films, a green lock while it is hidden; tap to toggle its privacy switch (or its smart plug)
+- One badge per camera: a red live dot while it films, a green lock while it is hidden; tap to toggle its privacy switch (or its smart plug); greyed out, and ignoring taps, while that switch is unavailable (camera offline)
 - Each image carries its name with a live dot; when every camera is hidden, a panel says how to bring one back
 - A single camera: its name is the title, a round *Disable* / *Enable* icon button sits on the right and the HD / SD badge under the title
 - Hidden cameras are removed from the grid: a camera is hidden when its **privacy switch is on** or its **power switch is off**

@@ -56,6 +56,9 @@ jobs:
           done
           [ -n "$ok" ] || { echo "::error::apt failed 3 times"; exit 1; }
           ffmpeg -version > /dev/null
+      # The comparator that decides which screenshots get rewritten must see every channel (it needs ffmpeg).
+      - name: Screenshot comparator test
+        run: node --test test/pixels.test.mjs
       - run: npm run build
       - name: Render screenshots
         run: |

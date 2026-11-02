@@ -19,6 +19,7 @@ const HcI18n = {
     quality_hint: 'Basculer entre HD et SD',
     privacy_on: '{c} : masquée, toucher pour l\'afficher',
     privacy_off: '{c} : visible, toucher pour la masquer',
+    privacy_unavailable: '{c} : indisponible',
     enable: 'Activer',
     disable: 'Désactiver',
     unavailable: 'Indisponible',
@@ -73,6 +74,7 @@ const HcI18n = {
     quality_hint: 'Switch between HD and SD',
     privacy_on: '{c}: hidden, tap to show it',
     privacy_off: '{c}: visible, tap to hide it',
+    privacy_unavailable: '{c}: unavailable',
     enable: 'Enable',
     disable: 'Disable',
     unavailable: 'Unavailable',
@@ -127,6 +129,7 @@ const HcI18n = {
     quality_hint: 'Zwischen HD und SD wechseln',
     privacy_on: '{c}: ausgeblendet, tippen zum Anzeigen',
     privacy_off: '{c}: sichtbar, tippen zum Ausblenden',
+    privacy_unavailable: '{c}: nicht verfügbar',
     enable: 'Aktivieren',
     disable: 'Deaktivieren',
     unavailable: 'Nicht verfügbar',
@@ -181,6 +184,7 @@ const HcI18n = {
     quality_hint: 'Cambiar entre HD y SD',
     privacy_on: '{c}: oculta, toca para mostrarla',
     privacy_off: '{c}: visible, toca para ocultarla',
+    privacy_unavailable: '{c}: no disponible',
     enable: 'Activar',
     disable: 'Desactivar',
     unavailable: 'No disponible',
@@ -221,9 +225,9 @@ const HcI18n = {
   sr: {
     title: 'Камере',
     live_one: '{n} камера уживо',
-    live_many: '{n} камера уживо',
+    live_many: 'Камере уживо: {n}',
     hidden_one: '{n} скривена',
-    hidden_many: '{n} скривених',
+    hidden_many: 'Скривене: {n}',
     all_hidden: 'Све камере су скривене',
     one_hidden: 'Камера је онемогућена',
     no_cameras: 'Нема подешених камера',
@@ -235,6 +239,7 @@ const HcI18n = {
     quality_hint: 'Пребацивање између HD и SD квалитета',
     privacy_on: '{c}: скривена, додирните да је прикажете',
     privacy_off: '{c}: видљива, додирните да је сакријете',
+    privacy_unavailable: '{c}: недоступна',
     enable: 'Омогући',
     disable: 'Онемогући',
     unavailable: 'Недоступно',
@@ -275,9 +280,9 @@ const HcI18n = {
   'sr-Latn': {
     title: 'Kamere',
     live_one: '{n} kamera uživo',
-    live_many: '{n} kamera uživo',
+    live_many: 'Kamere uživo: {n}',
     hidden_one: '{n} skrivena',
-    hidden_many: '{n} skrivenih',
+    hidden_many: 'Skrivene: {n}',
     all_hidden: 'Sve kamere su skrivene',
     one_hidden: 'Kamera je onemogućena',
     no_cameras: 'Nema podešenih kamera',
@@ -289,6 +294,7 @@ const HcI18n = {
     quality_hint: 'Prebacivanje između HD i SD kvaliteta',
     privacy_on: '{c}: skrivena, dodirnite da je prikažete',
     privacy_off: '{c}: vidljiva, dodirnite da je sakrijete',
+    privacy_unavailable: '{c}: nedostupna',
     enable: 'Omogući',
     disable: 'Onemogući',
     unavailable: 'Nedostupno',
@@ -343,6 +349,7 @@ const HcI18n = {
     quality_hint: 'Passa da HD a SD e viceversa',
     privacy_on: '{c}: nascosta, tocca per mostrarla',
     privacy_off: '{c}: visibile, tocca per nasconderla',
+    privacy_unavailable: '{c}: non disponibile',
     enable: 'Attiva',
     disable: 'Disattiva',
     unavailable: 'Non disponibile',
@@ -397,6 +404,7 @@ const HcI18n = {
     quality_hint: 'Wisselen tussen HD en SD',
     privacy_on: '{c}: verborgen, tik om te tonen',
     privacy_off: '{c}: zichtbaar, tik om te verbergen',
+    privacy_unavailable: '{c}: niet beschikbaar',
     enable: 'Inschakelen',
     disable: 'Uitschakelen',
     unavailable: 'Niet beschikbaar',
@@ -451,6 +459,7 @@ const HcI18n = {
     quality_hint: 'Alternar entre HD e SD',
     privacy_on: '{c}: oculta, toque para a mostrar',
     privacy_off: '{c}: visível, toque para a ocultar',
+    privacy_unavailable: '{c}: indisponível',
     enable: 'Ativar',
     disable: 'Desativar',
     unavailable: 'Indisponível',
@@ -505,6 +514,7 @@ const HcI18n = {
     quality_hint: 'Przełącz między HD a SD',
     privacy_on: '{c}: ukryta, dotknij, aby pokazać',
     privacy_off: '{c}: widoczna, dotknij, aby ukryć',
+    privacy_unavailable: '{c}: niedostępna',
     enable: 'Włącz',
     disable: 'Wyłącz',
     unavailable: 'Niedostępna',
@@ -815,6 +825,13 @@ class HomeCameraCard extends HTMLElement {
     return (cam.privacy && this._state(cam.privacy) === 'on') || (cam.power && this._state(cam.power) === 'off');
   }
 
+  // False for a switch that is unavailable, unknown or missing: toggling it would do nothing (Home Assistant
+  // skips unavailable entities without an error), so its badge is shown disabled instead.
+  _usable(id) {
+    const state = this._state(id);
+    return state !== undefined && state !== 'unavailable' && state !== 'unknown';
+  }
+
   // The switch a tap on the camera's badge toggles: its power switch while that is off (the privacy
   // switch cannot bring the camera back then, and is usually unavailable with the power cut), else
   // its privacy switch, or its power switch when it has no privacy switch.
@@ -870,7 +887,15 @@ class HomeCameraCard extends HTMLElement {
       this._lang(),
       hd,
       [...(this._pending?.keys() || [])],
-      cams.map((cam) => [cam.name, cam.short, cam.privacy, cam.power, this._hidden(cam), this._target(cam)]),
+      cams.map((cam) => [
+        cam.name,
+        cam.short,
+        cam.privacy,
+        cam.power,
+        this._hidden(cam),
+        this._target(cam),
+        this._usable(this._target(cam)),
+      ]),
     ]);
     if (headSig !== this._headSig) {
       this._headSig = headSig;
@@ -926,6 +951,8 @@ class HomeCameraCard extends HTMLElement {
     const lock = (cam) => {
       const target = this._target(cam);
       if (this._isPending(target)) return { cls: 'pending', icon: 'mdi:loading', title: this._t('pending') };
+      // Its switch unavailable (camera offline): a tap would do nothing, the badge says so instead of "visible".
+      if (!this._usable(target)) return { cls: 'dis', icon: 'mdi:cancel', title: this._t('privacy_unavailable', { c: cam.name }) };
       const off = this._hidden(cam);
       return {
         cls: off ? 'private' : 'exposed',
@@ -944,7 +971,8 @@ class HomeCameraCard extends HTMLElement {
           const l = lock(cam);
           const target = this._target(cam);
           const label = single ? this._t(this._hidden(cam) ? 'enable' : 'disable') : cam.short;
-          return this._chip(l.cls, `data-toggle="${hcEsc(target)}"`, badgeIcon(l), label, l.title);
+          const attrs = `data-toggle="${hcEsc(target)}"${l.cls === 'dis' ? ' aria-disabled="true"' : ''}`;
+          return this._chip(l.cls, attrs, badgeIcon(l), label, l.title);
         })
         .join('');
     }
@@ -960,10 +988,11 @@ class HomeCameraCard extends HTMLElement {
       // Same marks as the badges: the red live dot while the camera films, the lock while it is hidden.
       const cam = cams[0];
       const l = lock(cam);
-      const label = l.cls === 'pending' ? l.title : this._t(this._hidden(cam) ? 'enable' : 'disable');
+      const label = l.cls === 'pending' || l.cls === 'dis' ? l.title : this._t(this._hidden(cam) ? 'enable' : 'disable');
       right = '';
       side =
         `<span class="toggle ${l.cls}" data-toggle="${hcEsc(this._target(cam))}" role="button" tabindex="0"` +
+        (l.cls === 'dis' ? ' aria-disabled="true"' : '') +
         ` title="${hcEsc(label)}" aria-label="${hcEsc(label)}">` +
         `${badgeIcon(l) ? `<ha-icon icon="${l.icon}"></ha-icon>` : '<span class="dot"></span>'}</span>`;
       if (visible.length) sub = `<div class="chips sub">${quality}</div>`;
@@ -985,7 +1014,7 @@ class HomeCameraCard extends HTMLElement {
     if (kind) {
       for (const el of head.querySelectorAll(`[data-${kind}]`)) {
         if (el.dataset[kind] !== focused.dataset[kind]) continue;
-        el.focus();
+        el.focus({ preventScroll: true });
         break;
       }
     }
@@ -1311,7 +1340,10 @@ class HomeCameraCard extends HTMLElement {
       // --hc-glass: the smoked glass of everything laid over the images (labels, buttons, arrows).
       // --hc-on-ink: the hidden state's green for text and lone icons, pulled toward the text colour so it
       // stays readable on its tinted badge (darker in a light theme, lighter in a dark one).
-      ':host { display: block; --hc-on: var(--success-color, #43a047);' +
+      // A one-column grid whose track may shrink to 0: the card takes its width from its parent (its header and tiles
+      // never set a minimum width, so in a 1fr 1fr grid it keeps to its half, placed directly or in a <div>), while a
+      // parent sized by its content (inline-block, an auto grid column) still gets the card's natural width.
+      ':host { display: grid; grid-template-columns: minmax(0, 1fr); --hc-on: var(--success-color, #43a047);' +
       ' --hc-on-ink: color-mix(in srgb, var(--hc-on) 60%, var(--primary-text-color, #212121));' +
       ' --hc-live: var(--error-color, #db4437); --hc-glass: rgba(14, 16, 20, 0.46); --hc-glass-line: rgba(255, 255, 255, 0.14); }' +
       'ha-card { box-sizing: border-box; padding: 12px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }' +
@@ -1322,9 +1354,13 @@ class HomeCameraCard extends HTMLElement {
       ' --hc-c: var(--primary-color, #03a9f4); background: color-mix(in srgb, var(--hc-c) 16%, transparent); color: var(--hc-c); }' +
       '.hicon.off { --hc-c: var(--secondary-text-color); }' +
       '.hicon ha-icon { --mdc-icon-size: 24px; }' +
-      '.titles { flex: 1; min-width: 0; align-self: center; }' +
-      '.name-row { display: flex; align-items: center; gap: 8px; }' +
-      '.name { flex: 1; min-width: 0; font-size: 16px; font-weight: 500; line-height: 1.25; color: var(--primary-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }' +
+      // Narrow card (half a Sections view, or a narrow column): the title shrinks to an ellipsis but keeps a few letters,
+      // the HD / SD switch goes under it rather than out of the card, and the round buttons never shrink.
+      '.titles { flex: 1 1 auto; min-width: 0; align-self: center; }' +
+      '.name-row { display: flex; flex-wrap: wrap; align-items: center; column-gap: 8px; row-gap: 4px; }' +
+      '.name-row > .chips { flex: none; margin-left: auto; }' +
+      '.chips:empty { display: none; }' +
+      '.name { flex: 1 1 0; min-width: 4ch; font-size: 16px; font-weight: 500; line-height: 1.25; color: var(--primary-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }' +
       '.summary { font-size: 12px; line-height: 1.35; margin-top: 2px; color: var(--secondary-text-color); }' +
       '.chips { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }' +
       '.chips.badges, .chips.sub { justify-content: flex-start; }' +
@@ -1338,19 +1374,23 @@ class HomeCameraCard extends HTMLElement {
       '.opt:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 1px; }' +
       // Single camera: its badge as a round button, styled like the badges (neutral with the live dot,
       // green-tinted with the lock).
-      '.toggle { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer;' +
+      '.toggle { width: 40px; height: 40px; border-radius: 50%; flex: none; display: flex; align-items: center; justify-content: center; cursor: pointer;' +
       ' background: var(--secondary-background-color, rgba(128,128,128,0.12)); color: var(--primary-text-color); }' +
       '.toggle.private { background: color-mix(in srgb, var(--hc-on) 16%, transparent); color: var(--hc-on-ink); }' +
       '.toggle.pending { color: var(--secondary-text-color); cursor: progress; }' +
       '.toggle ha-icon { --mdc-icon-size: 22px; }' +
       '.toggle .dot { width: 12px; height: 12px; }' +
       // Badges: neutral with a red live dot while the camera films, green-tinted with a lock while hidden.
-      '.chip { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; line-height: 18px; padding: 1px 9px 1px 7px; border-radius: 12px;' +
+      '.chip { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; min-width: 0; box-sizing: border-box; font-size: 11px; font-weight: 500; line-height: 18px; padding: 1px 9px 1px 7px; border-radius: 12px;' +
       ' cursor: pointer; white-space: nowrap; user-select: none; background: var(--secondary-background-color, rgba(128,128,128,0.12)); color: var(--primary-text-color); }' +
-      '.chip ha-icon { --mdc-icon-size: 13px; }' +
+      '.chip ha-icon { --mdc-icon-size: 13px; flex: none; }' +
+      // A long badge name ends with an ellipsis instead of running out of the card (the full name is in the title).
+      '.chip > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; }' +
       '.chip.private { background: color-mix(in srgb, var(--hc-on) 16%, transparent); color: var(--hc-on-ink); }' +
       ':is(.chip, .toggle).private:hover { background: color-mix(in srgb, var(--hc-on) 24%, transparent); }' +
       '.chip.pending { cursor: progress; color: var(--secondary-text-color); }' +
+      // Switch unavailable: greyed out, and a tap does nothing.
+      ':is(.chip, .toggle).dis { opacity: 0.5; cursor: not-allowed; color: var(--secondary-text-color); }' +
       '.chip:focus-visible, .toggle:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 1px; }' +
       '.dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; background: var(--hc-live); }' +
       '.pending ha-icon { animation: hc-spin 0.9s linear infinite; }' +
@@ -1359,7 +1399,11 @@ class HomeCameraCard extends HTMLElement {
       '@keyframes hc-live { 50% { opacity: 0.35; } }' +
       '.view:empty { display: none; }' +
       '.grid { display: grid; gap: 8px; }' +
-      '.tile { position: relative; aspect-ratio: var(--hc-ratio, 1.7778); border-radius: 12px; overflow: hidden; background: #0d0f12; container-type: size; }' +
+      // container-type: size gives the tile no width of its own: in a parent sized by its content (inline-block,
+      // an auto grid column) the card would fold to its padding. contain-intrinsic-width stands in for the image
+      // there, and changes nothing where the card is given its width (the Sections view, a stack).
+      '.tile { position: relative; aspect-ratio: var(--hc-ratio, 1.7778); border-radius: 12px; overflow: hidden; background: #0d0f12; container-type: size;' +
+      ' contain-intrinsic-width: 240px; }' +
       // A hairline ring over the image, so dark scenes keep their edge on a dark card.
       '.tile::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.07); pointer-events: none; }' +
       ':is(.tile:fullscreen, .tile.pseudo)::after { display: none; }' +
@@ -1457,8 +1501,9 @@ class HomeCameraCard extends HTMLElement {
     const toggle = path.find((n) => n.dataset?.toggle);
     if (toggle) {
       const id = toggle.dataset.toggle;
-      // One toggle at a time: taps while the switch has not answered are ignored.
-      if (this._isPending(id)) return;
+      // One toggle at a time: taps while the switch has not answered are ignored, and so are taps on an
+      // unavailable switch (its badge is disabled).
+      if (this._isPending(id) || !this._usable(id)) return;
       this._call(id.split('.')[0], 'toggle', { entity_id: id }).catch(() => {
         // Refused (not allowed, entity gone): the badge stops waiting at once instead of spinning for 15 s.
         const p = this._pending?.get(id);
