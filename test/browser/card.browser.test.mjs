@@ -595,7 +595,7 @@ for (const width of [160, 245]) {
   test(`at ${width} px the header keeps its title readable and every control inside the card`, async () => {
     const r = await page.evaluate((width) => {
       const out = [];
-      for (const language of ["en", "pl", "sr-Latn"]) {
+      for (const language of ["en", "pl", "sr-Latn", "el", "bg", "ro"]) {
         for (const cameras of [
           [{ camera: "camera.b_hd_stream", name: "Living room camera by the window", privacy: "switch.b_privacy" }],
           [

@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.5.8 - 2026-11-04
+### What's new
+- Added Romanian, Danish, Swedish, Bulgarian, Russian, Ukrainian, Hungarian, Slovak, Czech, Slovenian, Latvian and Greek translations: the card and its visual editor (including the language selector).
+
 ## 3.5.7 - 2026-11-01
 ### Fixes
 - Serbian: the header now counts 2 to 4 cameras correctly ("Kamere uživo: 3 · Skrivene: 2" instead of "3 kamera uživo · 2 skrivenih").

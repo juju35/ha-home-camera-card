@@ -163,7 +163,10 @@ test("a failed player load is retried on the next hass update, not only when the
   assert.equal(loads, 2);
 });
 
-const LANGS = ["fr", "de", "es", "sr", "sr-Latn", "it", "nl", "pt", "pl"];
+const LANGS = [
+  "fr", "de", "es", "sr", "sr-Latn", "it", "nl", "pt", "pl",
+  "ro", "da", "sv", "bg", "ru", "uk", "hu", "sk", "cs", "sl", "lv", "el",
+];
 
 test("I18N parity: every language has exactly the English keys and placeholders, and no empty value", () => {
   const { HcI18n } = loadCard("home-camera-card.js", ["HcI18n"]);
@@ -204,6 +207,18 @@ test("the language resolves to the full tag, else its base, else en", () => {
     ["pt", "pt"],
     ["pt-BR", "pt"],
     ["pl-PL", "pl"],
+    ["ro-RO", "ro"],
+    ["da-DK", "da"],
+    ["sv-SE", "sv"],
+    ["bg", "bg"],
+    ["ru-RU", "ru"],
+    ["uk", "uk"],
+    ["hu-HU", "hu"],
+    ["sk", "sk"],
+    ["cs-CZ", "cs"],
+    ["sl-SI", "sl"],
+    ["lv-LV", "lv"],
+    ["el-GR", "el"],
     ["ja", "en"],
   ];
   for (const [language, want] of cases) assert.equal(hcLang(language), want, language);
@@ -245,6 +260,11 @@ test("the editor language selector offers every dictionary language", () => {
   assert.deepEqual(
     [labels.it, labels.nl, labels.pt, labels.pl],
     ["Italiano", "Nederlands", "Português (Portugal)", "Polski"],
+  );
+  const added = ["ro", "da", "sv", "bg", "ru", "uk", "hu", "sk", "cs", "sl", "lv", "el"];
+  assert.deepEqual(
+    added.map((l) => labels[l]),
+    ["Română", "Dansk", "Svenska", "Български", "Русский", "Українська", "Magyar", "Slovenčina", "Čeština", "Slovenščina", "Latviešu", "Ελληνικά"],
   );
 });
 
@@ -364,9 +384,10 @@ test("plurals: 1 is singular in every language, 2, 5, 21 and 22 use a form valid
       assert.equal(summaryOf(lang, 1, n), `${one("live")} · ${of("hidden")}`, `${lang} hidden ${n}`);
     }
   }
-  // Serbian and Polish have three forms (1 / 2-4 / 5+, and 21 is singular in Serbian): one string cannot fit
-  // every count after the number, so the counter follows a label.
-  for (const lang of ["sr", "sr-Latn", "pl"]) {
+  // Serbian, Polish, Russian, Ukrainian, Czech, Slovak, Slovenian, Romanian and Latvian have more
+  // than two forms (1 / 2-4 / 5+, 21 singular in Serbian, Russian and Latvian, "de" from 20 in Romanian…): one string
+  // cannot fit every count after the number, so the counter follows a label.
+  for (const lang of ["sr", "sr-Latn", "pl", "ru", "uk", "cs", "sk", "sl", "ro", "lv"]) {
     for (const k of ["live_many", "hidden_many"]) assert.match(HcI18n[lang][k], /: \{n\}$/, `${lang}.${k}`);
   }
 });
