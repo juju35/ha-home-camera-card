@@ -16,15 +16,15 @@ List the cameras, the card finds their privacy switch, SD stream and PTZ buttons
 
 | Light | Dark |
 |---|---|
-| ![Camera card](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card.png) | ![Camera card, dark theme](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-dark.png) |
+| <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card.png" alt="Camera card" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-dark.png" alt="Camera card, dark theme" width="400"> |
 | **Pan & tilt** | **Pan & tilt, dark** |
-| ![Camera card with the pan and tilt arrows](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-ptz.png) | ![Camera card with the pan and tilt arrows, dark theme](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-ptz-dark.png) |
+| <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-ptz.png" alt="Camera card with the pan and tilt arrows" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-ptz-dark.png" alt="Camera card with the pan and tilt arrows, dark theme" width="400"> |
 | **Single camera** | **Single camera, dark** |
-| ![Camera card with a single camera](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-single.png) | ![Camera card with a single camera, dark theme](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-single-dark.png) |
+| <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-single.png" alt="Camera card with a single camera" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-single-dark.png" alt="Camera card with a single camera, dark theme" width="400"> |
 | **Every camera hidden** | **Every camera hidden, dark** |
-| ![Camera card with every camera hidden](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-hidden-light.png) | ![Camera card with every camera hidden, dark theme](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-hidden.png) |
+| <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-hidden-light.png" alt="Camera card with every camera hidden" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-hidden.png" alt="Camera card with every camera hidden, dark theme" width="400"> |
 | **Fullscreen, pan & tilt** | **Fullscreen, pan & tilt, dark** |
-| ![Fullscreen camera with the round pan and tilt pad](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-fullscreen-light.png) | ![Fullscreen camera with the round pan and tilt pad, dark theme](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-fullscreen.png) |
+| <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-fullscreen-light.png" alt="Fullscreen camera with the round pan and tilt pad" width="700"> | <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-fullscreen.png" alt="Fullscreen camera with the round pan and tilt pad, dark theme" width="700"> |
 
 ## Features
 
@@ -157,13 +157,13 @@ The card animates in two places (both honour `prefers-reduced-motion`). While a 
 
 | Light | Dark |
 |---|---|
-| ![live](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/live.gif) | ![live dark](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/live-dark.gif) |
+| <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/live.gif" alt="live" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/live-dark.gif" alt="live dark" width="400"> |
 
 While a tile is waiting for its first frame, a spinner turns over the stream.
 
 | Light | Dark |
 |---|---|
-| ![loading](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/loading.gif) | ![loading dark](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/loading-dark.gif) |
+| <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/loading.gif" alt="loading" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/loading-dark.gif" alt="loading dark" width="400"> |
 
 The still states (the grid; pan & tilt; a single camera; every camera hidden; fullscreen), each in light and dark, are shown at the [top of this page](#ha-home-camera-card).
 
