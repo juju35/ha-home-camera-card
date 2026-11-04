@@ -5,7 +5,7 @@
 [![Validate](https://github.com/juju35/ha-home-camera-card/actions/workflows/validate.yml/badge.svg)](https://github.com/juju35/ha-home-camera-card/actions/workflows/validate.yml)
 [![Lint](https://github.com/juju35/ha-home-camera-card/actions/workflows/lint.yml/badge.svg)](https://github.com/juju35/ha-home-camera-card/actions/workflows/lint.yml)
 [![Release](https://img.shields.io/github/v/release/juju35/ha-home-camera-card)](https://github.com/juju35/ha-home-camera-card/releases/latest)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/juju35/ha-home-camera-card/blob/main/LICENSE)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/julienstep9)
 
 Custom Lovelace card for Home Assistant showing **every home camera in one grid**, with a **privacy badge per camera**, an **HD / SD switch** and **PTZ controls**.
@@ -157,13 +157,13 @@ The card animates in two places (both honour `prefers-reduced-motion`). While a 
 
 | Light | Dark |
 |---|---|
-| ![live](screenshots/live.gif) | ![live dark](screenshots/live-dark.gif) |
+| ![live](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/live.gif) | ![live dark](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/live-dark.gif) |
 
 While a tile is waiting for its first frame, a spinner turns over the stream.
 
 | Light | Dark |
 |---|---|
-| ![loading](screenshots/loading.gif) | ![loading dark](screenshots/loading-dark.gif) |
+| ![loading](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/loading.gif) | ![loading dark](https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/loading-dark.gif) |
 
 The still states (the grid; pan & tilt; a single camera; every camera hidden; fullscreen), each in light and dark, are shown at the [top of this page](#ha-home-camera-card).
 
@@ -189,7 +189,7 @@ npm run screenshots  # renders the card with mock cameras into screenshots/ (and
 ### Releasing
 
 1. Bump `version` in `package.json`
-2. Add a `## <version>` section at the top of [CHANGELOG.md](CHANGELOG.md)
+2. Add a `## <version>` section at the top of [CHANGELOG.md](https://github.com/juju35/ha-home-camera-card/blob/main/CHANGELOG.md)
 3. Push to `main`: the **Release** workflow builds the card, creates the tag and the GitHub release with the changelog section as notes, and attaches `home-camera-card.js`
 
 ## Translations
@@ -225,7 +225,7 @@ Contributions for additional languages are welcome!
 
 ## License
 
-[MIT](LICENSE)
+[MIT](https://github.com/juju35/ha-home-camera-card/blob/main/LICENSE)
 
 ## Support
 
