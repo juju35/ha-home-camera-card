@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.5.10 - 2026-11-04
+
+### Documentation
+- README: images and links use absolute URLs, so the screenshots, icons, badges and links display in HACS (relative paths broke there).
+- README: screenshots get a display size, so cards no longer show oversized in HACS and on GitHub.
+
 ## 3.5.9 - 2026-11-04
 ### Fixes
 - In fullscreen, a camera without pan & tilt no longer shows an empty round pad in the bottom right corner.
