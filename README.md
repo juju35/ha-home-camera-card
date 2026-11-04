@@ -43,7 +43,7 @@ List the cameras, the card finds their privacy switch, SD stream and PTZ buttons
 - Streams stop while the page is hidden (other tab, phone locked) and resume when it comes back
 - Automatic discovery on the camera's device: `switch.*_privacy`, `button.*_move_left/right/up/down`, and the `*_sd_stream` camera next to a `*_hd_stream` one (Tapo integration naming)
 - Visual editor in the dashboard UI (no YAML needed)
-- English, French, German, Spanish, Serbian (Cyrillic and Latin), Italian, Dutch, European Portuguese and Polish, follows the Home Assistant language
+- English, French, German, Spanish, Serbian (Cyrillic and Latin), Italian, Dutch, European Portuguese, Polish, Romanian, Danish, Swedish, Bulgarian, Russian, Ukrainian, Hungarian, Irish, Slovak, Czech, Slovenian, Maltese, Latvian and Greek, follows the Home Assistant language
 - Light and dark theme compatible
 - HACS-ready, a single file with no dependency
 
@@ -136,7 +136,7 @@ cameras:
 | `aspect_ratio` | ❌ | `16:9` | Shape of the tiles (`16:9`, `4:3`, `1:1`…); the image fills the tile |
 | `show_summary` | ❌ | `true` | Summary line under the title |
 | `show_badges` | ❌ | `true` | Privacy badges under the header |
-| `language` | ❌ | Auto | Force language: `en`, `fr`, `de`, `es`, `sr`, `sr-Latn`, `it`, `nl`, `pt` or `pl` (auto-detects from HA settings) |
+| `language` | ❌ | Auto | Force language: `en`, `fr`, `de`, `es`, `sr`, `sr-Latn`, `it`, `nl`, `pt`, `pl`, `ro`, `da`, `sv`, `bg`, `ru`, `uk`, `hu`, `ga`, `sk`, `cs`, `sl`, `mt`, `lv` or `el` (auto-detects from HA settings) |
 
 **Camera options**
 
@@ -207,6 +207,20 @@ The card auto-detects the language from your Home Assistant settings. Currently 
 | Nederlands | `nl` |
 | Português (Portugal) | `pt` |
 | Polski | `pl` |
+| Română | `ro` |
+| Dansk | `da` |
+| Svenska | `sv` |
+| Български | `bg` |
+| Русский | `ru` |
+| Українська | `uk` |
+| Magyar | `hu` |
+| Gaeilge | `ga` |
+| Slovenčina | `sk` |
+| Čeština | `cs` |
+| Slovenščina | `sl` |
+| Malti | `mt` |
+| Latviešu | `lv` |
+| Ελληνικά | `el` |
 
 Contributions for additional languages are welcome!
 
