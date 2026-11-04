@@ -239,6 +239,23 @@ test("without element fullscreen (iPhone), the card covers the screen itself, wi
   });
 });
 
+test("in fullscreen, a camera without pan & tilt shows no pad", async () => {
+  const r = await page.evaluate(() => {
+    mount(CAMS);
+    const original = [Element.prototype.requestFullscreen, Element.prototype.webkitRequestFullscreen];
+    Element.prototype.requestFullscreen = undefined;
+    Element.prototype.webkitRequestFullscreen = undefined;
+    const tile = tiles()[1];
+    tile.querySelector(".open").click();
+    const pseudo = tile.classList.contains("pseudo");
+    const pad = getComputedStyle(tile.querySelector(".pad")).display;
+    tile.querySelector(".open").click();
+    [Element.prototype.requestFullscreen, Element.prototype.webkitRequestFullscreen] = original;
+    return { pseudo, pad };
+  });
+  assert.deepEqual(r, { pseudo: true, pad: "none" });
+});
+
 test("the details button opens the camera dialog", async () => {
   const r = await page.evaluate(() => {
     mount(CAMS);

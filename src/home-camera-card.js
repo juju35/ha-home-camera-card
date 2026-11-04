@@ -1810,6 +1810,7 @@ class HomeCameraCard extends HTMLElement {
           )
           .join('')
       : '';
+    tile.classList.toggle('has-ptz', !!cam.ptz);
     if (!cam.ptz) tile.classList.remove('ptz-open');
     this._soundIcon(tile);
     this._syncPtz(tile);
@@ -2116,7 +2117,7 @@ class HomeCameraCard extends HTMLElement {
       '.tile { --pad: min(120px, 58cqh); }' +
       '.pad { display: none; position: absolute; width: var(--pad); height: var(--pad); border-radius: 50%;' +
       ' right: 8px; bottom: 8px; background: rgba(14, 16, 20, 0.26); border: 1px solid rgba(255, 255, 255, 0.2); }' +
-      '.tile.ptz-open .pad, :is(.tile:fullscreen, .tile.pseudo) .pad { display: block; }' +
+      '.tile.ptz-open .pad, :is(.tile:fullscreen, .tile.pseudo).has-ptz .pad { display: block; }' +
       '.pad::after { content: ""; position: absolute; inset: 0; margin: auto; width: calc(var(--pad) * 0.07); height: calc(var(--pad) * 0.07); border-radius: 50%;' +
       ' background: rgba(255,255,255,0.22); pointer-events: none; }' +
       '.move { --s: calc(var(--pad) * 0.32); position: absolute; width: var(--s); height: var(--s); touch-action: none;' +
