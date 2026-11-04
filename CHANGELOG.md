@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.5.9 - 2026-11-04
+### Fixes
+- In fullscreen, a camera without pan & tilt no longer shows an empty round pad in the bottom right corner.
+
 ## 3.5.8 - 2026-11-04
 ### What's new
 - Added Romanian, Danish, Swedish, Bulgarian, Russian, Ukrainian, Hungarian, Slovak, Czech, Slovenian, Latvian and Greek translations: the card and its visual editor (including the language selector).
