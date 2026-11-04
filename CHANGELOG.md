@@ -2,7 +2,7 @@
 
 ## 3.5.8 - 2026-11-04
 ### What's new
-- Added Romanian, Danish, Swedish, Bulgarian, Russian, Ukrainian, Hungarian, Irish, Slovak, Czech, Slovenian, Maltese, Latvian and Greek translations: the card and its visual editor (including the language selector).
+- Added Romanian, Danish, Swedish, Bulgarian, Russian, Ukrainian, Hungarian, Slovak, Czech, Slovenian, Latvian and Greek translations: the card and its visual editor (including the language selector).
 
 ## 3.5.7 - 2026-11-01
 ### Fixes
