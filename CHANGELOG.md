@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.6.0 - 2026-11-07
+### What's new
+- New mini card (`custom:home-camera-mini-card`): a snapshot of each camera with its name and status, refreshed every 10 seconds; its detail button or a tap on a snapshot shows the full card, and a click outside brings the compact view back.
+- Streams and snapshot refreshes now also stop while the card is scrolled off screen, and resume when it comes back into view.
+
 ## 3.5.10 - 2026-11-04
 
 ### Documentation

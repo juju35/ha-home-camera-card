@@ -23,6 +23,8 @@ List the cameras, the card finds their privacy switch, SD stream and PTZ buttons
 | <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-single.png" alt="Camera card with a single camera" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-single-dark.png" alt="Camera card with a single camera, dark theme" width="400"> |
 | **Every camera hidden** | **Every camera hidden, dark** |
 | <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-hidden-light.png" alt="Camera card with every camera hidden" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-hidden.png" alt="Camera card with every camera hidden, dark theme" width="400"> |
+| **Mini card** | **Mini card, dark** |
+| <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-mini.png" alt="Camera mini card with a snapshot per camera" width="300"> | <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-mini-dark.png" alt="Camera mini card with a snapshot per camera, dark theme" width="300"> |
 | **Fullscreen, pan & tilt** | **Fullscreen, pan & tilt, dark** |
 | <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-fullscreen-light.png" alt="Fullscreen camera with the round pan and tilt pad" width="700"> | <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-fullscreen.png" alt="Fullscreen camera with the round pan and tilt pad, dark theme" width="700"> |
 
@@ -41,7 +43,8 @@ List the cameras, the card finds their privacy switch, SD stream and PTZ buttons
 - Spinner until each camera's first frame; privacy badges spin until their switch answers
 - Mouse: tile buttons show on hover; touch: always shown, with larger targets
 - Hiding or showing a camera, or switching HD / SD, never reloads the streams of the other cameras
-- Streams stop while the page is hidden (other tab, phone locked) and resume when it comes back
+- Streams stop while the page is hidden (other tab, phone locked) or the card is scrolled off screen, and resume when it comes back
+- **Mini card** (`home-camera-mini-card`): a snapshot of each camera with its name and status, refreshed every 10 seconds instead of a live stream; its detail button (top right) or a tap on a snapshot shows the full card, a click outside folds it back
 - Automatic discovery on the camera's device: `switch.*_privacy`, `button.*_move_left/right/up/down`, and the `*_sd_stream` camera next to a `*_hd_stream` one (Tapo integration naming)
 - Visual editor in the dashboard UI (no YAML needed)
 - English, French, German, Spanish, Serbian (Cyrillic and Latin), Italian, Dutch, European Portuguese, Polish, Romanian, Danish, Swedish, Bulgarian, Russian, Ukrainian, Hungarian, Slovak, Czech, Slovenian, Latvian and Greek, follows the Home Assistant language
@@ -123,6 +126,17 @@ cameras:
     ptz: false
 ```
 
+### Mini card
+
+```yaml
+type: custom:home-camera-mini-card
+cameras:
+  - camera.living_room_hd_stream
+  - camera.bedroom_hd_stream
+```
+
+The mini card takes the same options as the full card, plus `zoom`. Its compact view shows the title with its status and a snapshot of each camera (the SD stream's when there is one; a hidden camera's snapshot is never fetched), refreshed every 10 seconds while the card is on screen in a visible page. The detail button at the top right, or a tap on a snapshot, switches it to the full card (live streams, privacy badges, HD / SD); a click outside the card brings the compact view back.
+
 ### Options reference
 
 | Option | Required | Default | Description |
@@ -137,6 +151,7 @@ cameras:
 | `aspect_ratio` | ❌ | `16:9` | Shape of the tiles (`16:9`, `4:3`, `1:1`…); the image fills the tile |
 | `show_summary` | ❌ | `true` | Summary line under the title |
 | `show_badges` | ❌ | `true` | Privacy badges under the header |
+| `zoom` | ❌ | `true` | Mini card only: its detail button to the full card; with `false`, a tap on a snapshot opens the camera's dialog |
 | `language` | ❌ | Auto | Force language: `en`, `fr`, `de`, `es`, `sr`, `sr-Latn`, `it`, `nl`, `pt`, `pl`, `ro`, `da`, `sv`, `bg`, `ru`, `uk`, `hu`, `sk`, `cs`, `sl`, `lv` or `el` (auto-detects from HA settings) |
 
 **Camera options**
@@ -165,7 +180,7 @@ While a tile is waiting for its first frame, a spinner turns over the stream.
 |---|---|
 | <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/loading.gif" alt="loading" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/loading-dark.gif" alt="loading dark" width="400"> |
 
-The still states (the grid; pan & tilt; a single camera; every camera hidden; fullscreen), each in light and dark, are shown at the [top of this page](#ha-home-camera-card).
+The still states (the grid; pan & tilt; a single camera; every camera hidden; the mini card; fullscreen), each in light and dark, are shown at the [top of this page](#ha-home-camera-card).
 
 ## How it works
 
