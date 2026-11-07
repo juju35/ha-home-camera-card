@@ -1,6 +1,6 @@
 # ha-home-camera-card
 
-[![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+[![Marketplace](https://img.shields.io/badge/Marketplace-Custom-41BDF5.svg)](https://www.home-assistant.io/integrations/marketplace/)
 [![HACS Validation](https://github.com/juju35/ha-home-camera-card/actions/workflows/hacs.yml/badge.svg)](https://github.com/juju35/ha-home-camera-card/actions/workflows/hacs.yml)
 [![Validate](https://github.com/juju35/ha-home-camera-card/actions/workflows/validate.yml/badge.svg)](https://github.com/juju35/ha-home-camera-card/actions/workflows/validate.yml)
 [![Lint](https://github.com/juju35/ha-home-camera-card/actions/workflows/lint.yml/badge.svg)](https://github.com/juju35/ha-home-camera-card/actions/workflows/lint.yml)
@@ -12,7 +12,7 @@ Custom Lovelace card for Home Assistant showing **every home camera in one grid*
 
 List the cameras, the card finds their privacy switch, SD stream and PTZ buttons by itself.
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=juju35&repository=ha-home-camera-card&category=plugin)
+[![Open your Home Assistant instance and open a repository inside the Marketplace.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=juju35&repository=ha-home-camera-card&category=plugin)
 
 | Light | Dark |
 |---|---|
@@ -46,7 +46,7 @@ List the cameras, the card finds their privacy switch, SD stream and PTZ buttons
 - Visual editor in the dashboard UI (no YAML needed)
 - English, French, German, Spanish, Serbian (Cyrillic and Latin), Italian, Dutch, European Portuguese, Polish, Romanian, Danish, Swedish, Bulgarian, Russian, Ukrainian, Hungarian, Slovak, Czech, Slovenian, Latvian and Greek, follows the Home Assistant language
 - Light and dark theme compatible
-- HACS-ready, a single file with no dependency
+- Ready for the Marketplace, a single file with no dependency
 
 ## Prerequisites
 
@@ -55,20 +55,20 @@ List the cameras, the card finds their privacy switch, SD stream and PTZ buttons
 
 ## Installation
 
-### Via HACS (recommended)
+### Via the Marketplace (recommended)
 
 Click the button below to add the repository directly:
 
-[![Add to HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=juju35&repository=ha-home-camera-card&category=plugin)
+[![Add to the Marketplace](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=juju35&repository=ha-home-camera-card&category=plugin)
 
 Or manually:
 
-1. Open HACS → **⋮** (top right) → **Custom repositories**
+1. Open **Settings → Marketplace → Add from link** (top right; this needs a GitHub account connected)
 2. Add `https://github.com/juju35/ha-home-camera-card` — Type: **Dashboard**
-3. Search for **Home Camera Card** and install it
+3. Open **Home Camera Card** and click **Install**
 4. Clear your browser cache and refresh
 
-HACS registers the dashboard resource for you.
+The Marketplace registers the dashboard resource for you.
 
 ### Manual
 
@@ -184,7 +184,7 @@ npm run test:browser # builds the card and runs it in Chromium with a stand-in p
 npm run screenshots  # renders the card with mock cameras into screenshots/ (and the live/loading gifs in light and dark, needs ffmpeg)
 ```
 
-`dist/` is not committed: `npm run build` creates it locally, CI builds it on every push, and the release workflow attaches the built file to the release, which is where HACS downloads it from.
+`dist/` is not committed: `npm run build` creates it locally, CI builds it on every push, and the release workflow attaches the built file to the release, which is where the Marketplace installs it from.
 
 ### Releasing
 
