@@ -2,11 +2,12 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { loadCard } from "./load.mjs";
 
-const { hcSibling, hcOwnControl, hcDeviceIndex, hcRatio } = loadCard("home-camera-card.js", [
+const { hcSibling, hcOwnControl, hcDeviceIndex, hcRatio, hcMotion } = loadCard("home-camera-card.js", [
   "hcSibling",
   "hcOwnControl",
   "hcDeviceIndex",
   "hcRatio",
+  "hcMotion",
 ]);
 
 const entities = () => ({
@@ -23,6 +24,30 @@ test("hcSibling finds an entity of the camera's own device", () => {
   assert.equal(hcSibling(hass, "camera.salon_hd_stream", "button", "_move_left"), "button.salon_move_left");
   assert.equal(hcSibling(hass, "camera.salon_hd_stream", "switch", "_nope"), undefined);
   assert.equal(hcSibling(hass, "camera.unknown", "switch", "_privacy"), undefined);
+});
+
+test("hcMotion finds the motion, occupancy and person sensors of the camera's device, or takes the config's", () => {
+  const reg = {
+    ...entities(),
+    "binary_sensor.salon_motion": { entity_id: "binary_sensor.salon_motion", device_id: "d1" },
+    "binary_sensor.salon_person_detection": { entity_id: "binary_sensor.salon_person_detection", device_id: "d1" },
+    "binary_sensor.salon_pir": { entity_id: "binary_sensor.salon_pir", device_id: "d1" },
+    "binary_sensor.salon_cloud": { entity_id: "binary_sensor.salon_cloud", device_id: "d1" },
+    "binary_sensor.garage_motion": { entity_id: "binary_sensor.garage_motion", device_id: "d2" },
+  };
+  const states = {
+    "binary_sensor.salon_pir": { attributes: { device_class: "occupancy" } },
+    "binary_sensor.salon_cloud": { attributes: { device_class: "connectivity" } },
+  };
+  const hass = { entities: reg, states };
+  const id = "camera.salon_hd_stream";
+  assert.deepEqual(
+    [...hcMotion(hass, {}, id)],
+    ["binary_sensor.salon_motion", "binary_sensor.salon_person_detection", "binary_sensor.salon_pir"],
+  );
+  assert.deepEqual([...hcMotion(hass, { motion: false }, id)], []);
+  assert.deepEqual([...hcMotion(hass, { motion: "binary_sensor.door" }, id)], ["binary_sensor.door"]);
+  assert.deepEqual([...hcMotion(hass, {}, "camera.unknown")], []);
 });
 
 test("the device index is built once per registry object and rebuilt when it changes", () => {

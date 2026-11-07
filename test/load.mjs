@@ -11,7 +11,7 @@ export function loadCard(file, names, globals = {}) {
     console: { info() {}, log() {}, warn() {}, error() {} },
     HTMLElement: class {
       attachShadow() {
-        this.shadowRoot = { innerHTML: "", activeElement: null, addEventListener() {}, querySelector: () => null };
+        this.shadowRoot = { innerHTML: "", activeElement: null, addEventListener() {}, querySelector: () => null, querySelectorAll: () => [] };
         return this.shadowRoot;
       }
       addEventListener() {}

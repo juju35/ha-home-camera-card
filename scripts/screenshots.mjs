@@ -138,6 +138,8 @@ for (const [key, name, , privacy] of CAMS) {
   add(`switch.${key}_privacy`, privacy ? "on" : "off", key);
   for (const d of ["left", "right", "up", "down"]) add(`button.${key}_move_${d}`, "unknown", key);
 }
+// Someone walks through the living room: its motion badge shows.
+add("binary_sensor.living_room_motion", "on", "living_room", { device_class: "motion" });
 add("camera.terrace", "streaming", "terrace", { friendly_name: "Terrace" });
 add("switch.terrace_camera_plug", "on", "plug");
 add("input_select.camera_quality", "HD", null, { options: ["HD", "SD"] });

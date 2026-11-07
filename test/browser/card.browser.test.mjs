@@ -1006,3 +1006,100 @@ test("mini card: snapshots stop refreshing while the page is hidden or the card 
   });
   assert.deepEqual(r, { running: true, hidden: false, back: { timer: true, fresh: true }, offscreen: false, onscreen: true, detached: false });
 });
+
+test("motion badge: shown on a tile and its snapshot while a motion sensor of its device is on, and show_motion: false removes it", async () => {
+  const r = await page.evaluate(() => {
+    const withMotion = (on) => {
+      const states = baseStates();
+      states["binary_sensor.b_motion"] = st("binary_sensor.b_motion", on ? "on" : "off");
+      const hass = makeHass(states);
+      hass.entities["binary_sensor.b_motion"] = { entity_id: "binary_sensor.b_motion", device_id: "b" };
+      return hass;
+    };
+    const shown = (node) => getComputedStyle(node.querySelector(".mot")).display !== "none";
+    mount(CAMS);
+    el.hass = withMotion(false);
+    const start = window.__connects;
+    const off = tiles().map(shown);
+    el.hass = withMotion(true);
+    const on = tiles().map(shown);
+    const label = tiles()[1].querySelector(".mot").getAttribute("aria-label");
+    const connects = window.__connects - start;
+    el.setConfig({ cameras: CAMS, show_motion: false });
+    const disabled = tiles().map(shown);
+
+    document.body.replaceChildren();
+    const mini = document.createElement("home-camera-mini-card");
+    mini.setConfig({ cameras: CAMS });
+    document.body.appendChild(mini);
+    mini.hass = withMotion(true);
+    const thumbs = [...mini.shadowRoot.querySelectorAll(".thumb")];
+    const img = thumbs[1].querySelector("img");
+    const thumbOn = thumbs.map(shown);
+    mini.hass = withMotion(false);
+    return { off, on, label, connects, disabled, thumbOn, thumbOff: thumbs.map(shown), sameImg: mini.shadowRoot.querySelectorAll(".thumb")[1].querySelector("img") === img };
+  });
+  assert.deepEqual(r.off, [false, false, false]);
+  assert.deepEqual(r.on, [false, true, false]);
+  assert.equal(r.label, "Motion detected");
+  assert.equal(r.connects, 0);
+  assert.deepEqual(r.disabled, [false, false, false]);
+  assert.deepEqual(r.thumbOn, [false, true, false]);
+  assert.deepEqual(r.thumbOff, [false, false, false]);
+  // Toggled in place: the snapshot is not reloaded.
+  assert.equal(r.sameImg, true);
+});
+
+test("HD / SD radio group: one tab stop, the arrow keys select the other option and move the focus", async () => {
+  const r = await page.evaluate(() => {
+    mount(CAMS);
+    el._toggleQuality();
+    if (!el._hd()) el._toggleQuality();
+    const opt = (q) => el.shadowRoot.querySelector(`[data-quality="${q}"]`);
+    const tabs = () => [opt("hd").tabIndex, opt("sd").tabIndex];
+    const key = (k) => el.shadowRoot.activeElement.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true, composed: true }));
+    const start = tabs();
+    opt("hd").focus();
+    key("ArrowRight");
+    const right = { focus: el.shadowRoot.activeElement?.dataset.quality, hd: el._hd(), tabs: tabs(), entity: streams()[0].stateObj?.entity_id };
+    key("ArrowLeft");
+    const left = { focus: el.shadowRoot.activeElement?.dataset.quality, hd: el._hd(), tabs: tabs() };
+    return { start, right, left };
+  });
+  assert.deepEqual(r.start, [0, -1]);
+  assert.deepEqual(r.right, { focus: "sd", hd: false, tabs: [-1, 0], entity: "camera.a_sd_stream" });
+  assert.deepEqual(r.left, { focus: "hd", hd: true, tabs: [0, -1] });
+});
+
+test("mini card: a snapshot's accessible name says when its camera is hidden or offline", async () => {
+  await mountMini();
+  const r = await page.evaluate(() => {
+    const states = baseStates();
+    states["switch.b_privacy"] = st("switch.b_privacy", "on");
+    states["camera.c"] = st("camera.c", "unavailable");
+    el.hass = makeHass(states);
+    return $$(".thumb").map((t) => t.getAttribute("aria-label"));
+  });
+  assert.deepEqual(r, ["camera.a_hd_stream", "camera.b_hd_stream: hidden", "camera.c: unavailable"]);
+});
+
+test("the card's own fullscreen gives the page its previous overflow back on the way out", async () => {
+  const r = await page.evaluate(() => {
+    mount(CAMS);
+    document.documentElement.style.overflow = "auto";
+    document.body.style.overflow = "scroll";
+    const original = [Element.prototype.requestFullscreen, Element.prototype.webkitRequestFullscreen];
+    Element.prototype.requestFullscreen = undefined;
+    Element.prototype.webkitRequestFullscreen = undefined;
+    const tile = tiles()[0];
+    tile.querySelector(".open").click();
+    const during = [document.documentElement.style.overflow, document.body.style.overflow];
+    tile.querySelector(".open").click();
+    const after = [document.documentElement.style.overflow, document.body.style.overflow];
+    [Element.prototype.requestFullscreen, Element.prototype.webkitRequestFullscreen] = original;
+    document.documentElement.style.overflow = "";
+    document.body.style.overflow = "";
+    return { during, after };
+  });
+  assert.deepEqual(r, { during: ["hidden", "hidden"], after: ["auto", "scroll"] });
+});

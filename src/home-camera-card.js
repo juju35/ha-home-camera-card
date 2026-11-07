@@ -59,6 +59,10 @@ const HcI18n = {
     zoom_in: 'Afficher la carte complète',
     zoom_out: 'Revenir à la vue compacte',
     ed_zoom: 'Bouton détail',
+    motion: 'Mouvement détecté',
+    cam_hidden: '{c} : masquée',
+    ed_show_motion: 'Pastille de mouvement',
+    cf_motion: 'Capteur de mouvement (pastille sur l\'image)',
   },
   en: {
     title: 'Cameras',
@@ -117,6 +121,10 @@ const HcI18n = {
     zoom_in: 'Show the full card',
     zoom_out: 'Back to the compact view',
     ed_zoom: 'Detail button',
+    motion: 'Motion detected',
+    cam_hidden: '{c}: hidden',
+    ed_show_motion: 'Motion badge',
+    cf_motion: 'Motion sensor (badge on the image)',
   },
   de: {
     title: 'Kameras',
@@ -175,6 +183,10 @@ const HcI18n = {
     zoom_in: 'Vollständige Karte anzeigen',
     zoom_out: 'Zurück zur kompakten Ansicht',
     ed_zoom: 'Detail-Schaltfläche',
+    motion: 'Bewegung erkannt',
+    cam_hidden: '{c}: ausgeblendet',
+    ed_show_motion: 'Bewegungs-Badge',
+    cf_motion: 'Bewegungssensor (Badge auf dem Bild)',
   },
   es: {
     title: 'Cámaras',
@@ -233,6 +245,10 @@ const HcI18n = {
     zoom_in: 'Mostrar la tarjeta completa',
     zoom_out: 'Volver a la vista compacta',
     ed_zoom: 'Botón de detalle',
+    motion: 'Movimiento detectado',
+    cam_hidden: '{c}: oculta',
+    ed_show_motion: 'Insignia de movimiento',
+    cf_motion: 'Sensor de movimiento (insignia en la imagen)',
   },
   sr: {
     title: 'Камере',
@@ -291,6 +307,10 @@ const HcI18n = {
     zoom_in: 'Прикажи целу картицу',
     zoom_out: 'Назад на компактни приказ',
     ed_zoom: 'Дугме за детаље',
+    motion: 'Откривен покрет',
+    cam_hidden: '{c}: скривена',
+    ed_show_motion: 'Значка покрета',
+    cf_motion: 'Сензор покрета (значка на слици)',
   },
   'sr-Latn': {
     title: 'Kamere',
@@ -349,6 +369,10 @@ const HcI18n = {
     zoom_in: 'Prikaži celu karticu',
     zoom_out: 'Nazad na kompaktni prikaz',
     ed_zoom: 'Dugme za detalje',
+    motion: 'Otkriven pokret',
+    cam_hidden: '{c}: skrivena',
+    ed_show_motion: 'Značka pokreta',
+    cf_motion: 'Senzor pokreta (značka na slici)',
   },
   it: {
     title: 'Telecamere',
@@ -407,6 +431,10 @@ const HcI18n = {
     zoom_in: 'Mostra la scheda completa',
     zoom_out: 'Torna alla vista compatta',
     ed_zoom: 'Pulsante dettagli',
+    motion: 'Movimento rilevato',
+    cam_hidden: '{c}: nascosta',
+    ed_show_motion: 'Badge di movimento',
+    cf_motion: 'Sensore di movimento (badge sull\'immagine)',
   },
   nl: {
     title: 'Camera\'s',
@@ -465,6 +493,10 @@ const HcI18n = {
     zoom_in: 'Volledige kaart tonen',
     zoom_out: 'Terug naar de compacte weergave',
     ed_zoom: 'Detailknop',
+    motion: 'Beweging gedetecteerd',
+    cam_hidden: '{c}: verborgen',
+    ed_show_motion: 'Bewegingsbadge',
+    cf_motion: 'Bewegingssensor (badge op het beeld)',
   },
   pt: {
     title: 'Câmaras',
@@ -523,6 +555,10 @@ const HcI18n = {
     zoom_in: 'Mostrar o cartão completo',
     zoom_out: 'Voltar à vista compacta',
     ed_zoom: 'Botão de detalhe',
+    motion: 'Movimento detetado',
+    cam_hidden: '{c}: oculta',
+    ed_show_motion: 'Emblema de movimento',
+    cf_motion: 'Sensor de movimento (emblema na imagem)',
   },
   pl: {
     title: 'Kamery',
@@ -581,6 +617,10 @@ const HcI18n = {
     zoom_in: 'Pokaż pełną kartę',
     zoom_out: 'Wróć do widoku kompaktowego',
     ed_zoom: 'Przycisk szczegółów',
+    motion: 'Wykryto ruch',
+    cam_hidden: '{c}: ukryta',
+    ed_show_motion: 'Plakietka ruchu',
+    cf_motion: 'Czujnik ruchu (plakietka na obrazie)',
   },
   ro: {
     title: 'Camere',
@@ -639,6 +679,10 @@ const HcI18n = {
     zoom_in: 'Afișează cardul complet',
     zoom_out: 'Înapoi la vizualizarea compactă',
     ed_zoom: 'Buton de detalii',
+    motion: 'Mișcare detectată',
+    cam_hidden: '{c}: ascunsă',
+    ed_show_motion: 'Insignă de mișcare',
+    cf_motion: 'Senzor de mișcare (insignă pe imagine)',
   },
   da: {
     title: 'Kameraer',
@@ -697,6 +741,10 @@ const HcI18n = {
     zoom_in: 'Vis hele kortet',
     zoom_out: 'Tilbage til kompakt visning',
     ed_zoom: 'Detaljeknap',
+    motion: 'Bevægelse registreret',
+    cam_hidden: '{c}: skjult',
+    ed_show_motion: 'Bevægelsesbadge',
+    cf_motion: 'Bevægelsessensor (badge på billedet)',
   },
   sv: {
     title: 'Kameror',
@@ -755,6 +803,10 @@ const HcI18n = {
     zoom_in: 'Visa hela kortet',
     zoom_out: 'Tillbaka till kompakt vy',
     ed_zoom: 'Detaljknapp',
+    motion: 'Rörelse upptäckt',
+    cam_hidden: '{c}: dold',
+    ed_show_motion: 'Rörelsebricka',
+    cf_motion: 'Rörelsesensor (bricka på bilden)',
   },
   bg: {
     title: 'Камери',
@@ -813,6 +865,10 @@ const HcI18n = {
     zoom_in: 'Покажи цялата карта',
     zoom_out: 'Обратно към компактния изглед',
     ed_zoom: 'Бутон за подробности',
+    motion: 'Открито движение',
+    cam_hidden: '{c}: скрита',
+    ed_show_motion: 'Значка за движение',
+    cf_motion: 'Сензор за движение (значка върху изображението)',
   },
   ru: {
     title: 'Камеры',
@@ -871,6 +927,10 @@ const HcI18n = {
     zoom_in: 'Показать полную карточку',
     zoom_out: 'Вернуться к компактному виду',
     ed_zoom: 'Кнопка подробностей',
+    motion: 'Обнаружено движение',
+    cam_hidden: '{c}: скрыта',
+    ed_show_motion: 'Значок движения',
+    cf_motion: 'Датчик движения (значок на изображении)',
   },
   uk: {
     title: 'Камери',
@@ -929,6 +989,10 @@ const HcI18n = {
     zoom_in: 'Показати повну картку',
     zoom_out: 'Повернутися до компактного вигляду',
     ed_zoom: 'Кнопка деталей',
+    motion: 'Виявлено рух',
+    cam_hidden: '{c}: прихована',
+    ed_show_motion: 'Значок руху',
+    cf_motion: 'Датчик руху (значок на зображенні)',
   },
   hu: {
     title: 'Kamerák',
@@ -987,6 +1051,10 @@ const HcI18n = {
     zoom_in: 'Teljes kártya megjelenítése',
     zoom_out: 'Vissza a kompakt nézethez',
     ed_zoom: 'Részletek gomb',
+    motion: 'Mozgás észlelve',
+    cam_hidden: '{c}: rejtett',
+    ed_show_motion: 'Mozgásjelvény',
+    cf_motion: 'Mozgásérzékelő (jelvény a képen)',
   },
   sk: {
     title: 'Kamery',
@@ -1045,6 +1113,10 @@ const HcI18n = {
     zoom_in: 'Zobraziť celú kartu',
     zoom_out: 'Späť na kompaktné zobrazenie',
     ed_zoom: 'Tlačidlo podrobností',
+    motion: 'Zistený pohyb',
+    cam_hidden: '{c}: skrytá',
+    ed_show_motion: 'Odznak pohybu',
+    cf_motion: 'Senzor pohybu (odznak na obraze)',
   },
   cs: {
     title: 'Kamery',
@@ -1103,6 +1175,10 @@ const HcI18n = {
     zoom_in: 'Zobrazit celou kartu',
     zoom_out: 'Zpět na kompaktní zobrazení',
     ed_zoom: 'Tlačítko podrobností',
+    motion: 'Zjištěn pohyb',
+    cam_hidden: '{c}: skrytá',
+    ed_show_motion: 'Odznak pohybu',
+    cf_motion: 'Senzor pohybu (odznak na obraze)',
   },
   sl: {
     title: 'Kamere',
@@ -1161,6 +1237,10 @@ const HcI18n = {
     zoom_in: 'Prikaži celotno kartico',
     zoom_out: 'Nazaj na kompaktni pogled',
     ed_zoom: 'Gumb za podrobnosti',
+    motion: 'Zaznano gibanje',
+    cam_hidden: '{c}: skrita',
+    ed_show_motion: 'Značka gibanja',
+    cf_motion: 'Senzor gibanja (značka na sliki)',
   },
   lv: {
     title: 'Kameras',
@@ -1219,6 +1299,10 @@ const HcI18n = {
     zoom_in: 'Rādīt pilno karti',
     zoom_out: 'Atpakaļ uz kompakto skatu',
     ed_zoom: 'Detaļu poga',
+    motion: 'Konstatēta kustība',
+    cam_hidden: '{c}: paslēpta',
+    ed_show_motion: 'Kustības žetons',
+    cf_motion: 'Kustības sensors (žetons attēlā)',
   },
   el: {
     title: 'Κάμερες',
@@ -1277,6 +1361,10 @@ const HcI18n = {
     zoom_in: 'Εμφάνιση πλήρους κάρτας',
     zoom_out: 'Επιστροφή στη συμπαγή προβολή',
     ed_zoom: 'Κουμπί λεπτομερειών',
+    motion: 'Εντοπίστηκε κίνηση',
+    cam_hidden: '{c}: κρυφή',
+    ed_show_motion: 'Σήμα κίνησης',
+    cf_motion: 'Αισθητήρας κίνησης (σήμα στην εικόνα)',
   },
 };
 
@@ -1306,6 +1394,7 @@ const HC_DEFAULTS = {
   columns: 2,
   show_summary: true,
   show_badges: true,
+  show_motion: true,
 };
 
 const HC_PTZ_DIRS = ['left', 'right', 'up', 'down'];
@@ -1404,6 +1493,22 @@ function hcPtz(hass, cam, cameraId) {
   return ptz;
 }
 
+// Motion sensors of the camera's device: binary sensors whose device class or id says motion, occupancy or person
+// (Tapo: binary_sensor.*_motion, *_person_detection). An entity id or a list in the config replaces the lookup.
+const HC_MOTION_CLASSES = ['motion', 'occupancy', 'presence'];
+function hcMotion(hass, cam, cameraId) {
+  if (cam.motion === false) return [];
+  if (cam.motion) return [].concat(cam.motion);
+  const reg = hass?.entities;
+  const device = reg?.[cameraId]?.device_id;
+  if (!device) return [];
+  return hcDeviceEntities(reg, device).filter(
+    (id) =>
+      id.startsWith('binary_sensor.') &&
+      (HC_MOTION_CLASSES.includes(hass.states?.[id]?.attributes?.device_class) || /(motion|occupancy|person)/.test(id)),
+  );
+}
+
 // A camera entry, completed from its device: SD stream, privacy switch and PTZ buttons.
 function hcCamera(hass, raw, index) {
   const cam = typeof raw === 'string' ? { camera: raw } : Object.assign({}, raw);
@@ -1425,6 +1530,7 @@ function hcCamera(hass, raw, index) {
     privacy: privacy,
     power: cam.power || null,
     ptz: hcPtz(hass, cam, id),
+    motion: hcMotion(hass, cam, id),
   };
 }
 
@@ -1676,7 +1782,7 @@ class HomeCameraCard extends HTMLElement {
           'compact',
           this._config.aspect_ratio,
           this._config.zoom,
-          cams.map((cam) => [cam.key, this._snapEntity(cam), cam.name, cam.short, this._thumbState(cam)]),
+          cams.map((cam) => [cam.key, this._snapEntity(cam), cam.name, cam.short, this._thumbState(cam), cam.motion]),
         ])
       : JSON.stringify([
           this._lang(),
@@ -1684,13 +1790,30 @@ class HomeCameraCard extends HTMLElement {
           this._config.columns,
           this._config.aspect_ratio,
           cams.length,
-          visible.map((cam) => [cam.key, cam.camera, cam.sd, cam.name, cam.ptz]),
+          visible.map((cam) => [cam.key, cam.camera, cam.sd, cam.name, cam.ptz, cam.motion]),
         ]);
     if (viewSig !== this._viewSig) {
       this._viewSig = viewSig;
       if (compact) this._renderThumbs(cams);
       else this._renderView(visible, hd, cams.length);
     }
+    this._syncMotion();
+  }
+
+  // Motion badge of each tile and snapshot: shown while one of its camera's motion sensors is on.
+  // Toggled in place, so a motion never reloads a snapshot or a player.
+  _syncMotion() {
+    const show = this._config.show_motion !== false;
+    for (const el of this.shadowRoot.querySelectorAll('[data-motion]')) {
+      const ids = el.dataset.motion.split(' ').filter(Boolean);
+      el.classList.toggle('motion', show && ids.some((id) => this._state(id) === 'on'));
+    }
+  }
+
+  // The motion mark of a snapshot label (shown by _syncMotion); a tile has its own, labelled in _fillTile.
+  _motionMark() {
+    const label = hcEsc(this._t('motion'));
+    return `<span class="mot" role="img" aria-label="${label}"><ha-icon icon="mdi:motion-sensor"></ha-icon></span>`;
   }
 
   // ── Compact view (mini card): a snapshot per camera, refreshed every HC_SNAPSHOT_MS ──
@@ -1722,11 +1845,19 @@ class HomeCameraCard extends HTMLElement {
           ? '<span class="dot"></span>'
           : `<ha-icon icon="${state === 'hidden' ? 'mdi:eye-lock' : 'mdi:cctv-off'}"></ha-icon>`;
       const title = state === 'hidden' ? this._t('privacy_on', { c: cam.name }) : state === 'off' ? this._t('unavailable') : cam.name;
+      // Screen readers get the state the image shows: hidden or offline, not just the camera's name.
+      const label =
+        state === 'hidden'
+          ? this._t('cam_hidden', { c: cam.name })
+          : state === 'off'
+            ? this._t('privacy_unavailable', { c: cam.name })
+            : cam.name;
       return (
-        `<div class="thumb ${state}" data-action="zoom" data-entity="${hcEsc(cam.camera)}" role="button" tabindex="0"` +
-        ` title="${hcEsc(title)}" aria-label="${hcEsc(cam.name)}">` +
+        `<div class="thumb ${state}" data-action="zoom" data-entity="${hcEsc(cam.camera)}"` +
+        ` data-motion="${hcEsc(cam.motion.join(' '))}" role="button" tabindex="0"` +
+        ` title="${hcEsc(title)}" aria-label="${hcEsc(label)}">` +
         (state === 'live' ? `<img alt="" data-snap="${hcEsc(this._snapEntity(cam))}">` : '<div class="na"></div>') +
-        `<div class="label">${mark}<span class="text">${hcEsc(cam.short)}</span></div></div>`
+        `<div class="label">${mark}<span class="text">${hcEsc(cam.short)}</span>${this._motionMark()}</div></div>`
       );
     });
     view.innerHTML =
@@ -1791,7 +1922,7 @@ class HomeCameraCard extends HTMLElement {
 
     // HD / SD as a two-way switch: both options shown, the current one raised.
     const opt = (q, on) =>
-      `<span class="opt${on ? ' on' : ''}" data-quality="${q}" role="radio" aria-checked="${on}" tabindex="0">${this._t(q)}</span>`;
+      `<span class="opt${on ? ' on' : ''}" data-quality="${q}" role="radio" aria-checked="${on}" tabindex="${on ? 0 : -1}">${this._t(q)}</span>`;
     const quality = `<span class="seg" role="radiogroup" title="${hcEsc(this._t('quality_hint'))}">${opt('hd', hd)}${opt('sd', !hd)}</span>`;
 
     // Lock icon by state; a spinning icon while the switch toggled from the card has not answered yet.
@@ -1949,7 +2080,7 @@ class HomeCameraCard extends HTMLElement {
     tile.setAttribute('role', 'group');
     tile.innerHTML =
       '<div class="na"><ha-icon icon="mdi:cctv-off"></ha-icon><span></span></div><div class="spin"></div>' +
-      '<div class="label"><span class="dot"></span><span class="text"></span></div>' +
+      '<div class="label"><span class="dot"></span><span class="text"></span><span class="mot" role="img"><ha-icon icon="mdi:motion-sensor"></ha-icon></span></div>' +
       '<span class="open" data-action="open" role="button" tabindex="0"></span>' +
       '<div class="tools"></div><div class="pad"></div>';
     const stream = document.createElement('ha-camera-stream');
@@ -1980,6 +2111,8 @@ class HomeCameraCard extends HTMLElement {
     // A single camera already has its name as the card title: its image just says it is live.
     tile.querySelector('.label .text').textContent = single ? this._t('live') : cam.name;
     tile.querySelector('.na span').textContent = this._t('unavailable');
+    tile.dataset.motion = cam.motion.join(' ');
+    tile.querySelector('.mot').setAttribute('aria-label', this._t('motion'));
     if (!this._fullscreen(tile)) tile._stream.aspectRatio = hcRatio(this._config.aspect_ratio);
     this._renderTools(tile);
   }
@@ -2070,8 +2203,17 @@ class HomeCameraCard extends HTMLElement {
     tile.classList.toggle('pseudo', on);
     this._pseudo = on ? tile : null;
     // The tile only covers the page: a drag on the image would still scroll the dashboard behind it.
-    document.documentElement.style.overflow = on ? 'hidden' : '';
-    document.body.style.overflow = on ? 'hidden' : '';
+    // The page's own overflow is put back on the way out, not cleared.
+    const html = document.documentElement.style;
+    const body = document.body.style;
+    if (on) {
+      if (!this._overflow) this._overflow = [html.overflow, body.overflow];
+      html.overflow = 'hidden';
+      body.overflow = 'hidden';
+    } else if (this._overflow) {
+      [html.overflow, body.overflow] = this._overflow;
+      this._overflow = null;
+    }
     this._fullscreenChanged(tile);
   }
 
@@ -2181,6 +2323,15 @@ class HomeCameraCard extends HTMLElement {
 
   _onKey(ev) {
     const path = ev.composedPath();
+    // HD / SD radio group: the arrow keys select the other option and move the focus to it.
+    const radio = path.find((n) => n.dataset?.quality);
+    if (radio && /^Arrow(Left|Right|Up|Down)$/.test(ev.key)) {
+      ev.preventDefault();
+      const other = radio.parentNode.querySelector(`[data-quality="${radio.dataset.quality === 'hd' ? 'sd' : 'hd'}"]`);
+      other?.focus({ preventScroll: true });
+      if ((other?.dataset.quality === 'hd') !== this._hd()) this._toggleQuality();
+      return;
+    }
     // Arrow keys move the camera whose pan & tilt arrows are shown (always, in fullscreen).
     if (ev.key?.startsWith('Arrow')) {
       const tile = path.find((n) => n.dataset?.cam);
@@ -2345,7 +2496,13 @@ class HomeCameraCard extends HTMLElement {
       // Touch: buttons larger, and a pad never too small for a finger, even on a narrow tile.
       '@media (pointer: coarse) { .btn:not(.move) { width: 36px; height: 36px; } .btn:not(.move) ha-icon { --mdc-icon-size: 20px; }' +
       ' .tile { --pad: min(120px, max(84px, 58cqh)); } }' +
-      '@media (prefers-reduced-motion: reduce) { .label .dot, .spin, .pending ha-icon { animation: none; } }' +
+      // Motion badge on the image's label: an amber sensor icon that pulses while a motion sensor is on.
+      '.mot { display: none; flex: none; color: var(--warning-color, #ffa600); animation: hc-motion 1.2s ease-in-out infinite; }' +
+      '.label .mot ha-icon { --mdc-icon-size: 14px; }' +
+      '.tile.motion .label .mot, .thumb.live.motion .label .mot { display: inline-flex; }' +
+      ':is(.tile:fullscreen, .tile.pseudo) .label .mot ha-icon { --mdc-icon-size: 18px; }' +
+      '@keyframes hc-motion { 50% { opacity: 0.45; transform: scale(0.82); } }' +
+      '@media (prefers-reduced-motion: reduce) { .label .dot, .spin, .pending ha-icon, .mot { animation: none; } }' +
       // Every camera hidden: a quiet panel where the grid would be, saying how to bring one back.
       '.asleep { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 64px; padding: 12px; box-sizing: border-box;' +
       ' border-radius: 12px; border: 1px dashed var(--divider-color, rgba(128,128,128,0.3)); font-size: 12px; color: var(--secondary-text-color); text-align: center; }' +
@@ -2448,7 +2605,7 @@ function hcColumns(config, count) {
 }
 
 // ── home-camera-card-editor (visual editor, built on HA's ha-form) ───────────
-const HC_CAMERA_FIELDS = ['name', 'short_name', 'camera', 'sd', 'privacy', 'power', 'ptz'];
+const HC_CAMERA_FIELDS = ['name', 'short_name', 'camera', 'sd', 'privacy', 'power', 'ptz', 'motion'];
 
 class HomeCameraCardEditor extends HTMLElement {
   setConfig(config) {
@@ -2479,6 +2636,7 @@ class HomeCameraCardEditor extends HTMLElement {
       privacy: { selector: sw },
       power: { selector: sw },
       ptz: { selector: { text: {} } },
+      motion: { selector: { entity: { domain: 'binary_sensor' } } },
     };
     for (const k of HC_CAMERA_FIELDS) fields[k].label = t(`cf_${k}`);
     return [
@@ -2513,6 +2671,7 @@ class HomeCameraCardEditor extends HTMLElement {
         schema: [
           { name: 'show_summary', selector: { boolean: {} } },
           { name: 'show_badges', selector: { boolean: {} } },
+          { name: 'show_motion', selector: { boolean: {} } },
         ],
       },
       // Mini card: its detail button (on unless `zoom: false`).
