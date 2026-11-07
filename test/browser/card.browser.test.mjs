@@ -50,6 +50,8 @@ window.mount = (cameras) => {
 };
 window.emit = (i, type, detail) =>
   streams()[i].dispatchEvent(new CustomEvent(type, { detail, bubbles: true, composed: true }));
+// Waits for the IntersectionObserver to report (it calls back on the next rendering steps).
+window.frames = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(r, 50))));
 window.CAMS = [{ camera: "camera.a_hd_stream", ptz: "button.a_move" }, "camera.b_hd_stream", "camera.c"];
 `;
 
@@ -839,4 +841,168 @@ test("a long title, a single camera's long name or its privacy badge never widen
     // The title keeps a few letters (min-width: 4ch on .name, about 30 px at 16 px).
     if (m.title !== null) assert.ok(m.title >= 28, `${m.what}: title ${m.title} px`);
   }
+});
+
+
+test("players are emptied while the card is scrolled off screen and filled again when it comes back", async () => {
+  const r = await page.evaluate(async () => {
+    mount(CAMS);
+    await frames();
+    const shown = streams().map((s) => s.stateObj?.entity_id);
+    el.style.display = "block";
+    el.style.marginTop = "5000px";
+    await frames();
+    const paused = streams().every((s) => s.stateObj === undefined);
+    // A state update while off screen does not bring the streams back.
+    el.hass = makeHass(baseStates());
+    const stillPaused = streams().every((s) => s.stateObj === undefined);
+    el.style.marginTop = "";
+    await frames();
+    const resumed = streams().map((s) => s.stateObj?.entity_id);
+    el.remove();
+    return { shown, paused, stillPaused, resumed };
+  });
+  assert.deepEqual(r.shown, ["camera.a_hd_stream", "camera.b_hd_stream", "camera.c"]);
+  assert.equal(r.paused, true);
+  assert.equal(r.stillPaused, true);
+  assert.deepEqual(r.resumed, r.shown);
+});
+
+test("a tile in the card's own fullscreen keeps playing while the card is off screen", async () => {
+  const r = await page.evaluate(async () => {
+    mount(CAMS);
+    el._setPseudo(tiles()[0], true);
+    el.style.display = "block";
+    el.style.marginTop = "5000px";
+    await frames();
+    const out = streams().map((s) => s.stateObj?.entity_id);
+    el._setPseudo(tiles()[0], false);
+    el.remove();
+    return out;
+  });
+  assert.deepEqual(r, ["camera.a_hd_stream", undefined, undefined]);
+});
+
+// The mini card, on the same cameras; camera.a has a snapshot URL, camera.b is hidden by its privacy switch.
+const mountMini = (config = {}) =>
+  page.evaluate((config) => {
+    document.body.replaceChildren();
+    const el = document.createElement("home-camera-mini-card");
+    el.setConfig({ cameras: CAMS, ...config });
+    document.body.appendChild(el);
+    const states = baseStates();
+    states["camera.a_sd_stream"].attributes = { entity_picture: "/api/camera_proxy/camera.a_sd_stream?token=abc" };
+    states["switch.b_privacy"] = st("switch.b_privacy", "on");
+    el.hass = makeHass(states);
+    window.el = el;
+    window.$ = (sel) => el.shadowRoot.querySelector(sel);
+    window.$$ = (sel) => [...el.shadowRoot.querySelectorAll(sel)];
+  }, config);
+
+test("mini card: a snapshot per camera, no player, the header icon at 40px and a detail button", async () => {
+  await mountMini();
+  const r = await page.evaluate(() => {
+    const thumbs = $$(".thumb");
+    const icon = $(".hicon").getBoundingClientRect();
+    return {
+      mini: el.hasAttribute("mini") && $("ha-card").classList.contains("mini"),
+      container: getComputedStyle($("ha-card")).containerType,
+      players: $$("ha-camera-stream").length,
+      states: thumbs.map((t) => t.className),
+      srcs: thumbs.map((t) => t.querySelector("img")?.getAttribute("src") ?? null),
+      labels: thumbs.map((t) => t.querySelector(".text").textContent),
+      icon: [icon.width, icon.height],
+      zoom: $(".zoom")?.getAttribute("aria-label"),
+      quality: !!$(".seg"),
+      badges: !!$(".badges"),
+      grid: el.getGridOptions(),
+      size: el.getCardSize(),
+      registered: window.customCards.some((c) => c.type === "home-camera-mini-card"),
+    };
+  });
+  assert.equal(r.mini, true);
+  assert.equal(r.container, "inline-size");
+  assert.equal(r.players, 0);
+  assert.deepEqual(r.states, ["thumb live", "thumb hidden", "thumb live"]);
+  // The SD stream's snapshot when there is one; a hidden camera's snapshot is never fetched.
+  assert.match(r.srcs[0], /^\/api\/camera_proxy\/camera\.a_sd_stream\?token=abc&_t=\d+$/);
+  assert.equal(r.srcs[1], null);
+  assert.match(r.srcs[2], /^\/api\/camera_proxy\/camera\.c\?_t=\d+$/);
+  assert.deepEqual(r.labels, ["camera.a_hd_stream", "camera.b_hd_stream", "camera.c"]);
+  assert.deepEqual(r.icon, [40, 40]);
+  assert.equal(r.zoom, "Show the full card");
+  assert.equal(r.quality, false);
+  assert.equal(r.badges, false);
+  assert.deepEqual(r.grid, { columns: 6, min_columns: 6, rows: "auto" });
+  assert.equal(r.size, 3);
+  assert.equal(r.registered, true);
+});
+
+test("mini card: the detail button opens the full card, a click outside folds it back", async () => {
+  await mountMini();
+  const r = await page.evaluate(() => {
+    $(".zoom").click();
+    const full = {
+      players: $$("ha-camera-stream").length,
+      thumbs: $$(".thumb").length,
+      mini: $("ha-card").classList.contains("mini"),
+      quality: !!$(".seg"),
+      zoom: $(".zoom").getAttribute("aria-label"),
+    };
+    // Inside the card (a tile's button) or in a dialog opened from it: it stays open.
+    $$(".tile")[0].querySelector('[data-action="ptz"]').click();
+    const dialog = document.createElement("ha-dialog");
+    document.body.appendChild(dialog);
+    dialog.click();
+    const stays = $$("ha-camera-stream").length;
+    document.body.click();
+    return { full, stays, folded: { players: $$("ha-camera-stream").length, thumbs: $$(".thumb").length, mini: $("ha-card").classList.contains("mini") } };
+  });
+  assert.deepEqual(r.full, { players: 2, thumbs: 0, mini: false, quality: true, zoom: "Back to the compact view" });
+  assert.equal(r.stays, 2);
+  assert.deepEqual(r.folded, { players: 0, thumbs: 3, mini: true });
+});
+
+test("mini card: a tap on a snapshot opens the full card; without the detail button it opens the camera's dialog", async () => {
+  await mountMini();
+  const opened = await page.evaluate(() => {
+    $(".thumb").click();
+    return $$("ha-camera-stream").length;
+  });
+  assert.equal(opened, 2);
+  await mountMini({ zoom: false });
+  const r = await page.evaluate(() => {
+    const seen = [];
+    el.addEventListener("hass-more-info", (ev) => seen.push(ev.detail.entityId));
+    $$(".thumb")[2].click();
+    return { button: !!$(".zoom"), seen, players: $$("ha-camera-stream").length };
+  });
+  assert.deepEqual(r, { button: false, seen: ["camera.c"], players: 0 });
+});
+
+test("mini card: snapshots stop refreshing while the page is hidden or the card off screen, and refresh on return", async () => {
+  await mountMini();
+  const r = await page.evaluate(async () => {
+    await frames();
+    const running = !!el._snapTimer;
+    const before = $("img").getAttribute("src");
+    const setVisibility = (v) => {
+      Object.defineProperty(document, "visibilityState", { configurable: true, get: () => v });
+      document.dispatchEvent(new Event("visibilitychange"));
+    };
+    setVisibility("hidden");
+    const hidden = !!el._snapTimer;
+    await new Promise((res) => setTimeout(res, 5));
+    setVisibility("visible");
+    const back = { timer: !!el._snapTimer, fresh: $("img").getAttribute("src") !== before };
+    el.style.marginTop = "5000px";
+    await frames();
+    const offscreen = !!el._snapTimer;
+    el.style.marginTop = "";
+    await frames();
+    const onscreen = !!el._snapTimer;
+    el.remove();
+    return { running, hidden, back, offscreen, onscreen, detached: !!el._snapTimer };
+  });
+  assert.deepEqual(r, { running: true, hidden: false, back: { timer: true, fresh: true }, offscreen: false, onscreen: true, detached: false });
 });

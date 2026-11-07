@@ -56,6 +56,9 @@ const HcI18n = {
     cf_privacy: 'Interrupteur de confidentialité (activé = masquée)',
     cf_power: 'Alimentation (éteinte = masquée)',
     cf_ptz: 'Préfixe PTZ, par exemple button.sejour_move',
+    zoom_in: 'Afficher la carte complète',
+    zoom_out: 'Revenir à la vue compacte',
+    ed_zoom: 'Bouton détail',
   },
   en: {
     title: 'Cameras',
@@ -111,6 +114,9 @@ const HcI18n = {
     cf_privacy: 'Privacy switch (on = hidden)',
     cf_power: 'Power (off = hidden)',
     cf_ptz: 'PTZ prefix, for example button.living_room_move',
+    zoom_in: 'Show the full card',
+    zoom_out: 'Back to the compact view',
+    ed_zoom: 'Detail button',
   },
   de: {
     title: 'Kameras',
@@ -166,6 +172,9 @@ const HcI18n = {
     cf_privacy: 'Privatsphäre-Schalter (an = ausgeblendet)',
     cf_power: 'Stromversorgung (aus = ausgeblendet)',
     cf_ptz: 'PTZ-Präfix, zum Beispiel button.wohnzimmer_move',
+    zoom_in: 'Vollständige Karte anzeigen',
+    zoom_out: 'Zurück zur kompakten Ansicht',
+    ed_zoom: 'Detail-Schaltfläche',
   },
   es: {
     title: 'Cámaras',
@@ -221,6 +230,9 @@ const HcI18n = {
     cf_privacy: 'Interruptor de privacidad (encendido = oculta)',
     cf_power: 'Alimentación (apagada = oculta)',
     cf_ptz: 'Prefijo PTZ, por ejemplo button.salon_move',
+    zoom_in: 'Mostrar la tarjeta completa',
+    zoom_out: 'Volver a la vista compacta',
+    ed_zoom: 'Botón de detalle',
   },
   sr: {
     title: 'Камере',
@@ -276,6 +288,9 @@ const HcI18n = {
     cf_privacy: 'Прекидач приватности (укључено = скривено)',
     cf_power: 'Напајање (искључено = скривено)',
     cf_ptz: 'PTZ префикс, на пример button.living_room_move',
+    zoom_in: 'Прикажи целу картицу',
+    zoom_out: 'Назад на компактни приказ',
+    ed_zoom: 'Дугме за детаље',
   },
   'sr-Latn': {
     title: 'Kamere',
@@ -331,6 +346,9 @@ const HcI18n = {
     cf_privacy: 'Prekidač privatnosti (uključeno = skriveno)',
     cf_power: 'Napajanje (isključeno = skriveno)',
     cf_ptz: 'PTZ prefiks, na primer button.living_room_move',
+    zoom_in: 'Prikaži celu karticu',
+    zoom_out: 'Nazad na kompaktni prikaz',
+    ed_zoom: 'Dugme za detalje',
   },
   it: {
     title: 'Telecamere',
@@ -386,6 +404,9 @@ const HcI18n = {
     cf_privacy: 'Interruttore privacy (attivo = nascosta)',
     cf_power: 'Alimentazione (spenta = nascosta)',
     cf_ptz: 'Prefisso PTZ, ad esempio button.soggiorno_move',
+    zoom_in: 'Mostra la scheda completa',
+    zoom_out: 'Torna alla vista compatta',
+    ed_zoom: 'Pulsante dettagli',
   },
   nl: {
     title: 'Camera\'s',
@@ -441,6 +462,9 @@ const HcI18n = {
     cf_privacy: 'Privacyschakelaar (aan = verborgen)',
     cf_power: 'Voeding (uit = verborgen)',
     cf_ptz: 'PTZ-voorvoegsel, bijvoorbeeld button.woonkamer_move',
+    zoom_in: 'Volledige kaart tonen',
+    zoom_out: 'Terug naar de compacte weergave',
+    ed_zoom: 'Detailknop',
   },
   pt: {
     title: 'Câmaras',
@@ -496,6 +520,9 @@ const HcI18n = {
     cf_privacy: 'Interruptor de privacidade (ligado = oculta)',
     cf_power: 'Alimentação (desligada = oculta)',
     cf_ptz: 'Prefixo PTZ, por exemplo button.sala_move',
+    zoom_in: 'Mostrar o cartão completo',
+    zoom_out: 'Voltar à vista compacta',
+    ed_zoom: 'Botão de detalhe',
   },
   pl: {
     title: 'Kamery',
@@ -551,6 +578,9 @@ const HcI18n = {
     cf_privacy: 'Przełącznik prywatności (włączony = ukryta)',
     cf_power: 'Zasilanie (wyłączone = ukryta)',
     cf_ptz: 'Prefiks PTZ, na przykład button.salon_move',
+    zoom_in: 'Pokaż pełną kartę',
+    zoom_out: 'Wróć do widoku kompaktowego',
+    ed_zoom: 'Przycisk szczegółów',
   },
   ro: {
     title: 'Camere',
@@ -606,6 +636,9 @@ const HcI18n = {
     cf_privacy: 'Comutator de confidențialitate (pornit = ascunsă)',
     cf_power: 'Alimentare (oprită = ascunsă)',
     cf_ptz: 'Prefix PTZ, de exemplu button.sufragerie_move',
+    zoom_in: 'Afișează cardul complet',
+    zoom_out: 'Înapoi la vizualizarea compactă',
+    ed_zoom: 'Buton de detalii',
   },
   da: {
     title: 'Kameraer',
@@ -661,6 +694,9 @@ const HcI18n = {
     cf_privacy: 'Privatlivskontakt (til = skjult)',
     cf_power: 'Strøm (fra = skjult)',
     cf_ptz: 'PTZ-præfiks, for eksempel button.stue_move',
+    zoom_in: 'Vis hele kortet',
+    zoom_out: 'Tilbage til kompakt visning',
+    ed_zoom: 'Detaljeknap',
   },
   sv: {
     title: 'Kameror',
@@ -716,6 +752,9 @@ const HcI18n = {
     cf_privacy: 'Integritetsbrytare (på = dold)',
     cf_power: 'Ström (av = dold)',
     cf_ptz: 'PTZ-prefix, till exempel button.vardagsrum_move',
+    zoom_in: 'Visa hela kortet',
+    zoom_out: 'Tillbaka till kompakt vy',
+    ed_zoom: 'Detaljknapp',
   },
   bg: {
     title: 'Камери',
@@ -771,6 +810,9 @@ const HcI18n = {
     cf_privacy: 'Превключвател за поверителност (включен = скрита)',
     cf_power: 'Захранване (изключено = скрита)',
     cf_ptz: 'PTZ префикс, например button.vsekidnevna_move',
+    zoom_in: 'Покажи цялата карта',
+    zoom_out: 'Обратно към компактния изглед',
+    ed_zoom: 'Бутон за подробности',
   },
   ru: {
     title: 'Камеры',
@@ -826,6 +868,9 @@ const HcI18n = {
     cf_privacy: 'Переключатель конфиденциальности (вкл. = скрыта)',
     cf_power: 'Питание (выкл. = скрыта)',
     cf_ptz: 'Префикс PTZ, например button.gostinaya_move',
+    zoom_in: 'Показать полную карточку',
+    zoom_out: 'Вернуться к компактному виду',
+    ed_zoom: 'Кнопка подробностей',
   },
   uk: {
     title: 'Камери',
@@ -881,6 +926,9 @@ const HcI18n = {
     cf_privacy: 'Перемикач приватності (увімк. = прихована)',
     cf_power: 'Живлення (вимк. = прихована)',
     cf_ptz: 'Префікс PTZ, наприклад button.vitalnia_move',
+    zoom_in: 'Показати повну картку',
+    zoom_out: 'Повернутися до компактного вигляду',
+    ed_zoom: 'Кнопка деталей',
   },
   hu: {
     title: 'Kamerák',
@@ -936,6 +984,9 @@ const HcI18n = {
     cf_privacy: 'Adatvédelmi kapcsoló (be = rejtett)',
     cf_power: 'Tápellátás (ki = rejtett)',
     cf_ptz: 'PTZ előtag, például button.nappali_move',
+    zoom_in: 'Teljes kártya megjelenítése',
+    zoom_out: 'Vissza a kompakt nézethez',
+    ed_zoom: 'Részletek gomb',
   },
   sk: {
     title: 'Kamery',
@@ -991,6 +1042,9 @@ const HcI18n = {
     cf_privacy: 'Prepínač súkromia (zapnutý = skrytá)',
     cf_power: 'Napájanie (vypnuté = skrytá)',
     cf_ptz: 'Predpona PTZ, napríklad button.obyvacka_move',
+    zoom_in: 'Zobraziť celú kartu',
+    zoom_out: 'Späť na kompaktné zobrazenie',
+    ed_zoom: 'Tlačidlo podrobností',
   },
   cs: {
     title: 'Kamery',
@@ -1046,6 +1100,9 @@ const HcI18n = {
     cf_privacy: 'Přepínač soukromí (zapnuto = skrytá)',
     cf_power: 'Napájení (vypnuto = skrytá)',
     cf_ptz: 'Předpona PTZ, například button.obyvak_move',
+    zoom_in: 'Zobrazit celou kartu',
+    zoom_out: 'Zpět na kompaktní zobrazení',
+    ed_zoom: 'Tlačítko podrobností',
   },
   sl: {
     title: 'Kamere',
@@ -1101,6 +1158,9 @@ const HcI18n = {
     cf_privacy: 'Stikalo zasebnosti (vklopljeno = skrita)',
     cf_power: 'Napajanje (izklopljeno = skrita)',
     cf_ptz: 'Predpona PTZ, na primer button.dnevna_soba_move',
+    zoom_in: 'Prikaži celotno kartico',
+    zoom_out: 'Nazaj na kompaktni pogled',
+    ed_zoom: 'Gumb za podrobnosti',
   },
   lv: {
     title: 'Kameras',
@@ -1156,6 +1216,9 @@ const HcI18n = {
     cf_privacy: 'Privātuma slēdzis (ieslēgts = paslēpta)',
     cf_power: 'Barošana (izslēgta = paslēpta)',
     cf_ptz: 'PTZ prefikss, piemēram, button.dzivojama_istaba_move',
+    zoom_in: 'Rādīt pilno karti',
+    zoom_out: 'Atpakaļ uz kompakto skatu',
+    ed_zoom: 'Detaļu poga',
   },
   el: {
     title: 'Κάμερες',
@@ -1211,6 +1274,9 @@ const HcI18n = {
     cf_privacy: 'Διακόπτης απορρήτου (ενεργός = κρυφή)',
     cf_power: 'Τροφοδοσία (απενεργοποιημένη = κρυφή)',
     cf_ptz: 'Πρόθεμα PTZ, για παράδειγμα button.saloni_move',
+    zoom_in: 'Εμφάνιση πλήρους κάρτας',
+    zoom_out: 'Επιστροφή στη συμπαγή προβολή',
+    ed_zoom: 'Κουμπί λεπτομερειών',
   },
 };
 
@@ -1248,6 +1314,8 @@ const HC_PTZ_HOLD_MS = 500;
 const HC_PTZ_REPEAT_MS = 350;
 // How long a privacy badge waits for its switch to answer before giving up.
 const HC_PENDING_MS = 15000;
+// Mini card: how often the camera snapshots of its compact view are refreshed.
+const HC_SNAPSHOT_MS = 10000;
 const HC_PTZ_ICONS = { left: 'mdi:chevron-left', right: 'mdi:chevron-right', up: 'mdi:chevron-up', down: 'mdi:chevron-down' };
 
 // ── Entity discovery ─────────────────────────────────────────────────────────
@@ -1398,7 +1466,7 @@ class HomeCameraCard extends HTMLElement {
       this._onQuality = (ev) => {
         if (!ev.key || ev.key === HC_QUALITY_KEY) this._update();
       };
-      this._onVisibility = () => this._syncTiles();
+      this._onVisibility = () => this._syncLive();
       // Escape leaves the card's own fullscreen (the browser handles its native one).
       this._onEscape = (ev) => {
         if (ev.key === 'Escape' && this._pseudo) this._setPseudo(this._pseudo, false);
@@ -1408,7 +1476,18 @@ class HomeCameraCard extends HTMLElement {
     window.addEventListener(HC_QUALITY_EVENT, this._onQuality);
     document.addEventListener('visibilitychange', this._onVisibility);
     window.addEventListener('keydown', this._onEscape);
-    this._syncTiles();
+    // Scrolled out of view (or in a closed view, a collapsed stack): the streams and snapshots stop until
+    // the card shows again. Without IntersectionObserver the card counts as always on screen.
+    if (!this._observer && window.IntersectionObserver) {
+      this._observer = new window.IntersectionObserver((entries) => {
+        const off = !entries[entries.length - 1].isIntersecting;
+        if (off === this._offscreen) return;
+        this._offscreen = off;
+        this._syncLive();
+      });
+    }
+    this._observer?.observe(this);
+    this._syncLive();
     // The HD/SD choice may have changed while detached (listeners removed): catch up. _update() is
     // a no-op before setConfig/hass, and the signatures skip the render when nothing changed.
     this._update();
@@ -1419,6 +1498,8 @@ class HomeCameraCard extends HTMLElement {
     window.removeEventListener(HC_QUALITY_EVENT, this._onQuality);
     document.removeEventListener('visibilitychange', this._onVisibility);
     window.removeEventListener('keydown', this._onEscape);
+    this._observer?.disconnect();
+    this._stopSnapshots();
     this._stopRepeat();
     // Privacy badges waiting for their switch: drop their timers so none fires on the detached card.
     for (const p of this._pending?.values() || []) clearTimeout(p.timer);
@@ -1436,6 +1517,29 @@ class HomeCameraCard extends HTMLElement {
       // A failed player load is retried on every update until it succeeds, not only when the grid changes.
       this._loadStream();
     }
+    this._syncSnapshots();
+  }
+
+  // The live parts of the card follow the page and the viewport: players and snapshot refresh.
+  _syncLive() {
+    this._syncTiles();
+    this._syncSnapshots();
+  }
+
+  // Nothing live while the page is hidden (other tab, phone locked) or the card is off screen. A tile in
+  // fullscreen keeps playing when the card itself is scrolled away (the browser's fullscreen may report it so).
+  _paused(tile) {
+    if (document.visibilityState === 'hidden') return true;
+    return !!this._offscreen && !(tile && this._fullscreen(tile));
+  }
+
+  // Overridden by the mini card: compact view and its detail button.
+  _compact() {
+    return false;
+  }
+
+  _zoomButton() {
+    return '';
   }
 
   // Home Assistant's player, loaded through the first tile's camera; tiles spin until it is defined.
@@ -1542,9 +1646,13 @@ class HomeCameraCard extends HTMLElement {
     const cams = this._cameras();
     const hd = this._hd();
     const visible = cams.filter((cam) => !this._hidden(cam));
+    const compact = this._compact();
+    this.shadowRoot.querySelector('ha-card')?.classList.toggle('mini', compact);
 
     const headSig = JSON.stringify([
       this._lang(),
+      compact,
+      this._zoomButton(),
       hd,
       [...(this._pending?.keys() || [])],
       cams.map((cam) => [
@@ -1562,18 +1670,97 @@ class HomeCameraCard extends HTMLElement {
       this._renderHead(cams, visible, hd);
     }
 
-    const viewSig = JSON.stringify([
-      this._lang(),
-      hd,
-      this._config.columns,
-      this._config.aspect_ratio,
-      cams.length,
-      visible.map((cam) => [cam.key, cam.camera, cam.sd, cam.name, cam.ptz]),
-    ]);
+    const viewSig = compact
+      ? JSON.stringify([
+          this._lang(),
+          'compact',
+          this._config.aspect_ratio,
+          this._config.zoom,
+          cams.map((cam) => [cam.key, this._snapEntity(cam), cam.name, cam.short, this._thumbState(cam)]),
+        ])
+      : JSON.stringify([
+          this._lang(),
+          hd,
+          this._config.columns,
+          this._config.aspect_ratio,
+          cams.length,
+          visible.map((cam) => [cam.key, cam.camera, cam.sd, cam.name, cam.ptz]),
+        ]);
     if (viewSig !== this._viewSig) {
       this._viewSig = viewSig;
-      this._renderView(visible, hd, cams.length);
+      if (compact) this._renderThumbs(cams);
+      else this._renderView(visible, hd, cams.length);
     }
+  }
+
+  // ── Compact view (mini card): a snapshot per camera, refreshed every HC_SNAPSHOT_MS ──
+  // The lighter SD stream when the camera has one: a thumbnail needs no more.
+  _snapEntity(cam) {
+    return cam.sd || cam.camera;
+  }
+
+  // live, hidden (privacy: no snapshot is fetched) or off (camera unavailable).
+  _thumbState(cam) {
+    if (this._hidden(cam)) return 'hidden';
+    const st = this._hass.states[this._snapEntity(cam)];
+    return st && st.state !== 'unavailable' ? 'live' : 'off';
+  }
+
+  _renderThumbs(cams) {
+    this._viewRendered = true;
+    this._dropTiles();
+    const view = this.shadowRoot.querySelector('.view');
+    if (!cams.length) {
+      view.innerHTML = `<div class="empty"><ha-icon icon="mdi:cctv-off"></ha-icon>${hcEsc(this._t('no_cameras'))}</div>`;
+      this._syncSnapshots();
+      return;
+    }
+    const thumbs = cams.map((cam) => {
+      const state = this._thumbState(cam);
+      const mark =
+        state === 'live'
+          ? '<span class="dot"></span>'
+          : `<ha-icon icon="${state === 'hidden' ? 'mdi:eye-lock' : 'mdi:cctv-off'}"></ha-icon>`;
+      const title = state === 'hidden' ? this._t('privacy_on', { c: cam.name }) : state === 'off' ? this._t('unavailable') : cam.name;
+      return (
+        `<div class="thumb ${state}" data-action="zoom" data-entity="${hcEsc(cam.camera)}" role="button" tabindex="0"` +
+        ` title="${hcEsc(title)}" aria-label="${hcEsc(cam.name)}">` +
+        (state === 'live' ? `<img alt="" data-snap="${hcEsc(this._snapEntity(cam))}">` : '<div class="na"></div>') +
+        `<div class="label">${mark}<span class="text">${hcEsc(cam.short)}</span></div></div>`
+      );
+    });
+    view.innerHTML =
+      `<div class="thumbs" style="--hc-ratio: ${hcRatio(this._config.aspect_ratio)}">${thumbs.join('')}</div>`;
+    this._syncSnapshots();
+  }
+
+  // Snapshot of each live thumbnail, with a cache-busting stamp that moves on every refresh. The refresh
+  // only runs while thumbnails are shown and the card is on screen in a visible page; it takes a fresh
+  // snapshot as soon as it starts again.
+  _syncSnapshots() {
+    const imgs = this.isConnected && this._hass ? this.shadowRoot?.querySelectorAll('.thumb img') || [] : [];
+    if (!imgs.length || this._paused()) {
+      this._stopSnapshots();
+      return;
+    }
+    if (!this._snapTimer) {
+      this._snapAt = Date.now();
+      this._snapTimer = setInterval(() => {
+        this._snapAt = Date.now();
+        this._syncSnapshots();
+      }, HC_SNAPSHOT_MS);
+    }
+    for (const img of imgs) {
+      const id = img.dataset.snap;
+      const pic = this._hass.states[id]?.attributes?.entity_picture || `/api/camera_proxy/${id}`;
+      const src = `${pic}${pic.includes('?') ? '&' : '?'}_t=${this._snapAt}`;
+      if (img.getAttribute('src') !== src) img.setAttribute('src', src);
+    }
+  }
+
+  _stopSnapshots() {
+    clearInterval(this._snapTimer);
+    this._snapTimer = null;
   }
 
   // A badge: an icon, or the red live dot when icon is null.
@@ -1658,6 +1845,14 @@ class HomeCameraCard extends HTMLElement {
       if (visible.length) sub = `<div class="chips sub">${quality}</div>`;
       badges = '';
     }
+    // Compact view (mini card): the title and its status only; the toggles and HD / SD are in the full view.
+    if (this._compact()) {
+      right = '';
+      side = '';
+      badges = '';
+      const status = single && visible.length && c.show_summary ? this._t('live') : summary;
+      sub = status ? `<div class="summary">${hcEsc(status)}</div>` : '';
+    }
 
     const level = cams.length && !visible.length ? 'off' : 'on';
     const head = this.shadowRoot.querySelector('.head');
@@ -1669,7 +1864,7 @@ class HomeCameraCard extends HTMLElement {
       `<div class="header"><div class="hicon ${level}"><ha-icon icon="${hcEsc(c.icon || 'mdi:cctv')}"></ha-icon></div>` +
       `<div class="titles"><div class="name-row"><div class="name">${hcEsc(title)}</div><div class="chips">${right}</div></div>` +
       sub +
-      `</div>${side}</div>` +
+      `</div>${side}${this._zoomButton()}</div>` +
       (badges ? `<div class="chips badges">${badges}</div>` : '');
     if (kind) {
       for (const el of head.querySelectorAll(`[data-${kind}]`)) {
@@ -1687,10 +1882,10 @@ class HomeCameraCard extends HTMLElement {
     this._viewRendered = true;
     const view = this.shadowRoot.querySelector('.view');
     if (!this._tiles) this._tiles = new Map();
+    // Back from the compact view: its thumbnails give way to the grid.
+    if (view.querySelector('.thumbs')) view.replaceChildren();
     if (!visible.length) {
-      for (const tile of this._tiles.values()) this._dropTile(tile);
-      this._tiles.clear();
-      this._streamEntity = null;
+      this._dropTiles();
       const n = count;
       // Every camera hidden: what brings one back, where the grid would be.
       if (n && this._config.show_badges) {
@@ -1732,6 +1927,13 @@ class HomeCameraCard extends HTMLElement {
       if (grid.children[i] !== tile) grid.insertBefore(tile, grid.children[i] || null);
     });
     this._syncTiles();
+  }
+
+  // Every tile goes (all cameras hidden, or the compact view): their players close with them.
+  _dropTiles() {
+    for (const tile of this._tiles?.values() || []) this._dropTile(tile);
+    this._tiles?.clear();
+    this._streamEntity = null;
   }
 
   // A tile leaving the grid: it gives back the page scroll if it covered the screen, and stops a held arrow.
@@ -1817,11 +2019,12 @@ class HomeCameraCard extends HTMLElement {
   }
 
   // Live state of every tile: the camera's state object, and which PTZ buttons can be pressed.
-  // While the page is hidden (other tab, phone locked) the players are emptied, which closes the streams.
+  // While the page is hidden (other tab, phone locked) or the card off screen, the players are emptied,
+  // which closes the streams; they connect again once it shows.
   _syncTiles() {
     if (!this._tiles || !this._hass) return;
-    const paused = document.visibilityState === 'hidden';
     for (const tile of this._tiles.values()) {
+      const paused = this._paused(tile);
       const st = this._hass.states[tile._entity];
       const ok = !!st && st.state !== 'unavailable';
       tile.classList.toggle('off', !ok);
@@ -2148,6 +2351,29 @@ class HomeCameraCard extends HTMLElement {
       ' border-radius: 12px; border: 1px dashed var(--divider-color, rgba(128,128,128,0.3)); font-size: 12px; color: var(--secondary-text-color); text-align: center; }' +
       '.asleep ha-icon { --mdc-icon-size: 18px; color: var(--hc-on); }' +
       '.empty { display: flex; align-items: center; gap: 10px; color: var(--secondary-text-color); }' +
+      // Mini card. Only its compact ha-card is a size container; a size container takes no width from its
+      // content, so in a parent sized by its content it would fold to its padding: an empty, zero-height grid
+      // before it gives the host up to 240px there, and no minimum. The header icon keeps its 40px.
+      ':host([mini]) { display: block; min-width: 0; }' +
+      ':host([mini])::before { content: ""; display: grid; grid-template-columns: minmax(0, 240px); height: 0; }' +
+      'ha-card.mini { container-type: inline-size; }' +
+      // Detail button, top right of the header: the full card and back.
+      '.zoom { flex: none; cursor: pointer; width: 24px; height: 24px; margin: -4px -4px 0 0; border-radius: 50%; display: grid; place-items: center;' +
+      ' color: var(--secondary-text-color); --mdc-icon-size: 16px; -webkit-tap-highlight-color: transparent; }' +
+      '.zoom:hover { background: color-mix(in srgb, var(--secondary-text-color) 14%, transparent); color: var(--primary-text-color); }' +
+      '.zoom:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 1px; }' +
+      // Compact view: a snapshot per camera, as many per row as fit (one camera takes the whole width).
+      '.thumbs { display: grid; gap: 6px; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); }' +
+      '.thumb { position: relative; aspect-ratio: var(--hc-ratio, 1.7778); border-radius: 10px; overflow: hidden; background: #0d0f12; cursor: pointer;' +
+      ' -webkit-tap-highlight-color: transparent; }' +
+      '.thumb::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.07); pointer-events: none; }' +
+      '.thumb:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 1px; }' +
+      '.thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }' +
+      '.thumb .na { display: block; }' +
+      '.thumb .label { left: 4px; bottom: 4px; max-width: calc(100% - 8px); padding: 1px 8px 1px 6px; font-size: 11px; gap: 5px; }' +
+      '.thumb .label ha-icon { --mdc-icon-size: 13px; flex: none; }' +
+      '.thumb.hidden .label { color: color-mix(in srgb, var(--hc-on) 55%, #fff); }' +
+      '.thumb.off .label { color: rgba(255,255,255,0.62); }' +
       '</style>'
     );
   }
@@ -2289,6 +2515,8 @@ class HomeCameraCardEditor extends HTMLElement {
           { name: 'show_badges', selector: { boolean: {} } },
         ],
       },
+      // Mini card: its detail button (on unless `zoom: false`).
+      ...(this.constructor.mini ? [{ name: 'zoom', selector: { boolean: {} } }] : []),
       {
         name: 'language',
         selector: {
@@ -2341,7 +2569,7 @@ class HomeCameraCardEditor extends HTMLElement {
       const txt = hcT(lang, key);
       return txt === key ? undefined : txt;
     };
-    const data = Object.assign({}, HC_DEFAULTS, this._config);
+    const data = Object.assign({}, HC_DEFAULTS, this.constructor.mini ? { zoom: true } : {}, this._config);
     // The object selector edits objects: a camera given as a bare entity id becomes { camera }.
     data.cameras = (data.cameras || []).map((cam) => (typeof cam === 'string' ? { camera: cam } : cam));
     this._form.data = data;
@@ -2358,6 +2586,7 @@ class HomeCameraCardEditor extends HTMLElement {
     // Keep the YAML short: drop options left empty or at their default.
     clean(value);
     for (const key of Object.keys(HC_DEFAULTS)) if (value[key] === HC_DEFAULTS[key]) delete value[key];
+    if (value.zoom === true) delete value.zoom;
     if (Array.isArray(value.cameras)) {
       value.cameras = value.cameras.map((cam) => {
         const out = clean(Object.assign({}, cam));
@@ -2372,8 +2601,100 @@ class HomeCameraCardEditor extends HTMLElement {
   }
 }
 
+class HomeCameraMiniCardEditor extends HomeCameraCardEditor {
+  static get mini() {
+    return true;
+  }
+}
+
+// ── home-camera-mini-card ────────────────────────────────────────────────────
+// A click in a dialog opened from the card (a camera's more-info) does not fold it back.
+const hcInDialog = (ev) => ev.composedPath().some((n) => ['ha-more-info-dialog', 'ha-dialog', 'dialog'].includes(n.localName));
+
+/**
+ * Compact card: the header with its status, and a snapshot of each camera (no stream). Its detail button
+ * (top right, `zoom: false` removes it) or a tap on a snapshot switches it to the full card and back; a
+ * click outside the card brings the compact view back.
+ */
+class HomeCameraMiniCard extends HomeCameraCard {
+  constructor() {
+    super();
+    this._zoomed = false;
+    this._onOutside = (ev) => {
+      if (this._zoomed && !ev.composedPath().includes(this) && !hcInDialog(ev)) this._setZoom(false);
+    };
+  }
+
+  static getConfigElement() {
+    return document.createElement('home-camera-mini-card-editor');
+  }
+
+  setConfig(config) {
+    // The host attribute behind the mini card's styles (its size container); never set in the constructor.
+    this.setAttribute?.('mini', '');
+    super.setConfig(config);
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    document.addEventListener('click', this._onOutside, true);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    document.removeEventListener('click', this._onOutside, true);
+  }
+
+  getCardSize() {
+    return this._zoomed ? super.getCardSize() : 3;
+  }
+
+  getGridOptions() {
+    return this._zoomed ? super.getGridOptions() : { columns: 6, min_columns: 6, rows: 'auto' };
+  }
+
+  _compact() {
+    return !this._zoomed;
+  }
+
+  _setZoom(zoomed) {
+    this._zoomed = zoomed;
+    this._update();
+    this._syncLive();
+  }
+
+  _zoomButton() {
+    if (this._config?.zoom === false) return '';
+    const label = this._t(this._zoomed ? 'zoom_out' : 'zoom_in');
+    return (
+      `<span class="zoom" data-action="zoom" role="button" tabindex="0" title="${hcEsc(label)}" aria-label="${hcEsc(label)}">` +
+      `<ha-icon icon="${this._zoomed ? 'mdi:arrow-collapse' : 'mdi:arrow-expand'}"></ha-icon></span>`
+    );
+  }
+
+  _onClick(ev) {
+    const target = ev.composedPath().find((n) => n.dataset?.action === 'zoom');
+    if (!target) {
+      super._onClick(ev);
+      return;
+    }
+    ev.stopPropagation?.();
+    // Without the detail button, a snapshot opens its camera's dialog instead of the full card.
+    if (this._config.zoom === false) {
+      if (target.dataset.entity) this._moreInfo(target.dataset.entity);
+      return;
+    }
+    this._setZoom(!this._zoomed);
+    // Keyboard use (Enter / Space: no click count) keeps the focus on the button, without scrolling the page.
+    if (!ev.detail) this.shadowRoot.querySelector('.zoom')?.focus({ preventScroll: true });
+  }
+}
+
 if (!customElements.get('home-camera-card-editor')) {
   customElements.define('home-camera-card-editor', HomeCameraCardEditor);
+}
+if (!customElements.get('home-camera-mini-card-editor')) {
+  customElements.define('home-camera-mini-card-editor', HomeCameraMiniCardEditor);
 }
 
 if (!customElements.get('home-camera-card')) {
@@ -2383,6 +2704,17 @@ if (!customElements.get('home-camera-card')) {
     type: 'home-camera-card',
     name: 'Home Camera Card',
     description: 'Every home camera in one grid, with privacy toggles, HD/SD switching and PTZ',
+    preview: true,
+    documentationURL: 'https://github.com/juju35/ha-home-camera-card',
+  });
+}
+if (!customElements.get('home-camera-mini-card')) {
+  customElements.define('home-camera-mini-card', HomeCameraMiniCard);
+  window.customCards = window.customCards || [];
+  window.customCards.push({
+    type: 'home-camera-mini-card',
+    name: 'Home Camera Mini Card',
+    description: 'A snapshot of each home camera with its status, and a button to show the full camera card',
     preview: true,
     documentationURL: 'https://github.com/juju35/ha-home-camera-card',
   });

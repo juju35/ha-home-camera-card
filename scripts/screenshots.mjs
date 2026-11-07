@@ -88,6 +88,9 @@ const SCENES = [
 ];
 // Each mock camera shows the room it is named after.
 const SCENE_OF = { living_room: 0, kids_room: 1, office: 2, terrace: 4 };
+// The same scene as a still snapshot (the mini card's entity_picture). The card appends "?_t=…": after the
+// "#", it stays out of the SVG.
+window.snapshot = (id) => SCENES[SCENE_OF[id.replace(/^camera[.]/, "").replace(/_(hd|sd)_stream$/, "")] ?? 3].slice(5, -2) + "#snap";
 customElements.define("ha-camera-stream", class extends HTMLElement {
   connectedCallback() { this.style.aspectRatio = "16 / 9"; this.style.maxHeight = "100vh"; this.style.maxWidth = "calc(100vh * 16 / 9)"; }
   get stateObj() { return this._st; }
@@ -161,6 +164,9 @@ const SHOTS = [
   // Every camera hidden.
   { file: "card-hidden", theme: "dark", lang: "en", hidden: true },
   { file: "card-hidden-light", theme: "light", lang: "en", hidden: true },
+  // The mini card: a snapshot of each camera (the parents' one hidden), its detail button top right.
+  { file: "card-mini", theme: "light", lang: "en", mini: true, width: 300 },
+  { file: "card-mini-dark", theme: "dark", lang: "en", mini: true, width: 300 },
   // Fullscreen on the first camera, with its pan & tilt arrows: a 1280 x 720 screen in the frame.
   { file: "card-fullscreen", theme: "dark", lang: "en", fullscreen: 0, width: 1280 },
   { file: "card-fullscreen-light", theme: "light", lang: "en", fullscreen: 0, width: 1280 },
@@ -187,12 +193,16 @@ async function openCard(browser, s) {
   const shotStates = s.hidden
     ? Object.fromEntries(Object.entries(states).map(([k, v]) => [k, k.endsWith("_privacy") ? { ...v, state: "on" } : k.endsWith("_plug") ? { ...v, state: "off" } : v]))
     : states;
-  await page.evaluate(({ config, hass }) => {
-    const el = document.createElement("home-camera-card");
-    el.setConfig({ type: "custom:home-camera-card", ...config });
+  await page.evaluate(({ config, hass, type }) => {
+    // Snapshots for the mini card's thumbnails.
+    for (const st of Object.values(hass.states)) {
+      if (st.entity_id.startsWith("camera.")) st.attributes = { ...st.attributes, entity_picture: window.snapshot(st.entity_id) };
+    }
+    const el = document.createElement(type);
+    el.setConfig({ type: `custom:${type}`, ...config });
     el.hass = { ...hass, callService: async () => {} };
     document.getElementById("root").appendChild(el);
-  }, { config: s.config || config, hass: { states: shotStates, entities, language: s.lang, locale: { language: s.lang }, themes: { darkMode: s.theme === "dark" } } });
+  }, { config: s.config || config, type: s.mini ? "home-camera-mini-card" : "home-camera-card", hass: { states: shotStates, entities, language: s.lang, locale: { language: s.lang }, themes: { darkMode: s.theme === "dark" } } });
   return page;
 }
 
