@@ -1096,8 +1096,7 @@ test("mini card: a snapshot that fails to load shows the offline look until one 
       label: thumb.getAttribute("aria-label"),
       img: getComputedStyle(thumb.querySelector("img")).display,
       na: getComputedStyle(thumb.querySelector(".na")).display,
-      dot: getComputedStyle(thumb.querySelector(".label .dot")).display,
-      icon: getComputedStyle(thumb.querySelector(".label .fail")).display,
+      mark: thumb.querySelector(".label").firstElementChild.outerHTML,
     });
     const failed = look();
     thumb.querySelector("img").dispatchEvent(new Event("load"));
@@ -1109,8 +1108,7 @@ test("mini card: a snapshot that fails to load shows the offline look until one 
     label: "camera.c: unavailable",
     img: "none",
     na: "block",
-    dot: "none",
-    icon: "block",
+    mark: '<ha-icon icon="mdi:cctv-off"></ha-icon>',
   });
   assert.deepEqual(r.loaded, {
     cls: "thumb live",
@@ -1118,8 +1116,7 @@ test("mini card: a snapshot that fails to load shows the offline look until one 
     label: "camera.c",
     img: "block",
     na: "none",
-    dot: "block",
-    icon: "none",
+    mark: '<span class="dot"></span>',
   });
   // A tap on a hidden thumbnail opens the full card: its tooltip does not offer to show the camera.
   assert.equal(r.hiddenTitle, "camera.b_hd_stream: hidden");

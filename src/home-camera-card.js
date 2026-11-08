@@ -1842,7 +1842,7 @@ class HomeCameraCard extends HTMLElement {
       const state = this._thumbState(cam);
       const mark =
         state === 'live'
-          ? '<span class="dot"></span><ha-icon class="fail" icon="mdi:cctv-off"></ha-icon>'
+          ? '<span class="dot"></span>'
           : `<ha-icon icon="${state === 'hidden' ? 'mdi:eye-lock' : 'mdi:cctv-off'}"></ha-icon>`;
       // A tap on a thumbnail opens the full card, so a hidden one's tooltip only says it is hidden.
       const title = state === 'hidden' ? this._t('cam_hidden', { c: cam.name }) : state === 'off' ? this._t('unavailable') : cam.name;
@@ -1877,6 +1877,9 @@ class HomeCameraCard extends HTMLElement {
     if (!thumb || thumb.classList.contains('failed') === failed) return;
     const name = thumb.dataset.name;
     thumb.classList.toggle('failed', failed);
+    const mark = failed ? document.createElement('ha-icon') : Object.assign(document.createElement('span'), { className: 'dot' });
+    if (failed) mark.setAttribute('icon', 'mdi:cctv-off');
+    thumb.querySelector('.label').firstElementChild.replaceWith(mark);
     thumb.title = failed ? this._t('unavailable') : name;
     thumb.setAttribute('aria-label', failed ? this._t('privacy_unavailable', { c: name }) : name);
   }
@@ -2543,7 +2546,7 @@ class HomeCameraCard extends HTMLElement {
       '.thumb:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 1px; }' +
       '.thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }' +
       '.thumb .na { display: block; }' +
-      '.thumb.live:not(.failed) .na, .thumb.failed img, .thumb:not(.failed) .label .fail, .thumb.failed .label .dot { display: none; }' +
+      '.thumb.live:not(.failed) .na, .thumb.failed img { display: none; }' +
       '.thumb .label { left: 4px; bottom: 4px; max-width: calc(100% - 8px); padding: 1px 8px 1px 6px; font-size: 11px; gap: 5px; }' +
       '.thumb .label ha-icon { --mdc-icon-size: 13px; flex: none; }' +
       '.thumb.hidden .label { color: color-mix(in srgb, var(--hc-on) 55%, #fff); }' +
