@@ -1842,9 +1842,10 @@ class HomeCameraCard extends HTMLElement {
       const state = this._thumbState(cam);
       const mark =
         state === 'live'
-          ? '<span class="dot"></span>'
+          ? '<span class="dot"></span><ha-icon class="fail" icon="mdi:cctv-off"></ha-icon>'
           : `<ha-icon icon="${state === 'hidden' ? 'mdi:eye-lock' : 'mdi:cctv-off'}"></ha-icon>`;
-      const title = state === 'hidden' ? this._t('privacy_on', { c: cam.name }) : state === 'off' ? this._t('unavailable') : cam.name;
+      // A tap on a thumbnail opens the full card, so a hidden one's tooltip only says it is hidden.
+      const title = state === 'hidden' ? this._t('cam_hidden', { c: cam.name }) : state === 'off' ? this._t('unavailable') : cam.name;
       // Screen readers get the state the image shows: hidden or offline, not just the camera's name.
       const label =
         state === 'hidden'
@@ -1854,15 +1855,30 @@ class HomeCameraCard extends HTMLElement {
             : cam.name;
       return (
         `<div class="thumb ${state}" data-action="zoom" data-entity="${hcEsc(cam.camera)}"` +
-        ` data-motion="${hcEsc(cam.motion.join(' '))}" role="button" tabindex="0"` +
+        ` data-motion="${hcEsc(cam.motion.join(' '))}" data-name="${hcEsc(cam.name)}" role="button" tabindex="0"` +
         ` title="${hcEsc(title)}" aria-label="${hcEsc(label)}">` +
-        (state === 'live' ? `<img alt="" data-snap="${hcEsc(this._snapEntity(cam))}">` : '<div class="na"></div>') +
+        (state === 'live' ? `<img alt="" data-snap="${hcEsc(this._snapEntity(cam))}">` : '') +
+        '<div class="na"></div>' +
         `<div class="label">${mark}<span class="text">${hcEsc(cam.short)}</span>${this._motionMark()}</div></div>`
       );
     });
     view.innerHTML =
       `<div class="thumbs" style="--hc-ratio: ${hcRatio(this._config.aspect_ratio)}">${thumbs.join('')}</div>`;
+    for (const img of view.querySelectorAll('.thumb img')) {
+      img.addEventListener('error', () => this._snapFailed(img, true));
+      img.addEventListener('load', () => this._snapFailed(img, false));
+    }
     this._syncSnapshots();
+  }
+
+  // A snapshot that fails to load shows the offline look instead of a broken image, until one loads again.
+  _snapFailed(img, failed) {
+    const thumb = img.closest('.thumb');
+    if (!thumb || thumb.classList.contains('failed') === failed) return;
+    const name = thumb.dataset.name;
+    thumb.classList.toggle('failed', failed);
+    thumb.title = failed ? this._t('unavailable') : name;
+    thumb.setAttribute('aria-label', failed ? this._t('privacy_unavailable', { c: name }) : name);
   }
 
   // Snapshot of each live thumbnail, with a cache-busting stamp that moves on every refresh. The refresh
@@ -2527,10 +2543,11 @@ class HomeCameraCard extends HTMLElement {
       '.thumb:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 1px; }' +
       '.thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }' +
       '.thumb .na { display: block; }' +
+      '.thumb.live:not(.failed) .na, .thumb.failed img, .thumb:not(.failed) .label .fail, .thumb.failed .label .dot { display: none; }' +
       '.thumb .label { left: 4px; bottom: 4px; max-width: calc(100% - 8px); padding: 1px 8px 1px 6px; font-size: 11px; gap: 5px; }' +
       '.thumb .label ha-icon { --mdc-icon-size: 13px; flex: none; }' +
       '.thumb.hidden .label { color: color-mix(in srgb, var(--hc-on) 55%, #fff); }' +
-      '.thumb.off .label { color: rgba(255,255,255,0.62); }' +
+      '.thumb:is(.off, .failed) .label { color: rgba(255,255,255,0.62); }' +
       '</style>'
     );
   }
