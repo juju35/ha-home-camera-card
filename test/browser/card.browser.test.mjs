@@ -908,7 +908,8 @@ test("mini card: a snapshot per camera, no player, the header icon at 40px and a
       mini: el.hasAttribute("mini") && $("ha-card").classList.contains("mini"),
       container: getComputedStyle($("ha-card")).containerType,
       players: $$("ha-camera-stream").length,
-      states: thumbs.map((t) => t.className),
+      // Snapshot URLs do not resolve on this test page: a failed load is covered by its own test.
+      states: thumbs.map((t) => t.className.replace(" failed", "")),
       srcs: thumbs.map((t) => t.querySelector("img")?.getAttribute("src") ?? null),
       labels: thumbs.map((t) => t.querySelector(".text").textContent),
       icon: [icon.width, icon.height],
@@ -1081,6 +1082,44 @@ test("mini card: a snapshot's accessible name says when its camera is hidden or 
     return $$(".thumb").map((t) => t.getAttribute("aria-label"));
   });
   assert.deepEqual(r, ["camera.a_hd_stream", "camera.b_hd_stream: hidden", "camera.c: unavailable"]);
+});
+
+test("mini card: a snapshot that fails to load shows the offline look until one loads again", async () => {
+  await mountMini();
+  // Snapshot URLs do not resolve on this test page, so every live thumbnail's image fails to load.
+  await page.waitForFunction(() => $$(".thumb.failed").length === 2);
+  const r = await page.evaluate(() => {
+    const thumb = $$(".thumb")[2];
+    const look = () => ({
+      cls: thumb.className,
+      title: thumb.title,
+      label: thumb.getAttribute("aria-label"),
+      img: getComputedStyle(thumb.querySelector("img")).display,
+      na: getComputedStyle(thumb.querySelector(".na")).display,
+      mark: thumb.querySelector(".label").firstElementChild.outerHTML,
+    });
+    const failed = look();
+    thumb.querySelector("img").dispatchEvent(new Event("load"));
+    return { failed, loaded: look(), hiddenTitle: $$(".thumb")[1].title };
+  });
+  assert.deepEqual(r.failed, {
+    cls: "thumb live failed",
+    title: "Unavailable",
+    label: "camera.c: unavailable",
+    img: "none",
+    na: "block",
+    mark: '<ha-icon icon="mdi:cctv-off"></ha-icon>',
+  });
+  assert.deepEqual(r.loaded, {
+    cls: "thumb live",
+    title: "camera.c",
+    label: "camera.c",
+    img: "block",
+    na: "none",
+    mark: '<span class="dot"></span>',
+  });
+  // A tap on a hidden thumbnail opens the full card: its tooltip does not offer to show the camera.
+  assert.equal(r.hiddenTitle, "camera.b_hd_stream: hidden");
 });
 
 test("the card's own fullscreen gives the page its previous overflow back on the way out", async () => {

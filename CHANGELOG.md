@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.7.1 - 2026-11-08
+### Fixes
+- On the mini card, a snapshot that fails to load shows the offline look instead of a broken image, until a snapshot loads again.
+- On the mini card, a hidden camera's tooltip no longer says a tap shows it: a tap opens the full card.
+
 ## 3.7.0 - 2026-11-07
 ### What's new
 - Motion badge: a pulsing amber icon on a camera's image, and on its mini card snapshot, while a motion, occupancy or person sensor of its device is on (`show_motion: false` removes it, a camera's `motion` option picks its sensors).
