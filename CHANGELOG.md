@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.7.0 - 2026-11-07
+### What's new
+- Motion badge: a pulsing amber icon on a camera's image, and on its mini card snapshot, while a motion, occupancy or person sensor of its device is on (`show_motion: false` removes it, a camera's `motion` option picks its sensors).
+- The HD / SD switch is a single stop for the Tab key, and the arrow keys move between HD and SD.
+- On the mini card, a screen reader says when a snapshot's camera is hidden or offline, not only its name.
+
+### Fixes
+- Leaving the card's own fullscreen (iPhone) gives the page back the scrolling it had before, instead of clearing it.
+
 ## 3.6.0 - 2026-11-07
 ### What's new
 - New mini card (`custom:home-camera-mini-card`): a snapshot of each camera with its name and status, refreshed every 10 seconds; its detail button or a tap on a snapshot shows the full card, and a click outside brings the compact view back.

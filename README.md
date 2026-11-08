@@ -33,6 +33,7 @@ List the cameras, the card finds their privacy switch, SD stream and PTZ buttons
 - Header with the number of cameras live and hidden, and an **HD / SD** switch
 - One badge per camera: a red live dot while it films, a green lock while it is hidden; tap to toggle its privacy switch (or its smart plug); greyed out, and ignoring taps, while that switch is unavailable (camera offline)
 - Each image carries its name with a live dot; when every camera is hidden, a panel says how to bring one back
+- **Motion badge**: a pulsing amber sensor icon on the image's name (and on the mini card's snapshot) while a motion, occupancy or person sensor of the camera's device is on
 - A single camera: its name is the title, a round *Disable* / *Enable* icon button sits on the right and the HD / SD badge under the title
 - Hidden cameras are removed from the grid: a camera is hidden when its **privacy switch is on** or its **power switch is off**
 - **HD / SD** switch: from an `input_select` shared by every dashboard, or from the card itself (remembered by the browser)
@@ -45,7 +46,7 @@ List the cameras, the card finds their privacy switch, SD stream and PTZ buttons
 - Hiding or showing a camera, or switching HD / SD, never reloads the streams of the other cameras
 - Streams stop while the page is hidden (other tab, phone locked) or the card is scrolled off screen, and resume when it comes back
 - **Mini card** (`home-camera-mini-card`): a snapshot of each camera with its name and status, refreshed every 10 seconds instead of a live stream; its detail button (top right) or a tap on a snapshot shows the full card, a click outside folds it back
-- Automatic discovery on the camera's device: `switch.*_privacy`, `button.*_move_left/right/up/down`, and the `*_sd_stream` camera next to a `*_hd_stream` one (Tapo integration naming)
+- Automatic discovery on the camera's device: `switch.*_privacy`, `button.*_move_left/right/up/down`, the motion, occupancy and person `binary_sensor`s, and the `*_sd_stream` camera next to a `*_hd_stream` one (Tapo integration naming)
 - Visual editor in the dashboard UI (no YAML needed)
 - English, French, German, Spanish, Serbian (Cyrillic and Latin), Italian, Dutch, European Portuguese, Polish, Romanian, Danish, Swedish, Bulgarian, Russian, Ukrainian, Hungarian, Slovak, Czech, Slovenian, Latvian and Greek, follows the Home Assistant language
 - Light and dark theme compatible
@@ -120,6 +121,7 @@ cameras:
     sd: camera.bedroom_parents_sd_stream
     privacy: switch.bedroom_parents_privacy
     ptz: button.bedroom_parents_move
+    motion: binary_sensor.bedroom_parents_motion
   - camera: camera.terrace
     name: Terrace
     power: switch.terrace_camera_plug
@@ -151,6 +153,7 @@ The mini card takes the same options as the full card, plus `zoom`. Its compact 
 | `aspect_ratio` | ❌ | `16:9` | Shape of the tiles (`16:9`, `4:3`, `1:1`…); the image fills the tile |
 | `show_summary` | ❌ | `true` | Summary line under the title |
 | `show_badges` | ❌ | `true` | Privacy badges under the header |
+| `show_motion` | ❌ | `true` | Motion badge on the images while a camera's motion sensor is on |
 | `zoom` | ❌ | `true` | Mini card only: its detail button to the full card; with `false`, a tap on a snapshot opens the camera's dialog |
 | `language` | ❌ | Auto | Force language: `en`, `fr`, `de`, `es`, `sr`, `sr-Latn`, `it`, `nl`, `pt`, `pl`, `ro`, `da`, `sv`, `bg`, `ru`, `uk`, `hu`, `sk`, `cs`, `sl`, `lv` or `el` (auto-detects from HA settings) |
 
@@ -165,10 +168,11 @@ The mini card takes the same options as the full card, plus `zoom`. Its compact 
 | `privacy` | Switch hiding the camera when **on**; defaults to the `switch.*_privacy` of the camera's device, `false` for none |
 | `power` | Switch (smart plug) hiding the camera when **off** |
 | `ptz` | PTZ buttons: a prefix (`button.x_move` → `button.x_move_left`, `_right`, `_up`, `_down`), an object `{left, right, up, down}`, or `false`; defaults to the `button.*_move_*` of the camera's device |
+| `motion` | Motion sensor(s) behind the camera's motion badge: an entity id, a list, or `false` for none; defaults to the `binary_sensor`s of the camera's device whose device class is `motion`, `occupancy` or `presence`, or whose id contains `motion`, `occupancy` or `person` |
 
 ## Screenshots
 
-The card animates in two places (both honour `prefers-reduced-motion`). While a camera is live, the red live dot breathes on the stream; it settles to a still card when the stream stops.
+The card animates in three places (all honour `prefers-reduced-motion`): the two below, and the motion badge, which pulses while a camera detects motion. While a camera is live, the red live dot breathes on the stream; it settles to a still card when the stream stops.
 
 | Light | Dark |
 |---|---|
