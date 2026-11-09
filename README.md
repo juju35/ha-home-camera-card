@@ -76,8 +76,8 @@ The Marketplace registers the dashboard resource for you.
 
 ### Manual
 
-1. Download `home-camera-card.js` from the [latest release](https://github.com/juju35/ha-home-camera-card/releases/latest)
-2. Copy it to `/config/www/`
+1. Download `home-camera-card.js` and the `home-camera-card.i18n.*.js` translation files from the [latest release](https://github.com/juju35/ha-home-camera-card/releases/latest)
+2. Copy them all to `/config/www/` (without the translation files, the cards show in English)
 3. Go to **Settings → Dashboards → Resources** → Add resource:
    - URL: `/local/home-camera-card.js`
    - Type: **JavaScript Module**
