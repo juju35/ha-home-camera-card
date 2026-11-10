@@ -1526,16 +1526,20 @@ function hcPtz(hass, cam, cameraId) {
 // Motion sensors of the camera's device: binary sensors whose device class or id says motion, occupancy or person
 // (Tapo: binary_sensor.*_motion, *_person_detection). An entity id or a list in the config replaces the lookup.
 const HC_MOTION_CLASSES = ['motion', 'occupancy', 'presence'];
+const HC_MOTION_KEYS = ['motion', 'person'];
 function hcMotion(hass, cam, cameraId) {
   if (cam.motion === false) return [];
   if (cam.motion) return [].concat(cam.motion);
   const reg = hass?.entities;
   const device = reg?.[cameraId]?.device_id;
   if (!device) return [];
-  return hcDeviceEntities(reg, device).filter(
-    (id) =>
-      id.startsWith('binary_sensor.') &&
-      (HC_MOTION_CLASSES.includes(hass.states?.[id]?.attributes?.device_class) || /(motion|occupancy|person)/.test(id)),
+  const sensors = hcDeviceEntities(reg, device).filter((id) => id.startsWith('binary_sensor.'));
+  // Integrations that give translation keys (Tapo Cameras, whose ids are in the user's language): motion and person
+  // only, not its vehicle, pet or line-crossing detections that share the motion device class
+  const keyed = sensors.filter((id) => HC_MOTION_KEYS.includes(reg[id]?.translation_key));
+  if (keyed.length) return keyed;
+  return sensors.filter(
+    (id) => HC_MOTION_CLASSES.includes(hass.states?.[id]?.attributes?.device_class) || /(motion|occupancy|person)/.test(id),
   );
 }
 

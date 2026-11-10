@@ -1237,11 +1237,15 @@ test("Tapo Cameras with entity ids in the user's language: found by their transl
       "button.salon_descendre": "move_down",
       "switch.salon_mode_prive": "privacy_mode",
       "select.salon_qualite_du_flux": "stream_quality",
+      "binary_sensor.salon_mouvement": "motion",
+      "binary_sensor.salon_personne": "person",
+      "binary_sensor.salon_vehicule": "vehicle",
     };
     const states = { "camera.salon": { entity_id: "camera.salon", state: "idle", attributes: { stream_quality: "hd" } } };
     const entities = { "camera.salon": { entity_id: "camera.salon", device_id: "s" } };
     for (const [id, key] of Object.entries(ids)) {
       states[id] = st(id, id.startsWith("switch.") ? "off" : id.startsWith("select.") ? "hd" : "unknown");
+      if (id.startsWith("binary_sensor.")) states[id].attributes = { device_class: "motion" };
       entities[id] = { entity_id: id, device_id: "s", translation_key: key };
     }
     const el = document.createElement("home-camera-card");
@@ -1254,6 +1258,7 @@ test("Tapo Cameras with entity ids in the user's language: found by their transl
       ptz: cam.ptz,
       privacy: cam.privacy,
       quality: cam.quality,
+      motion: cam.motion,
       arrows: [...tile.querySelectorAll(".move")].map((b) => b.dataset.entity),
     };
   });
@@ -1265,5 +1270,6 @@ test("Tapo Cameras with entity ids in the user's language: found by their transl
   });
   assert.equal(r.privacy, "switch.salon_mode_prive");
   assert.equal(r.quality, "select.salon_qualite_du_flux");
+  assert.deepEqual(r.motion, ["binary_sensor.salon_mouvement", "binary_sensor.salon_personne"]);
   assert.equal(r.arrows.length, 4);
 });

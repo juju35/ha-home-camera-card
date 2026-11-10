@@ -40,7 +40,7 @@ List the cameras, the cards find their privacy switch, SD stream and PTZ buttons
 
 - **Cameras** in the sidebar for **every user** — family members without administrator rights included: a **video wall** edge to edge, with no card around it — a thin status bar (cameras live and hidden, privacy badges, HD / SD) over as many columns as the screen takes — and everything the card does (live streams, privacy badges, HD / SD, PTZ, fullscreen)
 - **Settings** tab, for administrators only: the cameras and their options with the card's own visual editor, and the sidebar title (left empty: *Cameras* in the server's language)
-- **Camera discovery**: a new entry starts with every camera of Home Assistant, and Settings lists the ones not shown yet, to **Add** one by one or **Add all**; a Tapo camera's two entities (`*_hd_stream`, `*_sd_stream`) count as one camera, whose SD stream the HD / SD switch picks
+- **Camera discovery**: a new entry starts with every camera of Home Assistant, and Settings lists the ones not shown yet, to **Add** one by one or **Add all**, each with the privacy switch, pan and tilt buttons and motion sensors found on its device; a Tapo camera's two entities (`*_hd_stream`, `*_sd_stream`) count as one camera, whose SD stream the HD / SD switch picks
 - **Copy from a dashboard**: takes the first camera card found on your dashboards, to move a cameras dashboard to the panel in one click
 - Saved settings reach every open panel at once, on every device; the tab is in the address (`/cameras/settings`)
 

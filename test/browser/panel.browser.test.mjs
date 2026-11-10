@@ -47,7 +47,15 @@ window.makeHass = ({ admin, card, title = "" }) => {
             { camera: "camera.a", name: "Living room", area: "Living room", sd: null },
             { camera: "camera.b_hd_stream", name: "Kids", area: "Bedroom", sd: "camera.b_sd_stream" },
             { camera: "camera.c_hd_stream", name: "Office", area: null, sd: "camera.c_sd_stream" },
-            { camera: "camera.d", name: "Terrace", area: null, sd: null },
+            {
+              camera: "camera.d",
+              name: "Terrace",
+              area: null,
+              sd: null,
+              privacy: "switch.d_mode_prive",
+              ptz: { left: "button.d_gauche" },
+              motion: ["binary_sensor.d_mouvement"],
+            },
           ],
         };
       }
@@ -195,6 +203,13 @@ test("Settings lists the cameras found that the panel does not show yet, and add
   assert.deepEqual(r.one, { names: ["Kids"], cameras: ["camera.a", "camera.x", "camera.d"], save: false });
   assert.deepEqual(r.all, { names: [], msg: "Cameras added: 1. Save to keep them.", none: "Every camera found is already in the panel." });
   assert.deepEqual(r.cameras.at(-1), { camera: "camera.b_hd_stream", name: "Kids" });
+  assert.deepEqual(r.cameras.at(-2), {
+    camera: "camera.d",
+    name: "Terrace",
+    privacy: "switch.d_mode_prive",
+    ptz: { left: "button.d_gauche" },
+    motion: "binary_sensor.d_mouvement",
+  });
 });
 
 test("Add all takes every camera found at once", async () => {
