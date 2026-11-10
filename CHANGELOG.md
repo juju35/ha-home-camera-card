@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.1.0 - 2026-11-10
+
+### What's new
+- **Camera discovery**: a new entry starts with every camera of Home Assistant, and the panel's Settings tab lists the cameras it does not show yet (**Add** one, or **Add all**). One entry per camera, not per stream: Tapo's two camera entities (`*_hd_stream` and `*_sd_stream`, no quality selector) count as one camera shown in HD, its SD stream being picked by the HD / SD switch. Cameras are named after their device, sorted by area; disabled and hidden ones are left out.
+
 ## 4.0.0 - 2026-11-10
 
 The repository becomes **ha-camera**, a Home Assistant integration (`home_camera`) carrying the cards and a sidebar panel.

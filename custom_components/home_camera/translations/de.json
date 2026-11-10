@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Home Camera",
-        "description": "Fügt der Seitenleiste das Panel Kameras für alle Benutzer hinzu (Administratoren wählen die Kameras im Tab Einstellungen) sowie die Kamerakarten für deine Dashboards."
+        "description": "Fügt der Seitenleiste das Panel Kameras für alle Benutzer hinzu (Administratoren wählen die Kameras im Tab Einstellungen) sowie die Kamerakarten für deine Dashboards. Das Panel startet mit allen in Home Assistant gefundenen Kameras."
       }
     },
     "abort": {

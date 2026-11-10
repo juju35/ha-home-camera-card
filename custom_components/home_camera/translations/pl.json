@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Home Camera",
-        "description": "Dodaje panel Kamery do paska bocznego dla wszystkich użytkowników (administratorzy wybierają kamery w karcie Ustawienia) oraz karty kamer do Twoich dashboardów."
+        "description": "Dodaje panel Kamery do paska bocznego dla wszystkich użytkowników (administratorzy wybierają kamery w karcie Ustawienia) oraz karty kamer do Twoich dashboardów. Panel startuje ze wszystkimi kamerami znalezionymi w Home Assistant."
       }
     },
     "abort": {

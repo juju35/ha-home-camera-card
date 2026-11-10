@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Home Camera",
-        "description": "Přidá panel Kamery do postranního panelu pro všechny uživatele (správci vybírají kamery na kartě Nastavení) a karty kamer na vaše dashboardy."
+        "description": "Přidá panel Kamery do postranního panelu pro všechny uživatele (správci vybírají kamery na kartě Nastavení) a karty kamer na vaše dashboardy. Panel začíná se všemi kamerami nalezenými v Home Assistant."
       }
     },
     "abort": {

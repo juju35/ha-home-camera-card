@@ -2,15 +2,16 @@
  * Home Camera sidebar panel — every home camera on one page, for every user (not only administrators).
  *
  * Two tabs under the toolbar, as in Smart Comfort: Cameras (the home camera card full page, as the cameras
- * dashboard showed it) and, for administrators only, Settings (the sidebar title and the card's own visual
- * editor, with a copy of a camera card found on a dashboard). The settings come from home_camera/subscribe,
+ * dashboard showed it) and, for administrators only, Settings (the sidebar title, the cameras of Home Assistant
+ * not shown yet, from home_camera/discover, and the card's own visual editor, with a copy of a camera card found
+ * on a dashboard). The settings come from home_camera/subscribe,
  * open to every user and pushed again whenever they change; home_camera/update_settings (administrators)
  * saves them. The tab is in the address (/cameras/settings). The panel draws its toolbar, tabs and forms itself;
  * the camera grid is the card's (streams, privacy, HD / SD, PTZ, fullscreen).
  *
  * https://github.com/juju35/ha-camera
  */
-var HOME_CAMERA_PANEL_VERSION = '4.0.0';
+var HOME_CAMERA_PANEL_VERSION = '4.1.0';
 
 var HomeCameraPanelI18n = {
   en: {
@@ -33,6 +34,12 @@ var HomeCameraPanelI18n = {
     import_none: 'No camera card found on the dashboards.',
     imported: 'Cameras copied from “{d}”: save to keep them.',
     integration: 'Open the integration',
+    found_heading: 'Cameras found',
+    found_hint: 'Cameras of Home Assistant not shown in the panel yet.',
+    found_none: 'Every camera found is already in the panel.',
+    add: 'Add',
+    add_all: 'Add all',
+    added: 'Cameras added: {n}. Save to keep them.',
     card_error: 'The camera card could not be loaded: clear the browser cache and reload the page.',
   },
   fr: {
@@ -55,6 +62,12 @@ var HomeCameraPanelI18n = {
     import_none: 'Aucune carte caméras trouvée sur les tableaux de bord.',
     imported: 'Caméras copiées depuis « {d} » : enregistrez pour les garder.',
     integration: 'Ouvrir l’intégration',
+    found_heading: 'Caméras trouvées',
+    found_hint: 'Caméras de Home Assistant pas encore affichées dans le panneau.',
+    found_none: 'Toutes les caméras trouvées sont déjà dans le panneau.',
+    add: 'Ajouter',
+    add_all: 'Tout ajouter',
+    added: 'Caméras ajoutées : {n}. Enregistrez pour les garder.',
     card_error: 'La carte caméras n’a pas pu être chargée : videz le cache du navigateur et rechargez la page.',
   },
   de: {
@@ -77,6 +90,12 @@ var HomeCameraPanelI18n = {
     import_none: 'Keine Kamerakarte in den Dashboards gefunden.',
     imported: 'Kameras aus „{d}“ kopiert: speichern, um sie zu behalten.',
     integration: 'Integration öffnen',
+    found_heading: 'Gefundene Kameras',
+    found_hint: 'Kameras aus Home Assistant, die das Panel noch nicht zeigt.',
+    found_none: 'Alle gefundenen Kameras sind bereits im Panel.',
+    add: 'Hinzufügen',
+    add_all: 'Alle hinzufügen',
+    added: 'Kameras hinzugefügt: {n}. Speichern, um sie zu behalten.',
     card_error: 'Die Kamerakarte konnte nicht geladen werden: Browser-Cache leeren und Seite neu laden.',
   },
   es: {
@@ -99,6 +118,12 @@ var HomeCameraPanelI18n = {
     import_none: 'No se encontró ninguna tarjeta de cámaras en los paneles.',
     imported: 'Cámaras copiadas de «{d}»: guarda para conservarlas.',
     integration: 'Abrir la integración',
+    found_heading: 'Cámaras encontradas',
+    found_hint: 'Cámaras de Home Assistant que el panel aún no muestra.',
+    found_none: 'Todas las cámaras encontradas ya están en el panel.',
+    add: 'Añadir',
+    add_all: 'Añadir todas',
+    added: 'Cámaras añadidas: {n}. Guarda para conservarlas.',
     card_error: 'No se pudo cargar la tarjeta de cámaras: vacía la caché del navegador y recarga la página.',
   },
   sr: {
@@ -121,6 +146,12 @@ var HomeCameraPanelI18n = {
     import_none: 'На контролним таблама није пронађена картица камера.',
     imported: 'Камере копиране са „{d}”: сачувајте да бисте их задржали.',
     integration: 'Отвори интеграцију',
+    found_heading: 'Пронађене камере',
+    found_hint: 'Камере из Home Assistant-а које панел још не приказује.',
+    found_none: 'Све пронађене камере су већ у панелу.',
+    add: 'Додај',
+    add_all: 'Додај све',
+    added: 'Додате камере: {n}. Сачувајте да бисте их задржали.',
     card_error: 'Картица камера није учитана: обришите кеш прегледача и поново учитајте страницу.',
   },
   'sr-Latn': {
@@ -143,6 +174,12 @@ var HomeCameraPanelI18n = {
     import_none: 'Na kontrolnim tablama nije pronađena kartica kamera.',
     imported: 'Kamere kopirane sa „{d}”: sačuvajte da biste ih zadržali.',
     integration: 'Otvori integraciju',
+    found_heading: 'Pronađene kamere',
+    found_hint: 'Kamere iz Home Assistant-a koje panel još ne prikazuje.',
+    found_none: 'Sve pronađene kamere su već u panelu.',
+    add: 'Dodaj',
+    add_all: 'Dodaj sve',
+    added: 'Dodate kamere: {n}. Sačuvajte da biste ih zadržali.',
     card_error: 'Kartica kamera nije učitana: obrišite keš pregledača i ponovo učitajte stranicu.',
   },
   it: {
@@ -165,6 +202,12 @@ var HomeCameraPanelI18n = {
     import_none: 'Nessuna scheda telecamere trovata nelle plance.',
     imported: 'Telecamere copiate da «{d}»: salva per mantenerle.',
     integration: 'Apri l’integrazione',
+    found_heading: 'Telecamere trovate',
+    found_hint: 'Telecamere di Home Assistant non ancora mostrate nel pannello.',
+    found_none: 'Tutte le telecamere trovate sono già nel pannello.',
+    add: 'Aggiungi',
+    add_all: 'Aggiungi tutte',
+    added: 'Telecamere aggiunte: {n}. Salva per mantenerle.',
     card_error: 'Impossibile caricare la scheda telecamere: svuota la cache del browser e ricarica la pagina.',
   },
   nl: {
@@ -187,6 +230,12 @@ var HomeCameraPanelI18n = {
     import_none: 'Geen camerakaart gevonden op de dashboards.',
     imported: "Camera's gekopieerd uit “{d}”: sla op om ze te bewaren.",
     integration: 'Integratie openen',
+    found_heading: 'Gevonden camera\'s',
+    found_hint: 'Camera\'s uit Home Assistant die het paneel nog niet toont.',
+    found_none: 'Alle gevonden camera\'s staan al in het paneel.',
+    add: 'Toevoegen',
+    add_all: 'Alles toevoegen',
+    added: 'Camera\'s toegevoegd: {n}. Sla op om ze te bewaren.',
     card_error: 'De camerakaart kon niet worden geladen: wis de browsercache en laad de pagina opnieuw.',
   },
   pt: {
@@ -209,6 +258,12 @@ var HomeCameraPanelI18n = {
     import_none: 'Nenhum cartão de câmaras encontrado nos painéis.',
     imported: 'Câmaras copiadas de «{d}»: guarde para as manter.',
     integration: 'Abrir a integração',
+    found_heading: 'Câmaras encontradas',
+    found_hint: 'Câmaras do Home Assistant que o painel ainda não mostra.',
+    found_none: 'Todas as câmaras encontradas já estão no painel.',
+    add: 'Adicionar',
+    add_all: 'Adicionar todas',
+    added: 'Câmaras adicionadas: {n}. Guarde para as manter.',
     card_error: 'Não foi possível carregar o cartão de câmaras: limpe a cache do navegador e recarregue a página.',
   },
   pl: {
@@ -231,6 +286,12 @@ var HomeCameraPanelI18n = {
     import_none: 'Nie znaleziono karty kamer na dashboardach.',
     imported: 'Kamery skopiowane z „{d}”: zapisz, aby je zachować.',
     integration: 'Otwórz integrację',
+    found_heading: 'Znalezione kamery',
+    found_hint: 'Kamery z Home Assistant, których panel jeszcze nie pokazuje.',
+    found_none: 'Wszystkie znalezione kamery są już w panelu.',
+    add: 'Dodaj',
+    add_all: 'Dodaj wszystkie',
+    added: 'Dodane kamery: {n}. Zapisz, aby je zachować.',
     card_error: 'Nie udało się wczytać karty kamer: wyczyść pamięć podręczną przeglądarki i odśwież stronę.',
   },
   ro: {
@@ -253,6 +314,12 @@ var HomeCameraPanelI18n = {
     import_none: 'Niciun card de camere găsit în tablourile de bord.',
     imported: 'Camere copiate din „{d}”: salvați pentru a le păstra.',
     integration: 'Deschide integrarea',
+    found_heading: 'Camere găsite',
+    found_hint: 'Camere din Home Assistant pe care panoul nu le afișează încă.',
+    found_none: 'Toate camerele găsite sunt deja în panou.',
+    add: 'Adaugă',
+    add_all: 'Adaugă toate',
+    added: 'Camere adăugate: {n}. Salvați pentru a le păstra.',
     card_error: 'Cardul camerelor nu a putut fi încărcat: goliți memoria cache a browserului și reîncărcați pagina.',
   },
   da: {
@@ -275,6 +342,12 @@ var HomeCameraPanelI18n = {
     import_none: 'Intet kamerakort fundet på dashboardene.',
     imported: 'Kameraer kopieret fra “{d}”: gem for at beholde dem.',
     integration: 'Åbn integrationen',
+    found_heading: 'Fundne kameraer',
+    found_hint: 'Kameraer i Home Assistant, som panelet endnu ikke viser.',
+    found_none: 'Alle fundne kameraer er allerede i panelet.',
+    add: 'Tilføj',
+    add_all: 'Tilføj alle',
+    added: 'Kameraer tilføjet: {n}. Gem for at beholde dem.',
     card_error: 'Kamerakortet kunne ikke indlæses: ryd browserens cache, og genindlæs siden.',
   },
   sv: {
@@ -297,6 +370,12 @@ var HomeCameraPanelI18n = {
     import_none: 'Inget kamerakort hittades på instrumentpanelerna.',
     imported: 'Kameror kopierade från ”{d}”: spara för att behålla dem.',
     integration: 'Öppna integrationen',
+    found_heading: 'Hittade kameror',
+    found_hint: 'Kameror i Home Assistant som panelen ännu inte visar.',
+    found_none: 'Alla hittade kameror finns redan i panelen.',
+    add: 'Lägg till',
+    add_all: 'Lägg till alla',
+    added: 'Kameror tillagda: {n}. Spara för att behålla dem.',
     card_error: 'Kamerakortet kunde inte läsas in: rensa webbläsarens cache och ladda om sidan.',
   },
   bg: {
@@ -319,6 +398,12 @@ var HomeCameraPanelI18n = {
     import_none: 'Не е намерена карта с камери в таблата.',
     imported: 'Камерите са копирани от „{d}“: запазете, за да ги задържите.',
     integration: 'Отвори интеграцията',
+    found_heading: 'Открити камери',
+    found_hint: 'Камери от Home Assistant, които панелът още не показва.',
+    found_none: 'Всички открити камери вече са в панела.',
+    add: 'Добави',
+    add_all: 'Добави всички',
+    added: 'Добавени камери: {n}. Запазете, за да ги задържите.',
     card_error: 'Картата с камери не можа да се зареди: изчистете кеша на браузъра и презаредете страницата.',
   },
   ru: {
@@ -341,6 +426,12 @@ var HomeCameraPanelI18n = {
     import_none: 'На дашбордах не найдена карточка камер.',
     imported: 'Камеры скопированы с «{d}»: сохраните, чтобы оставить их.',
     integration: 'Открыть интеграцию',
+    found_heading: 'Найденные камеры',
+    found_hint: 'Камеры Home Assistant, которых ещё нет на панели.',
+    found_none: 'Все найденные камеры уже на панели.',
+    add: 'Добавить',
+    add_all: 'Добавить все',
+    added: 'Добавлено камер: {n}. Сохраните, чтобы оставить их.',
     card_error: 'Не удалось загрузить карточку камер: очистите кэш браузера и перезагрузите страницу.',
   },
   uk: {
@@ -363,6 +454,12 @@ var HomeCameraPanelI18n = {
     import_none: 'На дашбордах не знайдено картки камер.',
     imported: 'Камери скопійовано з «{d}»: збережіть, щоб залишити їх.',
     integration: 'Відкрити інтеграцію',
+    found_heading: 'Знайдені камери',
+    found_hint: 'Камери Home Assistant, яких ще немає на панелі.',
+    found_none: 'Усі знайдені камери вже на панелі.',
+    add: 'Додати',
+    add_all: 'Додати всі',
+    added: 'Додано камер: {n}. Збережіть, щоб залишити їх.',
     card_error: 'Не вдалося завантажити картку камер: очистьте кеш браузера та перезавантажте сторінку.',
   },
   hu: {
@@ -385,6 +482,12 @@ var HomeCameraPanelI18n = {
     import_none: 'Nem található kamerakártya az irányítópultokon.',
     imported: 'Kamerák átmásolva innen: „{d}”; mentsd, hogy megmaradjanak.',
     integration: 'Integráció megnyitása',
+    found_heading: 'Talált kamerák',
+    found_hint: 'Home Assistant-kamerák, amelyeket a panel még nem mutat.',
+    found_none: 'Minden talált kamera már a panelen van.',
+    add: 'Hozzáadás',
+    add_all: 'Összes hozzáadása',
+    added: 'Hozzáadott kamerák: {n}. Mentsd, hogy megmaradjanak.',
     card_error: 'A kamerakártya nem tölthető be: ürítsd a böngésző gyorsítótárát, és töltsd újra az oldalt.',
   },
   sk: {
@@ -407,6 +510,12 @@ var HomeCameraPanelI18n = {
     import_none: 'Na dashboardoch sa nenašla karta kamier.',
     imported: 'Kamery skopírované z „{d}“: uložte ich, aby zostali.',
     integration: 'Otvoriť integráciu',
+    found_heading: 'Nájdené kamery',
+    found_hint: 'Kamery z Home Assistant, ktoré panel ešte nezobrazuje.',
+    found_none: 'Všetky nájdené kamery sú už v paneli.',
+    add: 'Pridať',
+    add_all: 'Pridať všetky',
+    added: 'Pridané kamery: {n}. Uložte ich, aby zostali.',
     card_error: 'Kartu kamier sa nepodarilo načítať: vymažte vyrovnávaciu pamäť prehliadača a obnovte stránku.',
   },
   cs: {
@@ -429,6 +538,12 @@ var HomeCameraPanelI18n = {
     import_none: 'Na dashboardech nebyla nalezena karta kamer.',
     imported: 'Kamery zkopírovány z „{d}“: uložte je, aby zůstaly.',
     integration: 'Otevřít integraci',
+    found_heading: 'Nalezené kamery',
+    found_hint: 'Kamery z Home Assistant, které panel zatím nezobrazuje.',
+    found_none: 'Všechny nalezené kamery už jsou v panelu.',
+    add: 'Přidat',
+    add_all: 'Přidat vše',
+    added: 'Přidané kamery: {n}. Uložte je, aby zůstaly.',
     card_error: 'Kartu kamer se nepodařilo načíst: vymažte mezipaměť prohlížeče a obnovte stránku.',
   },
   sl: {
@@ -451,6 +566,12 @@ var HomeCameraPanelI18n = {
     import_none: 'Na nadzornih ploščah ni kartice kamer.',
     imported: 'Kamere kopirane iz »{d}«: shranite, da jih obdržite.',
     integration: 'Odpri integracijo',
+    found_heading: 'Najdene kamere',
+    found_hint: 'Kamere iz Home Assistanta, ki jih plošča še ne prikazuje.',
+    found_none: 'Vse najdene kamere so že na plošči.',
+    add: 'Dodaj',
+    add_all: 'Dodaj vse',
+    added: 'Dodane kamere: {n}. Shranite, da jih obdržite.',
     card_error: 'Kartice kamer ni bilo mogoče naložiti: počistite predpomnilnik brskalnika in znova naložite stran.',
   },
   lv: {
@@ -473,6 +594,12 @@ var HomeCameraPanelI18n = {
     import_none: 'Informācijas paneļos nav atrasta kameru kartīte.',
     imported: 'Kameras nokopētas no “{d}”: saglabājiet, lai tās paturētu.',
     integration: 'Atvērt integrāciju',
+    found_heading: 'Atrastās kameras',
+    found_hint: 'Home Assistant kameras, kuras panelis vēl nerāda.',
+    found_none: 'Visas atrastās kameras jau ir panelī.',
+    add: 'Pievienot',
+    add_all: 'Pievienot visas',
+    added: 'Pievienotas kameras: {n}. Saglabājiet, lai tās paturētu.',
     card_error: 'Neizdevās ielādēt kameru kartīti: notīriet pārlūka kešatmiņu un pārlādējiet lapu.',
   },
   el: {
@@ -495,6 +622,12 @@ var HomeCameraPanelI18n = {
     import_none: 'Δεν βρέθηκε κάρτα καμερών στους πίνακες ελέγχου.',
     imported: 'Οι κάμερες αντιγράφηκαν από «{d}»: αποθηκεύστε για να τις κρατήσετε.',
     integration: 'Άνοιγμα ενσωμάτωσης',
+    found_heading: 'Κάμερες που βρέθηκαν',
+    found_hint: 'Κάμερες του Home Assistant που ο πίνακας δεν εμφανίζει ακόμη.',
+    found_none: 'Όλες οι κάμερες που βρέθηκαν είναι ήδη στον πίνακα.',
+    add: 'Προσθήκη',
+    add_all: 'Προσθήκη όλων',
+    added: 'Κάμερες που προστέθηκαν: {n}. Αποθηκεύστε για να τις κρατήσετε.',
     card_error: 'Η κάρτα καμερών δεν φορτώθηκε: καθαρίστε την κρυφή μνήμη του προγράμματος περιήγησης και φορτώστε ξανά τη σελίδα.',
   },
 };
@@ -587,6 +720,13 @@ class HomeCameraPanel extends HTMLElement {
     .act.quiet { color:var(--primary-text-color); background:var(--secondary-background-color, rgba(127,127,127,.12)); }
     .act[disabled] { opacity:.5; cursor:default; }
     ha-card { display:block; }
+    ha-card[hidden] { display:none; }
+    .bar.head h2 { margin:0; }
+    .found { display:flex; align-items:center; gap:12px; padding:6px 0; border-top:1px solid var(--divider-color, rgba(127,127,127,.2)); }
+    .found > ha-icon { color:var(--primary-color); --mdc-icon-size:22px; flex:none; }
+    .found .who { flex:1; min-width:0; }
+    .found .n { font-size:14px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .found .s { font-size:12px; color:var(--secondary-text-color); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   `;
 
   constructor() {
@@ -875,6 +1015,7 @@ class HomeCameraPanel extends HTMLElement {
             <div class="box"><input data-title maxlength="50" autocomplete="off"></div>
             <small data-title-helper></small></label>
         </div></ha-card>
+        <ha-card data-found hidden></ha-card>
         <ha-card><div class="block">
           <h2>${esc(this._t('cameras_heading'))}</h2>
           <div data-editor></div>
@@ -898,12 +1039,76 @@ class HomeCameraPanel extends HTMLElement {
         this._renderSettings();
       });
       section.querySelector('[data-import]').addEventListener('click', () => this._import());
+      section.querySelector('[data-found]').addEventListener('click', (ev) => {
+        var button = ev.composedPath().find((n) => n.dataset?.add !== undefined);
+        if (button) this._addFound(button.dataset.add ? [button.dataset.add] : null);
+      });
+      this._discover();
     }
     var input = section.querySelector('[data-title]');
     if (input.value !== values.title && this.shadowRoot.activeElement !== input) input.value = values.title;
     section.querySelector('[data-title-helper]').textContent = this._t('sidebar_title_helper', { d: this._defaultTitle() });
+    this._renderFound();
     await this._renderEditor(section.querySelector('[data-editor]'), values.card);
     this._renderStatus();
+  }
+
+  // ── Camera discovery (home_camera/discover): the cameras of Home Assistant the panel does not show yet ──
+  async _discover() {
+    try {
+      this._found = (await this._hass.callWS({ type: 'home_camera/discover' })).cameras || [];
+    } catch (err) {
+      console.warn('Home Camera panel: camera discovery failed', err);
+      this._found = [];
+    }
+    this._renderFound();
+  }
+
+  // Found cameras missing from the edited list: neither the camera nor its SD stream is in it
+  _newFound() {
+    var listed = new Set();
+    for (var cam of this._formValues()?.card?.cameras || []) {
+      var id = typeof cam === 'string' ? cam : cam?.camera;
+      if (id) listed.add(id);
+      if (cam?.sd) listed.add(cam.sd);
+    }
+    return (this._found || []).filter((cam) => !listed.has(cam.camera) && !(cam.sd && listed.has(cam.sd)));
+  }
+
+  _renderFound() {
+    var host = this.shadowRoot.getElementById?.('tab-settings')?.querySelector('[data-found]');
+    if (!host || !this._found) return;
+    var esc = hcpEsc;
+    var found = this._newFound();
+    host.hidden = false;
+    var rows = found
+      .map(
+        (cam) => `<div class="found">
+          <ha-icon icon="mdi:cctv"></ha-icon>
+          <div class="who"><div class="n">${esc(cam.name)}</div><div class="s">${esc([cam.area, cam.camera, cam.sd ? 'HD + SD' : ''].filter(Boolean).join(' · '))}</div></div>
+          <button class="act quiet" data-add="${esc(cam.camera)}"><ha-icon icon="mdi:plus"></ha-icon>${esc(this._t('add'))}</button>
+        </div>`,
+      )
+      .join('');
+    host.innerHTML = `<div class="block">
+      <div class="bar head"><h2 class="grow">${esc(this._t('found_heading'))}</h2>${
+        found.length > 1 ? `<button class="act" data-add=""><ha-icon icon="mdi:plus-box-multiple"></ha-icon>${esc(this._t('add_all'))}</button>` : ''
+      }</div>
+      <div class="msg">${esc(this._t(found.length ? 'found_hint' : 'found_none'))}</div>
+      ${rows}
+    </div>`;
+  }
+
+  // Adds the given found cameras (all the new ones when `ids` is null) to the edited list, named after their device
+  _addFound(ids) {
+    var add = this._newFound().filter((cam) => !ids || ids.includes(cam.camera));
+    if (!add.length) return;
+    var values = this._formValues();
+    values.card = Object.assign({}, values.card, {
+      cameras: (values.card.cameras || []).concat(add.map((cam) => ({ camera: cam.camera, name: cam.name }))),
+    });
+    this._status = { tone: 'good', text: this._t('added', { n: add.length }) };
+    this._renderSettings();
   }
 
   // The title the server gives the panel when none is set ("Cameras" in the server's language)

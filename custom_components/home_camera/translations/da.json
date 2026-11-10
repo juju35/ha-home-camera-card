@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Home Camera",
-        "description": "Tilføjer panelet Kameraer til sidepanelet for alle brugere (administratorer vælger kameraerne under fanen Indstillinger) og kamerakortene til dine dashboards."
+        "description": "Tilføjer panelet Kameraer til sidepanelet for alle brugere (administratorer vælger kameraerne under fanen Indstillinger) og kamerakortene til dine dashboards. Panelet starter med alle kameraer fundet i Home Assistant."
       }
     },
     "abort": {

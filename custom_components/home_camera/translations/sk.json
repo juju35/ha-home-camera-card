@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Home Camera",
-        "description": "Pridá panel Kamery do bočného panela pre všetkých používateľov (správcovia vyberajú kamery na karte Nastavenia) a karty kamier na vaše dashboardy."
+        "description": "Pridá panel Kamery do bočného panela pre všetkých používateľov (správcovia vyberajú kamery na karte Nastavenia) a karty kamier na vaše dashboardy. Panel začína so všetkými kamerami nájdenými v Home Assistant."
       }
     },
     "abort": {

@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Home Camera",
-        "description": "Doda ploščo Kamere v stransko vrstico za vse uporabnike (skrbniki izberejo kamere na zavihku Nastavitve) in kartice kamer na vaše nadzorne plošče."
+        "description": "Doda ploščo Kamere v stransko vrstico za vse uporabnike (skrbniki izberejo kamere na zavihku Nastavitve) in kartice kamer na vaše nadzorne plošče. Plošča se začne z vsemi kamerami, najdenimi v Home Assistantu."
       }
     },
     "abort": {

@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Home Camera",
-        "description": "Dodaje panel Kamere u bočnu traku, za sve korisnike (administratori biraju kamere na kartici Podešavanja), i kartice kamera na vaše kontrolne table."
+        "description": "Dodaje panel Kamere u bočnu traku, za sve korisnike (administratori biraju kamere na kartici Podešavanja), i kartice kamera na vaše kontrolne table. Panel počinje sa svim kamerama pronađenim u Home Assistant-u."
       }
     },
     "abort": {

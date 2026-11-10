@@ -5,7 +5,9 @@ shows the home camera card full page, as the cameras dashboard did. Administrato
 (the card's visual editor and the sidebar title). Commands:
 
 - ``home_camera/subscribe`` (every user): the settings at once, then again each time they change;
-- ``home_camera/update_settings`` (administrators): changes the card configuration and the sidebar title.
+- ``home_camera/update_settings`` (administrators): changes the card configuration and the sidebar title;
+- ``home_camera/discover`` (administrators): every camera of Home Assistant, for the Settings tab to add the
+  ones the panel does not show yet (``discovery.py``).
 """
 
 from __future__ import annotations
@@ -37,6 +39,7 @@ from .const import (
     TITLES,
     VERSION,
 )
+from .discovery import discover
 
 _ENTITY = re.compile(r"^[a-z_]+\.[a-z0-9_]+$")
 
@@ -90,6 +93,7 @@ def async_register_commands(hass: HomeAssistant) -> None:
     """The panel's commands, registered once per start."""
     websocket_api.async_register_command(hass, _ws_subscribe)
     websocket_api.async_register_command(hass, _ws_update_settings)
+    websocket_api.async_register_command(hass, _ws_discover)
 
 
 def validate_card(card: Any) -> dict[str, Any]:
@@ -150,3 +154,10 @@ async def _ws_update_settings(hass: HomeAssistant, connection: websocket_api.Act
             await async_register_panel(hass, entry)
         async_dispatcher_send(hass, SIGNAL_UPDATED)
     connection.send_result(msg["id"], _payload(hass))
+
+
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/discover"})
+@websocket_api.require_admin
+@callback
+def _ws_discover(hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict) -> None:
+    connection.send_result(msg["id"], {"cameras": discover(hass)})

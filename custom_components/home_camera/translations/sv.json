@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Home Camera",
-        "description": "Lägger till panelen Kameror i sidofältet för alla användare (administratörer väljer kamerorna på fliken Inställningar) och kamerakorten i dina instrumentpaneler."
+        "description": "Lägger till panelen Kameror i sidofältet för alla användare (administratörer väljer kamerorna på fliken Inställningar) och kamerakorten i dina instrumentpaneler. Panelen startar med alla kameror som hittats i Home Assistant."
       }
     },
     "abort": {
