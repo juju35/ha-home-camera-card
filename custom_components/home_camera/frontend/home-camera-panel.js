@@ -11,7 +11,7 @@
  *
  * https://github.com/juju35/ha-camera
  */
-var HOME_CAMERA_PANEL_VERSION = '4.2.0';
+var HOME_CAMERA_PANEL_VERSION = '4.2.1';
 
 var HomeCameraPanelI18n = {
   en: {
@@ -667,7 +667,8 @@ function hcpFindCard(node) {
 // The card configuration the panel stores: no type, no layout options of the dashboard it came from.
 function hcpCardConfig(card) {
   var out = Object.assign({}, card);
-  for (var key of ['type', 'grid_options', 'view_layout', 'layout_options', 'visibility']) delete out[key];
+  // `layout` too: the panel always shows the wall, whatever the stored configuration says
+  for (var key of ['type', 'layout', 'grid_options', 'view_layout', 'layout_options', 'visibility']) delete out[key];
   return out;
 }
 
@@ -1139,7 +1140,8 @@ class HomeCameraPanel extends HTMLElement {
     var json = JSON.stringify(card);
     if (json !== this._editorConfig) {
       this._editorConfig = json;
-      this._editor.setConfig(Object.assign({ type: `custom:${HCP_CARD}` }, card));
+      // As the wall: the editor offers no column count by default and keeps any count chosen
+      this._editor.setConfig(Object.assign({ type: `custom:${HCP_CARD}` }, card, { layout: 'wall' }));
     }
   }
 

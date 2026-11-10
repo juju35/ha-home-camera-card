@@ -1,4 +1,4 @@
-const HOME_CAMERA_CARD_VERSION = '4.2.0';
+const HOME_CAMERA_CARD_VERSION = '4.2.1';
 
 // ── i18n ─────────────────────────────────────────────────────────────────────
 const HcI18n = {
@@ -42,6 +42,7 @@ const HcI18n = {
     ed_hd_option: 'Option HD',
     ed_sd_option: 'Option SD',
     ed_columns: 'Colonnes',
+    ed_columns_wall_helper: 'Vide : autant que la largeur le permet',
     ed_aspect_ratio: 'Format des vignettes',
     ed_aspect_ratio_helper: 'Par exemple 16:9 (par défaut) ou 4:3',
     ed_show_summary: 'Résumé',
@@ -104,6 +105,7 @@ const HcI18n = {
     ed_hd_option: 'HD option',
     ed_sd_option: 'SD option',
     ed_columns: 'Columns',
+    ed_columns_wall_helper: 'Empty: as many as the width takes',
     ed_aspect_ratio: 'Tile aspect ratio',
     ed_aspect_ratio_helper: 'For example 16:9 (default) or 4:3',
     ed_show_summary: 'Summary',
@@ -166,6 +168,7 @@ const HcI18n = {
     ed_hd_option: 'HD-Option',
     ed_sd_option: 'SD-Option',
     ed_columns: 'Spalten',
+    ed_columns_wall_helper: 'Leer: so viele, wie die Breite zulässt',
     ed_aspect_ratio: 'Seitenverhältnis der Kacheln',
     ed_aspect_ratio_helper: 'Zum Beispiel 16:9 (Standard) oder 4:3',
     ed_show_summary: 'Zusammenfassung',
@@ -228,6 +231,7 @@ const HcI18n = {
     ed_hd_option: 'Opción HD',
     ed_sd_option: 'Opción SD',
     ed_columns: 'Columnas',
+    ed_columns_wall_helper: 'Vacío: tantas como quepan a lo ancho',
     ed_aspect_ratio: 'Relación de aspecto de las miniaturas',
     ed_aspect_ratio_helper: 'Por ejemplo 16:9 (predeterminado) o 4:3',
     ed_show_summary: 'Resumen',
@@ -290,6 +294,7 @@ const HcI18n = {
     ed_hd_option: 'HD опција',
     ed_sd_option: 'SD опција',
     ed_columns: 'Колоне',
+    ed_columns_wall_helper: 'Празно: колико стане по ширини',
     ed_aspect_ratio: 'Пропорција плочице (Aspect ratio)',
     ed_aspect_ratio_helper: 'На пример 16:9 (подразумевано) или 4:3',
     ed_show_summary: 'Садржај / Резиме',
@@ -352,6 +357,7 @@ const HcI18n = {
     ed_hd_option: 'HD opcija',
     ed_sd_option: 'SD opcija',
     ed_columns: 'Kolone',
+    ed_columns_wall_helper: 'Prazno: koliko stane po širini',
     ed_aspect_ratio: 'Proporcija pločice (Aspect ratio)',
     ed_aspect_ratio_helper: 'Na primer 16:9 (podrazumevano) ili 4:3',
     ed_show_summary: 'Sadržaj / Rezime',
@@ -414,6 +420,7 @@ const HcI18n = {
     ed_hd_option: 'Opzione HD',
     ed_sd_option: 'Opzione SD',
     ed_columns: 'Colonne',
+    ed_columns_wall_helper: 'Vuoto: quante ne entrano in larghezza',
     ed_aspect_ratio: 'Proporzioni dei riquadri',
     ed_aspect_ratio_helper: 'Ad esempio 16:9 (predefinito) o 4:3',
     ed_show_summary: 'Riepilogo',
@@ -476,6 +483,7 @@ const HcI18n = {
     ed_hd_option: 'HD-optie',
     ed_sd_option: 'SD-optie',
     ed_columns: 'Kolommen',
+    ed_columns_wall_helper: 'Leeg: zoveel als de breedte toelaat',
     ed_aspect_ratio: 'Beeldverhouding van de tegels',
     ed_aspect_ratio_helper: 'Bijvoorbeeld 16:9 (standaard) of 4:3',
     ed_show_summary: 'Samenvatting',
@@ -538,6 +546,7 @@ const HcI18n = {
     ed_hd_option: 'Opção HD',
     ed_sd_option: 'Opção SD',
     ed_columns: 'Colunas',
+    ed_columns_wall_helper: 'Vazio: tantas quantas couberem na largura',
     ed_aspect_ratio: 'Proporção das miniaturas',
     ed_aspect_ratio_helper: 'Por exemplo 16:9 (predefinição) ou 4:3',
     ed_show_summary: 'Resumo',
@@ -600,6 +609,7 @@ const HcI18n = {
     ed_hd_option: 'Opcja HD',
     ed_sd_option: 'Opcja SD',
     ed_columns: 'Kolumny',
+    ed_columns_wall_helper: 'Puste: tyle, ile zmieści szerokość',
     ed_aspect_ratio: 'Proporcje kafelków',
     ed_aspect_ratio_helper: 'Na przykład 16:9 (domyślnie) lub 4:3',
     ed_show_summary: 'Podsumowanie',
@@ -662,6 +672,7 @@ const HcI18n = {
     ed_hd_option: 'Opțiunea HD',
     ed_sd_option: 'Opțiunea SD',
     ed_columns: 'Coloane',
+    ed_columns_wall_helper: 'Gol: câte încap pe lățime',
     ed_aspect_ratio: 'Raportul de aspect al plăcilor',
     ed_aspect_ratio_helper: 'De exemplu 16:9 (implicit) sau 4:3',
     ed_show_summary: 'Rezumat',
@@ -724,6 +735,7 @@ const HcI18n = {
     ed_hd_option: 'HD-valgmulighed',
     ed_sd_option: 'SD-valgmulighed',
     ed_columns: 'Kolonner',
+    ed_columns_wall_helper: 'Tom: så mange som bredden giver plads til',
     ed_aspect_ratio: 'Billedformat for felterne',
     ed_aspect_ratio_helper: 'For eksempel 16:9 (standard) eller 4:3',
     ed_show_summary: 'Oversigt',
@@ -786,6 +798,7 @@ const HcI18n = {
     ed_hd_option: 'HD-alternativ',
     ed_sd_option: 'SD-alternativ',
     ed_columns: 'Kolumner',
+    ed_columns_wall_helper: 'Tomt: så många som får plats på bredden',
     ed_aspect_ratio: 'Bildformat för rutorna',
     ed_aspect_ratio_helper: 'Till exempel 16:9 (standard) eller 4:3',
     ed_show_summary: 'Sammanfattning',
@@ -848,6 +861,7 @@ const HcI18n = {
     ed_hd_option: 'Опция HD',
     ed_sd_option: 'Опция SD',
     ed_columns: 'Колони',
+    ed_columns_wall_helper: 'Празно: колкото се събират по ширина',
     ed_aspect_ratio: 'Съотношение на плочките',
     ed_aspect_ratio_helper: 'Например 16:9 (по подразбиране) или 4:3',
     ed_show_summary: 'Обобщение',
@@ -910,6 +924,7 @@ const HcI18n = {
     ed_hd_option: 'Вариант HD',
     ed_sd_option: 'Вариант SD',
     ed_columns: 'Столбцы',
+    ed_columns_wall_helper: 'Пусто: сколько поместится по ширине',
     ed_aspect_ratio: 'Соотношение сторон плиток',
     ed_aspect_ratio_helper: 'Например, 16:9 (по умолчанию) или 4:3',
     ed_show_summary: 'Сводка',
@@ -972,6 +987,7 @@ const HcI18n = {
     ed_hd_option: 'Варіант HD',
     ed_sd_option: 'Варіант SD',
     ed_columns: 'Стовпці',
+    ed_columns_wall_helper: 'Порожньо: скільки вміститься по ширині',
     ed_aspect_ratio: 'Співвідношення сторін плиток',
     ed_aspect_ratio_helper: 'Наприклад, 16:9 (типово) або 4:3',
     ed_show_summary: 'Зведення',
@@ -1034,6 +1050,7 @@ const HcI18n = {
     ed_hd_option: 'HD opció',
     ed_sd_option: 'SD opció',
     ed_columns: 'Oszlopok',
+    ed_columns_wall_helper: 'Üresen: amennyi a szélességbe belefér',
     ed_aspect_ratio: 'Csempék méretaránya',
     ed_aspect_ratio_helper: 'Például 16:9 (alapértelmezett) vagy 4:3',
     ed_show_summary: 'Összegzés',
@@ -1096,6 +1113,7 @@ const HcI18n = {
     ed_hd_option: 'Možnosť HD',
     ed_sd_option: 'Možnosť SD',
     ed_columns: 'Stĺpce',
+    ed_columns_wall_helper: 'Prázdne: koľko sa zmestí na šírku',
     ed_aspect_ratio: 'Pomer strán dlaždíc',
     ed_aspect_ratio_helper: 'Napríklad 16:9 (predvolené) alebo 4:3',
     ed_show_summary: 'Súhrn',
@@ -1158,6 +1176,7 @@ const HcI18n = {
     ed_hd_option: 'Možnost HD',
     ed_sd_option: 'Možnost SD',
     ed_columns: 'Sloupce',
+    ed_columns_wall_helper: 'Prázdné: kolik se vejde na šířku',
     ed_aspect_ratio: 'Poměr stran dlaždic',
     ed_aspect_ratio_helper: 'Například 16:9 (výchozí) nebo 4:3',
     ed_show_summary: 'Souhrn',
@@ -1220,6 +1239,7 @@ const HcI18n = {
     ed_hd_option: 'Možnost HD',
     ed_sd_option: 'Možnost SD',
     ed_columns: 'Stolpci',
+    ed_columns_wall_helper: 'Prazno: kolikor jih gre v širino',
     ed_aspect_ratio: 'Razmerje stranic ploščic',
     ed_aspect_ratio_helper: 'Na primer 16:9 (privzeto) ali 4:3',
     ed_show_summary: 'Povzetek',
@@ -1282,6 +1302,7 @@ const HcI18n = {
     ed_hd_option: 'HD opcija',
     ed_sd_option: 'SD opcija',
     ed_columns: 'Kolonnas',
+    ed_columns_wall_helper: 'Tukšs: cik ietilpst platumā',
     ed_aspect_ratio: 'Flīžu malu attiecība',
     ed_aspect_ratio_helper: 'Piemēram, 16:9 (noklusējums) vai 4:3',
     ed_show_summary: 'Kopsavilkums',
@@ -1344,6 +1365,7 @@ const HcI18n = {
     ed_hd_option: 'Επιλογή HD',
     ed_sd_option: 'Επιλογή SD',
     ed_columns: 'Στήλες',
+    ed_columns_wall_helper: 'Κενό: όσες χωρούν στο πλάτος',
     ed_aspect_ratio: 'Αναλογία πλακιδίων',
     ed_aspect_ratio_helper: 'Για παράδειγμα 16:9 (προεπιλογή) ή 4:3',
     ed_show_summary: 'Σύνοψη',
@@ -2675,6 +2697,10 @@ class HomeCameraCardEditor extends HTMLElement {
     return hcLang(this._config?.language || this._hass?.language || document.documentElement.lang || 'en');
   }
 
+  _wall() {
+    return this._config?.layout === 'wall' && !this.constructor.mini;
+  }
+
   _schema() {
     const t = (k) => hcT(this._lang(), k);
     const camera = { entity: { domain: 'camera' } };
@@ -2775,11 +2801,13 @@ class HomeCameraCardEditor extends HTMLElement {
     this._form.schema = this._schema();
     this._form.computeLabel = (s) => hcT(lang, `ed_${s.name}`);
     this._form.computeHelper = (s) => {
-      const key = `ed_${s.name}_helper`;
+      const key = s.name === 'columns' && this._wall() ? 'ed_columns_wall_helper' : `ed_${s.name}_helper`;
       const txt = hcT(lang, key);
       return txt === key ? undefined : txt;
     };
-    const data = Object.assign({}, HC_DEFAULTS, this.constructor.mini ? { zoom: true } : {}, this._config);
+    // Video wall (the Cameras panel): no column count by default, the wall fits as many as the width takes
+    const defaults = this._wall() ? Object.assign({}, HC_DEFAULTS, { columns: undefined }) : HC_DEFAULTS;
+    const data = Object.assign({}, defaults, this.constructor.mini ? { zoom: true } : {}, this._config);
     // The object selector edits objects: a camera given as a bare entity id becomes { camera }.
     data.cameras = (data.cameras || []).map((cam) => (typeof cam === 'string' ? { camera: cam } : cam));
     this._form.data = data;
@@ -2795,7 +2823,11 @@ class HomeCameraCardEditor extends HTMLElement {
     };
     // Keep the YAML short: drop options left empty or at their default.
     clean(value);
-    for (const key of Object.keys(HC_DEFAULTS)) if (value[key] === HC_DEFAULTS[key]) delete value[key];
+    // On the wall, any column count is a choice (the default is none): 2 is kept like the others
+    for (const key of Object.keys(HC_DEFAULTS)) {
+      if (key === 'columns' && this._wall()) continue;
+      if (value[key] === HC_DEFAULTS[key]) delete value[key];
+    }
     if (value.zoom === true) delete value.zoom;
     if (Array.isArray(value.cameras)) {
       value.cameras = value.cameras.map((cam) => {

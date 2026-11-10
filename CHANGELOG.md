@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.2.1 - 2026-11-11
+
+### Fixes
+- Cameras panel: the column count chosen in Settings is applied. The editor took 2 for the default and dropped it when saved, so the wall fell back to as many columns as fit; on the wall the field now starts empty (as many as fit) and keeps any count chosen, 2 included. A count of 2 saved before this version has to be chosen again.
+
 ## 4.2.0 - 2026-11-10
 
 ### What's new
