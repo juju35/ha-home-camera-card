@@ -1,4 +1,4 @@
-const HOME_CAMERA_CARD_VERSION = '4.3.0';
+const HOME_CAMERA_CARD_VERSION = '4.3.1';
 
 // ── i18n ─────────────────────────────────────────────────────────────────────
 const HcI18n = {
@@ -1446,12 +1446,16 @@ function hcDeviceEntities(reg, device) {
   return index.get(device) || [];
 }
 
-// An entity of the camera's device whose id ends with `suffix` (Tapo: switch.*_privacy, button.*_move_left).
+// An entity of the camera's device whose id ends with `suffix` (Tapo: switch.*_privacy, button.*_move_left), or
+// whose translation key is that suffix: integrations that name their entities in the user's language (Tapo Cameras:
+// button.salon_gauche is the move_left button) only keep the English key in the registry.
 function hcSibling(hass, cameraId, domain, suffix) {
   const reg = hass?.entities;
   const device = reg?.[cameraId]?.device_id;
   if (!device) return undefined;
-  return hcDeviceEntities(reg, device).find((id) => id.startsWith(`${domain}.`) && id.endsWith(suffix));
+  const key = suffix.replace(/^_/, '');
+  const ids = hcDeviceEntities(reg, device).filter((id) => id.startsWith(`${domain}.`));
+  return ids.find((id) => id.endsWith(suffix)) || ids.find((id) => reg[id]?.translation_key === key);
 }
 
 // True when an event path goes through one of the card's own controls (privacy toggle, HD/SD switch,
@@ -1503,9 +1507,13 @@ function hcPtz(hass, cam, cameraId) {
   if (cam.ptz === false) return null;
   let ptz = cam.ptz;
   if (!ptz) {
-    const left = hcSibling(hass, cameraId, 'button', '_move_left');
-    if (!left) return null;
-    ptz = left.slice(0, -'_left'.length);
+    // Each direction on its own: translated entity ids share no prefix (Tapo Cameras: *_gauche, *_monter…)
+    const found = {};
+    for (const d of HC_PTZ_DIRS) {
+      const id = hcSibling(hass, cameraId, 'button', `_move_${d}`);
+      if (id) found[d] = id;
+    }
+    return found.left || found.right || found.up || found.down ? found : null;
   }
   if (typeof ptz === 'string') {
     const out = {};
