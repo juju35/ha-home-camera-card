@@ -52,7 +52,7 @@ List the cameras, the cards find their privacy switch, SD stream and PTZ buttons
 - **Motion badge**: a pulsing amber sensor icon on the image's name (and on the mini card's snapshot) while a motion, occupancy or person sensor of the camera's device is on
 - A single camera: its name is the title, a round *Disable* / *Enable* icon button sits on the right and the HD / SD badge under the title
 - Hidden cameras are removed from the grid: a camera is hidden when its **privacy switch is on** or its **power switch is off**
-- **HD / SD** switch: from an `input_select` shared by every dashboard, or from the card itself (remembered by the browser)
+- **HD / SD** switch: from an `input_select` shared by every dashboard, or from the card itself (remembered by the browser); with [Tapo Cameras](https://github.com/juju35/ha-tapo), it sets each camera's own **Stream quality** select, and the player picks the new stream up
 - Live grid on Home Assistant's own player: WebRTC through go2rtc when available, else HLS or MJPEG — no other card to install
 - **Tap a camera to put it fullscreen**, with a round pan & tilt pad at the bottom right; tap again or press Escape to come back (on iPhone, the card covers the screen itself)
 - *Details* button on every tile for Home Assistant's camera dialog; **sound** button on streams that carry sound, for one camera at a time (the grid starts muted)
@@ -62,11 +62,22 @@ List the cameras, the cards find their privacy switch, SD stream and PTZ buttons
 - Hiding or showing a camera, or switching HD / SD, never reloads the streams of the other cameras
 - Streams stop while the page is hidden (other tab, phone locked) or the card is scrolled off screen, and resume when it comes back
 - **Mini card** (`home-camera-mini-card`): a snapshot of each camera with its name and status, refreshed every 10 seconds instead of a live stream; its detail button (top right) or a tap on a snapshot shows the full card, a click outside folds it back
-- Automatic discovery on the camera's device: `switch.*_privacy`, `button.*_move_left/right/up/down`, the motion, occupancy and person `binary_sensor`s, and the `*_sd_stream` camera next to a `*_hd_stream` one (Tapo integration naming)
+- Automatic discovery on the camera's device: `switch.*_privacy` (or `*_privacy_mode`), `button.*_move_left/right/up/down`, the motion, occupancy and person `binary_sensor`s, and either the `*_sd_stream` camera next to a `*_hd_stream` one or a `select.*_stream_quality` (see [Supported integrations](#supported-integrations))
 - Visual editor in the dashboard UI (no YAML needed)
 - English, French, German, Spanish, Serbian (Cyrillic and Latin), Italian, Dutch, European Portuguese, Polish, Romanian, Danish, Swedish, Bulgarian, Russian, Ukrainian, Hungarian, Slovak, Czech, Slovenian, Latvian and Greek, follows the Home Assistant language
 - Light and dark theme compatible
 - Served by the integration and added to the dashboard resources by itself (loaded on every page when the resources are in YAML mode); each language other than English is a small file fetched when needed
+
+## Supported integrations
+
+Any `camera` entity works. These integrations also bring their controls without any configuration:
+
+| Integration | Camera entities | Privacy | HD / SD | PTZ | Motion |
+|---|---|---|---|---|---|
+| [Tapo Cameras](https://github.com/juju35/ha-tapo) (`tapo_cameras`) | one per camera | `switch.*_privacy_mode` | `select.*_stream_quality` (`hd` / `sd`) of each camera | `button.*_move_*` | detection `binary_sensor`s |
+| Tapo: Cameras Control (`tapo_control`) | `*_hd_stream` and `*_sd_stream` | `switch.*_privacy` | the `*_sd_stream` camera | `button.*_move_*` | detection `binary_sensor`s |
+
+With Tapo Cameras, the HD / SD switch changes the stream of the camera itself, so every viewer gets the new quality; with a shared `quality_entity`, the switch sets it too.
 
 ## Prerequisites
 
@@ -117,7 +128,7 @@ cameras:
   - camera.bedroom_hd_stream
 ```
 
-With the Tapo integration, each camera brings its SD stream, its privacy switch and its PTZ buttons on its own.
+With a Tapo integration ([Supported integrations](#supported-integrations)), each camera brings its HD / SD streams, its privacy switch and its PTZ buttons on its own.
 
 ### Full options
 

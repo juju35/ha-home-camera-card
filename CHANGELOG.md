@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.3.0 - 2026-11-11
+
+### What's new
+- **Tapo Cameras (ha-tapo) support**: its single camera entity per camera is found with its privacy switch (`switch.*_privacy_mode`), its PTZ buttons and its detections. The HD / SD switch sets each camera's own **Stream quality** select (`hd` / `sd`) — and the shared `quality_entity` when there is one — and shows what those selects say when there is no `quality_entity`. When a camera's stream changes, its player plays again so it picks the new stream up.
+- README: a **Supported integrations** section (Tapo Cameras, Tapo: Cameras Control).
+
 ## 4.2.1 - 2026-11-11
 
 ### Fixes

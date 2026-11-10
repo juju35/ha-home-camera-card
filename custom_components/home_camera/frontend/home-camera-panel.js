@@ -11,7 +11,7 @@
  *
  * https://github.com/juju35/ha-camera
  */
-var HOME_CAMERA_PANEL_VERSION = '4.2.1';
+var HOME_CAMERA_PANEL_VERSION = '4.3.0';
 
 var HomeCameraPanelI18n = {
   en: {
