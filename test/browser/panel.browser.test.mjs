@@ -207,3 +207,19 @@ test("Add all takes every camera found at once", async () => {
   assert.deepEqual(r.cameras, ["camera.a", "camera.b_hd_stream", "camera.c_hd_stream", "camera.d"]);
   assert.equal(r.msg, "Cameras added: 4. Save to keep them.");
 });
+
+test("on the wall, the column count is empty by default and 2 is kept when chosen", async () => {
+  const r = await page.evaluate(async () => {
+    await open({ admin: true, card: { cameras: ["camera.a", "camera.b"] } }, "settings");
+    const before = form.data.columns;
+    formChange({ cameras: [{ camera: "camera.a" }, { camera: "camera.b" }], columns: 2 });
+    $("[data-save]").click();
+    await new Promise((r) => setTimeout(r, 50));
+    const saved = sent.find((m) => m.type === "home_camera/update_settings").card;
+    const grid = $("#tab-cameras home-camera-card").shadowRoot.querySelector(".grid").style.gridTemplateColumns;
+    return { before, saved, grid };
+  });
+  assert.equal(r.before, undefined);
+  assert.deepEqual(r.saved, { cameras: ["camera.a", "camera.b"], columns: 2 });
+  assert.equal(r.grid, "repeat(2, minmax(0px, 1fr))");
+});
