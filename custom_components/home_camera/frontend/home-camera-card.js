@@ -1,4 +1,4 @@
-const HOME_CAMERA_CARD_VERSION = '4.1.0';
+const HOME_CAMERA_CARD_VERSION = '4.2.0';
 
 // ── i18n ─────────────────────────────────────────────────────────────────────
 const HcI18n = {
@@ -1555,6 +1555,11 @@ class HomeCameraCard extends HTMLElement {
     if (!config) throw new Error('Invalid configuration');
     if (config.cameras && !Array.isArray(config.cameras)) throw new Error('cameras must be a list');
     this._config = Object.assign({}, HC_DEFAULTS, config);
+    // Video wall (the Cameras panel, or `layout: wall` on a dashboard): no card around the grid, a status bar
+    // instead of the header, and as many columns as fit unless `columns` is set.
+    this._wall = config.layout === 'wall' && !this.hasAttribute?.('mini');
+    this._columnsSet = config.columns != null;
+    this.toggleAttribute?.('wall', this._wall);
     if (!this.shadowRoot) {
       this.attachShadow({ mode: 'open' });
       this.shadowRoot.innerHTML = `${this._styles()}<ha-card><div class="head"></div><div class="view"></div></ha-card>`;
@@ -1980,7 +1985,7 @@ class HomeCameraCard extends HTMLElement {
     let right = visible.length ? quality : '';
     let side = '';
     let sub = summary ? `<div class="summary">${hcEsc(summary)}</div>` : '';
-    if (single && badges) {
+    if (single && badges && !this._wall) {
       // Icon only, the size of the header icon; the text stays in the tooltip and for screen readers.
       // Same marks as the badges: the red live dot while the camera films, the lock while it is hidden.
       const cam = cams[0];
@@ -2004,18 +2009,19 @@ class HomeCameraCard extends HTMLElement {
       sub = status ? `<div class="summary">${hcEsc(status)}</div>` : '';
     }
 
-    const level = cams.length && !visible.length ? 'off' : 'on';
     const head = this.shadowRoot.querySelector('.head');
     // Replacing the header drops the keyboard focus (HD/SD toggled, a badge tapped): remember which
     // control held it, and give it back to its replacement.
     const focused = this.shadowRoot.activeElement;
     const kind = head.contains(focused) && (focused.dataset?.quality ? 'quality' : focused.dataset?.toggle ? 'toggle' : null);
-    head.innerHTML =
-      `<div class="header"><div class="hicon ${level}"><ha-icon icon="${hcEsc(c.icon || 'mdi:cctv')}"></ha-icon></div>` +
-      `<div class="titles"><div class="name-row"><div class="name">${hcEsc(title)}</div><div class="chips">${right}</div></div>` +
-      sub +
-      `</div>${side}${this._zoomButton()}</div>` +
-      (badges ? `<div class="chips badges">${badges}</div>` : '');
+    if (this._wall) {
+      // Video wall: one thin bar, the status on the left, the privacy badges, HD / SD on the right.
+      head.innerHTML =
+        `<div class="wallbar">${summary ? `<div class="summary">${hcEsc(summary)}</div>` : ''}` +
+        `<div class="chips badges">${badges}</div><div class="chips">${right}</div></div>`;
+    } else {
+      this._renderHeader(head, { title, right, side, sub, badges, level: cams.length && !visible.length ? 'off' : 'on' });
+    }
     if (kind) {
       for (const el of head.querySelectorAll(`[data-${kind}]`)) {
         if (el.dataset[kind] !== focused.dataset[kind]) continue;
@@ -2023,6 +2029,17 @@ class HomeCameraCard extends HTMLElement {
         break;
       }
     }
+  }
+
+  // The card's own header: icon, title with HD / SD, status line, then the privacy badges.
+  _renderHeader(head, { title, right, side, sub, badges, level }) {
+    const c = this._config;
+    head.innerHTML =
+      `<div class="header"><div class="hicon ${level}"><ha-icon icon="${hcEsc(c.icon || 'mdi:cctv')}"></ha-icon></div>` +
+      `<div class="titles"><div class="name-row"><div class="name">${hcEsc(title)}</div><div class="chips">${right}</div></div>` +
+      sub +
+      `</div>${side}${this._zoomButton()}</div>` +
+      (badges ? `<div class="chips badges">${badges}</div>` : '');
   }
 
   // The grid of tiles, one per visible camera. Tiles are kept across renders and only added or removed
@@ -2057,7 +2074,11 @@ class HomeCameraCard extends HTMLElement {
       grid.className = 'grid';
       view.replaceChildren(grid);
     }
-    grid.style.gridTemplateColumns = `repeat(${hcColumns(this._config, visible.length)}, minmax(0, 1fr))`;
+    // The wall fits as many tiles of at least 360 px as the width takes (one per row on a phone)
+    grid.style.gridTemplateColumns =
+      this._wall && !this._columnsSet
+        ? 'repeat(auto-fit, minmax(min(100%, 360px), 1fr))'
+        : `repeat(${hcColumns(this._config, visible.length)}, minmax(0, 1fr))`;
     grid.style.setProperty('--hc-ratio', String(hcRatio(this._config.aspect_ratio)));
 
     const keys = new Set(visible.map((cam) => cam.key));
@@ -2432,6 +2453,16 @@ class HomeCameraCard extends HTMLElement {
       // The one moving thing: the live dot on the images breathes, like a recording light.
       '@keyframes hc-live { 50% { opacity: 0.35; } }' +
       '.view:empty { display: none; }' +
+      // Video wall: no card, the grid edge to edge under a thin status bar.
+      ':host([wall]) ha-card { background: none; border: none; box-shadow: none; border-radius: 0; padding: 0; gap: 8px; overflow: visible; }' +
+      '.wallbar { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; min-height: 28px; }' +
+      '.wallbar .summary { margin: 0; font-size: 13px; }' +
+      '.wallbar .chips.badges { margin: 0; flex: 1 1 auto; }' +
+      // On the page background, the badges and the HD / SD track take the card colour to stand out from it
+      ':host([wall]) :is(.chip:not(.private), .seg) { background: var(--card-background-color, #fff); }' +
+      ':host([wall]) .opt.on { background: var(--secondary-background-color, rgba(128,128,128,0.12)); box-shadow: none; }' +
+      ':host([wall]) .grid { gap: 6px; }' +
+      ':host([wall]) .tile { border-radius: 10px; }' +
       '.grid { display: grid; gap: 8px; }' +
       // container-type: size gives the tile no width of its own: in a parent sized by its content (inline-block,
       // an auto grid column) the card would fold to its padding. contain-intrinsic-width stands in for the image
