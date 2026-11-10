@@ -1505,7 +1505,7 @@ function hcLoadStream(entity) {
 // PTZ buttons as { left, right, up, down }: a prefix ("button.x_move" + "_left"…), an object, or found on the device.
 function hcPtz(hass, cam, cameraId) {
   if (cam.ptz === false) return null;
-  let ptz = cam.ptz;
+  const ptz = cam.ptz;
   if (!ptz) {
     // Each direction on its own: translated entity ids share no prefix (Tapo Cameras: *_gauche, *_monter…)
     const found = {};
