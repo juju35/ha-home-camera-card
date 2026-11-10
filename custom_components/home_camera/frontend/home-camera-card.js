@@ -1,4 +1,4 @@
-const HOME_CAMERA_CARD_VERSION = '4.2.1';
+const HOME_CAMERA_CARD_VERSION = '4.3.0';
 
 // ── i18n ─────────────────────────────────────────────────────────────────────
 const HcI18n = {
@@ -1541,7 +1541,14 @@ function hcCamera(hass, raw, index) {
     const guess = id.replace(/_hd_stream$/, '_sd_stream');
     if (hass?.states?.[guess]) sd = guess;
   }
-  const privacy = cam.privacy === false ? null : cam.privacy || hcSibling(hass, id, 'switch', '_privacy') || null;
+  // Tapo Cameras (ha-tapo) names it switch.*_privacy_mode
+  const privacy =
+    cam.privacy === false
+      ? null
+      : cam.privacy || hcSibling(hass, id, 'switch', '_privacy') || hcSibling(hass, id, 'switch', '_privacy_mode') || null;
+  // Tapo Cameras (ha-tapo): one camera entity whose stream is chosen by its select.*_stream_quality (hd / sd),
+  // instead of an SD camera entity next to the HD one
+  const quality = sd ? null : hcSibling(hass, id, 'select', '_stream_quality') || null;
   const name = cam.name || st?.attributes.friendly_name || id;
   return {
     key: cam.id || id.replace(/^camera\./, '') || `camera_${index}`,
@@ -1550,6 +1557,7 @@ function hcCamera(hass, raw, index) {
     name: name,
     short: cam.short_name || name,
     privacy: privacy,
+    quality: quality,
     power: cam.power || null,
     ptz: hcPtz(hass, cam, id),
     motion: hcMotion(hass, cam, id),
@@ -1708,6 +1716,9 @@ class HomeCameraCard extends HTMLElement {
   _hd() {
     const c = this._config;
     if (c.quality_entity) return this._state(c.quality_entity) !== c.sd_option;
+    // Tapo Cameras: what the cameras' own stream quality selects say (the first one; the switch sets them all)
+    const select = this._qualitySelects()[0];
+    if (select && this._usable(select)) return this._state(select) !== 'sd';
     let quality = this._quality;
     try {
       quality = localStorage.getItem(HC_QUALITY_KEY) || quality;
@@ -2238,6 +2249,14 @@ class HomeCameraCard extends HTMLElement {
           this._renderTools(tile);
         }
       }
+      // A camera that switched its stream itself (Tapo Cameras: the stream_quality attribute) plays again,
+      // so the player negotiates the new stream instead of keeping the old one.
+      const q = obj?.attributes?.stream_quality;
+      if (obj && stream.stateObj && tile._q !== undefined && q !== tile._q) {
+        stream.stateObj = undefined;
+        tile.classList.add('loading');
+      }
+      if (obj) tile._q = q;
       if (stream.stateObj !== obj) stream.stateObj = obj;
       this._syncPtz(tile);
     }
@@ -2649,9 +2668,24 @@ class HomeCameraCard extends HTMLElement {
     else this._toggleFullscreen(tile);
   }
 
+  // The stream quality selects of the cameras that switch their stream themselves (Tapo Cameras)
+  _qualitySelects() {
+    if (!this._hass || !this._config) return [];
+    return this._cameras()
+      .map((cam) => cam.quality)
+      .filter(Boolean);
+  }
+
   _toggleQuality() {
     const c = this._config;
     const next = !this._hd();
+    // Tapo Cameras: each camera's own select switches its stream (for every viewer: it is the camera's stream)
+    const option = next ? 'hd' : 'sd';
+    for (const select of this._qualitySelects()) {
+      if (this._usable(select) && this._state(select) !== option) {
+        this._call('select', 'select_option', { entity_id: select, option }).catch(() => {});
+      }
+    }
     if (c.quality_entity) {
       const domain = c.quality_entity.split('.')[0];
       this._call(domain, 'select_option', {

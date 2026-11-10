@@ -1175,3 +1175,54 @@ test("layout: wall puts the grid edge to edge under a status bar, as many column
   assert.equal(r.set, "repeat(2, minmax(0px, 1fr))");
   assert.deepEqual(r.back, { attr: false, header: true });
 });
+
+test("Tapo Cameras (ha-tapo): privacy_mode switch, and HD / SD through the camera's stream quality select", async () => {
+  const r = await page.evaluate(async () => {
+    document.body.replaceChildren();
+    const states = {
+      "camera.garage": { entity_id: "camera.garage", state: "idle", attributes: { stream_quality: "hd" } },
+      "switch.garage_privacy_mode": st("switch.garage_privacy_mode", "off"),
+      "select.garage_stream_quality": st("select.garage_stream_quality", "hd"),
+    };
+    const hass = (s) => ({
+      ...makeHass(s),
+      entities: {
+        "camera.garage": { entity_id: "camera.garage", device_id: "g" },
+        "switch.garage_privacy_mode": { entity_id: "switch.garage_privacy_mode", device_id: "g" },
+        "select.garage_stream_quality": { entity_id: "select.garage_stream_quality", device_id: "g" },
+      },
+    });
+    const el = document.createElement("home-camera-card");
+    el.setConfig({ cameras: ["camera.garage", "camera.c"] });
+    document.body.appendChild(el);
+    el.hass = hass({ ...baseStates(), ...states });
+    calls.length = 0;
+    const badge = el.shadowRoot.querySelector("[data-toggle]")?.dataset.toggle;
+    const hdBefore = el._hd();
+    el._toggleQuality();
+    const sent = [...calls];
+    // The select answers: the card shows SD, and the camera's player plays again
+    const tile = el.shadowRoot.querySelector('.tile[data-cam="garage"]');
+    tile.classList.remove("loading");
+    el.hass = hass({
+      ...baseStates(),
+      ...states,
+      "camera.garage": { entity_id: "camera.garage", state: "idle", attributes: { stream_quality: "sd" } },
+      "select.garage_stream_quality": st("select.garage_stream_quality", "sd"),
+    });
+    return {
+      badge,
+      hdBefore,
+      sent,
+      hdAfter: el._hd(),
+      reloaded: tile.classList.contains("loading"),
+      entity: tile.querySelector("ha-camera-stream").stateObj?.entity_id,
+    };
+  });
+  assert.equal(r.badge, "switch.garage_privacy_mode");
+  assert.equal(r.hdBefore, true);
+  assert.deepEqual(r.sent, [["select", "select_option", "select.garage_stream_quality"]]);
+  assert.equal(r.hdAfter, false);
+  assert.equal(r.reloaded, true);
+  assert.equal(r.entity, "camera.garage");
+});
