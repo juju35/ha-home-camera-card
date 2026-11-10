@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Home Camera",
+        "description": "Adaugă panoul Camere în bara laterală, pentru toți utilizatorii (administratorii aleg camerele în fila Setări), și cardurile camerelor în tablourile de bord."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Home Camera este deja configurat."
+    }
+  }
+}

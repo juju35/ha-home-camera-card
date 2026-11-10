@@ -29,10 +29,55 @@ jobs:
       # The checks the release makes, before merging: a version bumped in one file only fails the release on main.
       - name: Same version everywhere, and in the changelog
         run: |
-          VERSION="$(node -p "require('./package.json').version")"
+          VERSION="$(jq -r .version custom_components/home_camera/manifest.json)"
+          grep -q "VERSION = \"$VERSION\"" custom_components/home_camera/const.py || { echo "::error file=custom_components/home_camera/const.py::version $VERSION not found in const.py"; exit 1; }
+          grep -q "HOME_CAMERA_CARD_VERSION = '$VERSION'" custom_components/home_camera/frontend/home-camera-card.js || { echo "::error file=custom_components/home_camera/frontend/home-camera-card.js::version $VERSION not found in the card"; exit 1; }
+          grep -q "HOME_CAMERA_PANEL_VERSION = '$VERSION'" custom_components/home_camera/frontend/home-camera-panel.js || { echo "::error file=custom_components/home_camera/frontend/home-camera-panel.js::version $VERSION not found in the panel"; exit 1; }
+          grep -q "\"version\": \"$VERSION\"" package.json || { echo "::error file=package.json::version $VERSION not found in package.json"; exit 1; }
           test "$(node -p "require('./package-lock.json').version")" = "$VERSION" || { echo "::error file=package-lock.json::package-lock.json is not at $VERSION (npm install)"; exit 1; }
           grep -q "^## $VERSION " CHANGELOG.md || { echo "::error file=CHANGELOG.md::no '## $VERSION' entry in CHANGELOG.md"; exit 1; }
           echo "Version $VERSION everywhere"
+
+  hassfest:
+    name: Hassfest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Hassfest validation
+        uses: home-assistant/actions/hassfest@86d4564712fa02543c808e3a693dd04f9d3f8361 # master
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Latest Home Assistant: releases since 2026.3 need Python 3.14 (3.13 would resolve to 2026.2).
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.14"
+
+      - name: Install dependencies
+        run: pip install -r requirements_test.txt
+
+      - name: Home Assistant version
+        run: python -c 'from homeassistant.const import __version__; print(f"::notice::Home Assistant {__version__}")'
+
+      - name: Run tests
+        run: pytest
+        env:
+          DEPRECATIONS_LOG: ${{ runner.temp }}/deprecations.log
+
+      - name: Annotate deprecated calls
+        if: failure()
+        run: |
+          if [ -f "$RUNNER_TEMP/deprecations.log" ]; then
+            sort -u "$RUNNER_TEMP/deprecations.log" | head -n 20 | while IFS= read -r line; do echo "::error::$line"; done
+          fi
 
   build:
     name: Build & check
@@ -49,7 +94,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build and check the card
+      - name: Build and check the card and the panel
         run: npm run check
 
       - name: Unit tests
@@ -74,7 +119,10 @@ jobs:
       - name: Browser tests
         run: npm run test:browser
 
-      - name: Check hacs.json points to the built file
+      - name: The release zip carries the integration
         run: |
-          file=$(node -p "require('./hacs.json').filename")
-          test -f "dist/$file" || { echo "dist/$file not built"; exit 1; }
+          node scripts/build.mjs --into
+          (cd custom_components/home_camera && zip -qr ../../home_camera.zip . -x "__pycache__/*")
+          unzip -l home_camera.zip | grep -q " manifest.json$"
+          unzip -l home_camera.zip | grep -q " frontend/home-camera-panel.js$"
+          unzip -l home_camera.zip | grep -q " frontend/home-camera-card.i18n.fr.js$"

@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Home Camera",
+        "description": "Dodaje panel Kamery do paska bocznego dla wszystkich użytkowników (administratorzy wybierają kamery w karcie Ustawienia) oraz karty kamer do Twoich dashboardów."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Home Camera jest już skonfigurowany."
+    }
+  }
+}

@@ -1,0 +1,10 @@
+target-version = "py312"
+line-length = 120
+extend-exclude = [".vulture_whitelist.py"]
+
+[lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "PERF", "C4", "FURB", "PLW", "TRY400", "RUF"]
+ignore = ["RUF001", "RUF002", "RUF003", "RUF100"]
+
+[lint.per-file-ignores]
+"scripts/*" = ["E501"]

@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Home Camera",
+        "description": "Aggiunge il pannello Telecamere alla barra laterale, per tutti gli utenti (gli amministratori scelgono le telecamere nella scheda Impostazioni), e le schede delle telecamere alle tue plance."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Home Camera è già configurato."
+    }
+  }
+}

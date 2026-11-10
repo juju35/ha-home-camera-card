@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Home Camera",
+        "description": "Přidá panel Kamery do postranního panelu pro všechny uživatele (správci vybírají kamery na kartě Nastavení) a karty kamer na vaše dashboardy."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Home Camera je již nastaven."
+    }
+  }
+}

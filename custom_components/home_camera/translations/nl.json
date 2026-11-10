@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Home Camera",
+        "description": "Voegt het paneel Camera's toe aan de zijbalk, voor alle gebruikers (beheerders kiezen de camera's op het tabblad Instellingen), en de camerakaarten aan je dashboards."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Home Camera is al ingesteld."
+    }
+  }
+}

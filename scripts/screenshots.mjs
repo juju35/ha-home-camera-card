@@ -17,10 +17,11 @@ function save(file, data) {
   console.log(`screenshots/${file}${written ? "" : " (unchanged)"}`);
 }
 const cardJs = readFileSync(`${root}dist/home-camera-card.js`, "utf8");
+const panelJs = readFileSync(`${root}dist/home-camera-panel.js`, "utf8");
 
 // Every mdi:* icon the card and the mock camera view use, as SVG paths for the <ha-icon> stand-in.
 const icons = {};
-for (const name of new Set(cardJs.match(/mdi:[a-z0-9-]+/g))) {
+for (const name of new Set(`${cardJs}${panelJs}`.match(/mdi:[a-z0-9-]+/g))) {
   const key = `mdi${name.slice(4).replace(/(^|-)([a-z0-9])/g, (_, __, c) => c.toUpperCase())}`;
   if (mdi[key]) icons[name.slice(4)] = mdi[key];
 }
@@ -91,6 +92,11 @@ const SCENE_OF = { living_room: 0, kids_room: 1, office: 2, terrace: 4 };
 // The same scene as a still snapshot (the mini card's entity_picture). The card appends "?_t=…": after the
 // "#", it stays out of the SVG.
 window.snapshot = (id) => SCENES[SCENE_OF[id.replace(/^camera[.]/, "").replace(/_(hd|sd)_stream$/, "")] ?? 3].slice(5, -2) + "#snap";
+window.withSnapshots = (states) => {
+  for (const st of Object.values(states)) {
+    if (st.entity_id.startsWith("camera.")) st.attributes = { ...st.attributes, entity_picture: window.snapshot(st.entity_id) };
+  }
+};
 customElements.define("ha-camera-stream", class extends HTMLElement {
   connectedCallback() { this.style.aspectRatio = "16 / 9"; this.style.maxHeight = "100vh"; this.style.maxWidth = "calc(100vh * 16 / 9)"; }
   get stateObj() { return this._st; }
@@ -197,9 +203,7 @@ async function openCard(browser, s) {
     : states;
   await page.evaluate(({ config, hass, type }) => {
     // Snapshots for the mini card's thumbnails.
-    for (const st of Object.values(hass.states)) {
-      if (st.entity_id.startsWith("camera.")) st.attributes = { ...st.attributes, entity_picture: window.snapshot(st.entity_id) };
-    }
+    window.withSnapshots(hass.states);
     const el = document.createElement(type);
     el.setConfig({ type: `custom:${type}`, ...config });
     el.hass = { ...hass, callService: async () => {} };
@@ -234,6 +238,46 @@ for (const s of SHOTS) {
     animations: "disabled",
   });
   save(`${s.file}.png`, png);
+  await page.close();
+}
+
+// The Cameras sidebar panel, 1100 x 760, as an administrator (both tabs) sees it: the header bar and the tabs
+// in the theme's header colours, the card full page under them. A stand-in menu button draws the sidebar toggle.
+const HEADER = { light: { bg: "#03a9f4", text: "#ffffff" }, dark: { bg: "#101e24", text: "#e1e1e1" } };
+for (const theme of ["light", "dark"]) {
+  const page = await browser.newPage({ deviceScaleFactor: 1.5, viewport: { width: 1100, height: 760 } });
+  page.on("pageerror", (err) => console.error(`pageerror (panel ${theme}): ${err.message}`));
+  await page.setContent(`<!doctype html><html><head><meta charset="utf-8"><style>
+    :root { ${Object.entries({ ...THEMES[theme], ...COMMON, "--app-header-background-color": HEADER[theme].bg, "--app-header-text-color": HEADER[theme].text }).map(([k, v]) => `${k}:${v};`).join("")} }
+    body { margin: 0; background: var(--primary-background-color); color: var(--primary-text-color); font-family: Roboto, "Segoe UI", Helvetica, Arial, sans-serif; }
+  </style></head><body></body></html>`);
+  await page.addScriptTag({ content: haElements });
+  await page.addScriptTag({
+    content: `customElements.define("ha-menu-button", class extends HTMLElement {
+      connectedCallback() { this.innerHTML = '<ha-icon icon="mdi:menu" style="display:flex;padding:8px"></ha-icon>'; }
+    });`,
+  });
+  await page.addScriptTag({ content: cardJs });
+  await page.addScriptTag({ content: panelJs });
+  await page.evaluate(({ config, hass }) => {
+    window.withSnapshots(hass.states);
+    const settings = { configured: true, card: config, title: "", sidebar_title: "Cameras", default_title: "Cameras" };
+    const el = document.createElement("home-camera-panel");
+    el.panel = { url_path: "cameras", config: {} };
+    el.route = { path: "" };
+    el.narrow = false;
+    document.body.appendChild(el);
+    el.hass = {
+      ...hass,
+      user: { is_admin: true },
+      callService: async () => {},
+      connection: { subscribeMessage: (cb) => { setTimeout(() => cb(settings)); return Promise.resolve(() => {}); } },
+    };
+  }, { config, hass: { states, entities, language: "en", locale: { language: "en" }, themes: { darkMode: theme === "dark" } } });
+  await page.waitForTimeout(500);
+  await page.locator("home-camera-panel home-camera-card .tile").first().hover();
+  await page.waitForTimeout(300);
+  save(`panel${theme === "dark" ? "-dark" : ""}.png`, await page.screenshot({ animations: "disabled" }));
   await page.close();
 }
 

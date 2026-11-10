@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import vm from "node:vm";
 
 export function loadCard(file, names, globals = {}) {
-  const src = readFileSync(fileURLToPath(new URL(`../src/${file}`, import.meta.url)), "utf8");
+  const src = readFileSync(fileURLToPath(new URL(`../custom_components/home_camera/frontend/${file}`, import.meta.url)), "utf8");
   const registry = new Map();
   const sandbox = {
     console: { info() {}, log() {}, warn() {}, error() {} },

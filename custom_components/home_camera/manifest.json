@@ -1,0 +1,14 @@
+{
+  "domain": "home_camera",
+  "name": "Home Camera",
+  "codeowners": ["@juju35"],
+  "config_flow": true,
+  "dependencies": ["frontend", "http", "lovelace", "panel_custom"],
+  "documentation": "https://github.com/juju35/ha-camera",
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/juju35/ha-camera/issues",
+  "requirements": [],
+  "single_config_entry": true,
+  "version": "4.0.0"
+}

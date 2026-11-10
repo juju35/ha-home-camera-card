@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Home Camera",
+        "description": "Pridá panel Kamery do bočného panela pre všetkých používateľov (správcovia vyberajú kamery na karte Nastavenia) a karty kamier na vaše dashboardy."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Home Camera je už nastavený."
+    }
+  }
+}

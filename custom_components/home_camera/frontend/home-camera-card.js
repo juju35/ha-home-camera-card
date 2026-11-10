@@ -1,4 +1,4 @@
-const HOME_CAMERA_CARD_VERSION = '__VERSION__';
+const HOME_CAMERA_CARD_VERSION = '4.0.0';
 
 // ── i18n ─────────────────────────────────────────────────────────────────────
 const HcI18n = {
@@ -2884,7 +2884,7 @@ if (!customElements.get('home-camera-card')) {
     name: 'Home Camera Card',
     description: 'Every home camera in one grid, with privacy toggles, HD/SD switching and PTZ',
     preview: true,
-    documentationURL: 'https://github.com/juju35/ha-home-camera-card',
+    documentationURL: 'https://github.com/juju35/ha-camera',
   });
 }
 if (!customElements.get('home-camera-mini-card')) {
@@ -2895,7 +2895,7 @@ if (!customElements.get('home-camera-mini-card')) {
     name: 'Home Camera Mini Card',
     description: 'A snapshot of each home camera with its status, and a button to show the full camera card',
     preview: true,
-    documentationURL: 'https://github.com/juju35/ha-home-camera-card',
+    documentationURL: 'https://github.com/juju35/ha-camera',
   });
 }
 

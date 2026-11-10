@@ -29,6 +29,22 @@ jobs:
           python-version: "3.13"
       - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
 
+  ruff:
+    name: Ruff (annotations)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # Same ruff version as the pre-commit hook, so both jobs apply the same rules
+      # (and stay aligned when Dependabot bumps .pre-commit-config.yaml).
+      - name: Read ruff version from .pre-commit-config.yaml
+        id: ruff-version
+        run: |
+          version=$(awk '/astral-sh\/ruff-pre-commit/ {f=1} f && /rev:/ {sub(/.*rev:[ ]*"?v?/, ""); sub(/".*/, ""); print; exit}' .pre-commit-config.yaml)
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - uses: astral-sh/ruff-action@278981a28ce3188b1e39527901f38254bf3aac89 # v4.1.0
+        with:
+          version: ${{ steps.ruff-version.outputs.version }}
   biome:
     name: Biome (card JS)
     runs-on: ubuntu-latest
@@ -58,3 +74,13 @@ jobs:
       - name: Annotate duplicates
         if: always()
         run: node .github/scripts/jscpd-annotate.mjs
+  dead-code:
+    name: Dead code (vulture)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+      - run: pip install vulture==2.16
+      - run: vulture custom_components .vulture_whitelist.py --min-confidence 60

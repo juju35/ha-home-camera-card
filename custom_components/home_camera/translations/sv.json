@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Home Camera",
+        "description": "Lägger till panelen Kameror i sidofältet för alla användare (administratörer väljer kamerorna på fliken Inställningar) och kamerakorten i dina instrumentpaneler."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Home Camera är redan konfigurerat."
+    }
+  }
+}
