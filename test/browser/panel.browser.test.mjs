@@ -101,9 +101,10 @@ test("every user gets the cameras full page, without the Settings tab", async ()
       tabsHidden: $(".tabs").hidden,
       settingsLink: !!$(".toolbar a"),
       tiles: card?.shadowRoot.querySelectorAll(".tile").length,
+      wall: card?.hasAttribute("wall"),
     };
   });
-  assert.deepEqual(r, { subscribed: true, tabs: ["cameras"], tabsHidden: true, settingsLink: false, tiles: 2 });
+  assert.deepEqual(r, { subscribed: true, tabs: ["cameras"], tabsHidden: true, settingsLink: false, tiles: 2, wall: true });
 });
 
 test("a user cannot open Settings from the address", async () => {

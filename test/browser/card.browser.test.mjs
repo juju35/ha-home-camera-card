@@ -1142,3 +1142,36 @@ test("the card's own fullscreen gives the page its previous overflow back on the
   });
   assert.deepEqual(r, { during: ["hidden", "hidden"], after: ["auto", "scroll"] });
 });
+
+test("layout: wall puts the grid edge to edge under a status bar, as many columns as fit", async () => {
+  const r = await page.evaluate(() => {
+    document.body.replaceChildren();
+    const el = document.createElement("home-camera-card");
+    el.setConfig({ cameras: CAMS, layout: "wall" });
+    document.body.appendChild(el);
+    el.hass = makeHass(baseStates());
+    const grid = el.shadowRoot.querySelector(".grid");
+    const wall = {
+      attr: el.hasAttribute("wall"),
+      bar: !!el.shadowRoot.querySelector(".wallbar"),
+      header: !!el.shadowRoot.querySelector(".header"),
+      columns: grid.style.gridTemplateColumns,
+      badges: el.shadowRoot.querySelectorAll(".wallbar .chip").length,
+      quality: !!el.shadowRoot.querySelector(".wallbar .seg"),
+    };
+    el.setConfig({ cameras: CAMS, layout: "wall", columns: 2 });
+    const set = el.shadowRoot.querySelector(".grid").style.gridTemplateColumns;
+    el.setConfig({ cameras: CAMS });
+    return { wall, set, back: { attr: el.hasAttribute("wall"), header: !!el.shadowRoot.querySelector(".header") } };
+  });
+  assert.deepEqual(r.wall, {
+    attr: true,
+    bar: true,
+    header: false,
+    columns: "repeat(auto-fit, minmax(min(100%, 360px), 1fr))",
+    badges: 1,
+    quality: true,
+  });
+  assert.equal(r.set, "repeat(2, minmax(0px, 1fr))");
+  assert.deepEqual(r.back, { attr: false, header: true });
+});

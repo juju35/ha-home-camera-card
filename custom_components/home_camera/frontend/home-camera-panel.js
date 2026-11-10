@@ -1,9 +1,9 @@
 /*
  * Home Camera sidebar panel — every home camera on one page, for every user (not only administrators).
  *
- * Two tabs under the toolbar, as in Smart Comfort: Cameras (the home camera card full page, as the cameras
- * dashboard showed it) and, for administrators only, Settings (the sidebar title, the cameras of Home Assistant
- * not shown yet, from home_camera/discover, and the card's own visual editor, with a copy of a camera card found
+ * Two tabs under the toolbar, as in Smart Comfort: Cameras (the cameras full page, as a video wall edge to edge,
+ * with no card around them) and, for administrators only, Settings (the sidebar title, the cameras of Home
+ * Assistant not shown yet, from home_camera/discover, and the card's own visual editor, with a copy of a camera card found
  * on a dashboard). The settings come from home_camera/subscribe,
  * open to every user and pushed again whenever they change; home_camera/update_settings (administrators)
  * saves them. The tab is in the address (/cameras/settings). The panel draws its toolbar, tabs and forms itself;
@@ -11,7 +11,7 @@
  *
  * https://github.com/juju35/ha-camera
  */
-var HOME_CAMERA_PANEL_VERSION = '4.1.0';
+var HOME_CAMERA_PANEL_VERSION = '4.2.0';
 
 var HomeCameraPanelI18n = {
   en: {
@@ -691,8 +691,8 @@ class HomeCameraPanel extends HTMLElement {
     .tab:hover, .tab:focus-visible { opacity:1; outline:none; }
     .tab.active { opacity:1; border-bottom-color:var(--app-header-text-color, #fff); }
     main { margin:0 auto; padding:16px; box-sizing:border-box; }
-    /* The camera grid as wide as the cameras dashboard's section, the settings at reading width */
-    main.cameras { max-width:1400px; }
+    /* The cameras as a video wall, edge to edge; the settings at reading width */
+    main.cameras { padding:8px 12px 12px; }
     main.settings { max-width:900px; }
     section[hidden] { display:none; }
     .column { display:flex; flex-direction:column; gap:12px; min-width:0; }
@@ -985,7 +985,8 @@ class HomeCameraPanel extends HTMLElement {
       this._card = document.createElement(HCP_CARD);
     }
     try {
-      this._card.setConfig(Object.assign({ type: `custom:${HCP_CARD}` }, card));
+      // Always the video wall here: no card around the cameras (the configuration keeps its own layout for dashboards)
+      this._card.setConfig(Object.assign({ type: `custom:${HCP_CARD}` }, card, { layout: 'wall' }));
     } catch (err) {
       note(`<span>${hcpEsc(String(err?.message || err))}</span>`, true);
       return;

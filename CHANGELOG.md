@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.2.0 - 2026-11-10
+
+### What's new
+- **Video wall in the Cameras panel**: no card around the cameras any more. A thin status bar (cameras live and hidden, privacy badges, HD / SD) sits over a grid edge to edge, with as many columns as the width takes (tiles of at least 360 px, one per row on a phone).
+- New card option `layout: wall`, the same look on a dashboard (a panel view, for instance); `columns` still sets the number of columns when given.
+
 ## 4.1.0 - 2026-11-10
 
 ### What's new
