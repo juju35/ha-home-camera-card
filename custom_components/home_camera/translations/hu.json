@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Home Camera",
-        "description": "Hozzáadja a Kamerák panelt az oldalsávhoz minden felhasználónak (a rendszergazdák a Beállítások lapon választják ki a kamerákat), valamint a kamerakártyákat az irányítópultjaidhoz."
+        "description": "Hozzáadja a Kamerák panelt az oldalsávhoz minden felhasználónak (a rendszergazdák a Beállítások lapon választják ki a kamerákat), valamint a kamerakártyákat az irányítópultjaidhoz. A panel a Home Assistantban talált összes kamerával indul."
       }
     },
     "abort": {

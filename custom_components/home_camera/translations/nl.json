@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Home Camera",
-        "description": "Voegt het paneel Camera's toe aan de zijbalk, voor alle gebruikers (beheerders kiezen de camera's op het tabblad Instellingen), en de camerakaarten aan je dashboards."
+        "description": "Voegt het paneel Camera's toe aan de zijbalk, voor alle gebruikers (beheerders kiezen de camera's op het tabblad Instellingen), en de camerakaarten aan je dashboards. Het paneel begint met alle camera's die in Home Assistant zijn gevonden."
       }
     },
     "abort": {

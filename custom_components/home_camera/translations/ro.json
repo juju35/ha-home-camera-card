@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Home Camera",
-        "description": "Adaugă panoul Camere în bara laterală, pentru toți utilizatorii (administratorii aleg camerele în fila Setări), și cardurile camerelor în tablourile de bord."
+        "description": "Adaugă panoul Camere în bara laterală, pentru toți utilizatorii (administratorii aleg camerele în fila Setări), și cardurile camerelor în tablourile de bord. Panoul pornește cu toate camerele găsite în Home Assistant."
       }
     },
     "abort": {

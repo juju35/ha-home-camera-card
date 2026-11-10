@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Home Camera",
-        "description": "Adiciona o painel Câmaras à barra lateral, para todos os utilizadores (os administradores escolhem as câmaras no separador Definições), e os cartões de câmaras aos seus painéis."
+        "description": "Adiciona o painel Câmaras à barra lateral, para todos os utilizadores (os administradores escolhem as câmaras no separador Definições), e os cartões de câmaras aos seus painéis. O painel começa com todas as câmaras encontradas no Home Assistant."
       }
     },
     "abort": {

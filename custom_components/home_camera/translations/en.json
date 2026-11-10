@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Home Camera",
-        "description": "Adds the Cameras panel to the sidebar, for every user (administrators choose the cameras in its Settings tab), and the home camera cards to your dashboards."
+        "description": "Adds the Cameras panel to the sidebar, for every user (administrators choose the cameras in its Settings tab), and the home camera cards to your dashboards. The panel starts with every camera found in Home Assistant."
       }
     },
     "abort": {

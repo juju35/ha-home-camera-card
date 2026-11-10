@@ -41,6 +41,16 @@ window.makeHass = ({ admin, card, title = "" }) => {
     callWS: async (msg) => {
       sent.push(msg);
       if (msg.type === "home_camera/update_settings") return settings(msg.card, msg.title);
+      if (msg.type === "home_camera/discover") {
+        return {
+          cameras: [
+            { camera: "camera.a", name: "Living room", area: "Living room", sd: null },
+            { camera: "camera.b_hd_stream", name: "Kids", area: "Bedroom", sd: "camera.b_sd_stream" },
+            { camera: "camera.c_hd_stream", name: "Office", area: null, sd: "camera.c_sd_stream" },
+            { camera: "camera.d", name: "Terrace", area: null, sd: null },
+          ],
+        };
+      }
       if (msg.type === "lovelace/dashboards/list") return [{ url_path: "dashboard-cameras", title: "Cameras", mode: "storage" }];
       if (msg.type === "lovelace/config" && msg.url_path === "dashboard-cameras") {
         return { views: [{ sections: [{ cards: [{ type: "custom:home-camera-card", cameras: ["camera.b"], grid_options: { columns: 36 } }] }] }] };
@@ -165,4 +175,34 @@ test("Copy from a dashboard takes the first camera card, without its type or lay
   assert.match(r.msg, /copied from “Cameras”/);
   assert.deepEqual(r.data, [{ camera: "camera.b" }]);
   assert.equal(r.save, false);
+});
+
+test("Settings lists the cameras found that the panel does not show yet, and adds them", async () => {
+  const r = await page.evaluate(async () => {
+    // camera.a is shown; Office is listed through its SD stream
+    await open({ admin: true, card: { cameras: ["camera.a", { camera: "camera.x", sd: "camera.c_sd_stream" }] } }, "settings");
+    const names = () => [...panel.shadowRoot.querySelectorAll(".found .n")].map((n) => n.textContent);
+    const first = { names: names(), sub: $(".found .s").textContent, addAll: !!$('[data-add=""]') };
+    $('[data-add="camera.d"]').click();
+    await new Promise((r) => setTimeout(r));
+    const one = { names: names(), cameras: form.data.cameras.map((c) => c.camera), save: $("[data-save]").disabled };
+    $('[data-add="camera.b_hd_stream"]').click();
+    await new Promise((r) => setTimeout(r));
+    return { first, one, all: { names: names(), msg: $("[data-msg]").textContent, none: $("[data-found] .msg").textContent }, cameras: form.data.cameras };
+  });
+  assert.deepEqual(r.first, { names: ["Kids", "Terrace"], sub: "Bedroom · camera.b_hd_stream · HD + SD", addAll: true });
+  assert.deepEqual(r.one, { names: ["Kids"], cameras: ["camera.a", "camera.x", "camera.d"], save: false });
+  assert.deepEqual(r.all, { names: [], msg: "Cameras added: 1. Save to keep them.", none: "Every camera found is already in the panel." });
+  assert.deepEqual(r.cameras.at(-1), { camera: "camera.b_hd_stream", name: "Kids" });
+});
+
+test("Add all takes every camera found at once", async () => {
+  const r = await page.evaluate(async () => {
+    await open({ admin: true, card: { cameras: [] } }, "settings");
+    $('[data-add=""]').click();
+    await new Promise((r) => setTimeout(r));
+    return { cameras: form.data.cameras.map((c) => c.camera), msg: $("[data-msg]").textContent };
+  });
+  assert.deepEqual(r.cameras, ["camera.a", "camera.b_hd_stream", "camera.c_hd_stream", "camera.d"]);
+  assert.equal(r.msg, "Cameras added: 4. Save to keep them.");
 });

@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Home Camera",
-        "description": "Añade el panel Cámaras a la barra lateral, para todos los usuarios (los administradores eligen las cámaras en su pestaña Ajustes), y las tarjetas de cámaras a tus paneles."
+        "description": "Añade el panel Cámaras a la barra lateral, para todos los usuarios (los administradores eligen las cámaras en su pestaña Ajustes), y las tarjetas de cámaras a tus paneles. El panel empieza con todas las cámaras encontradas en Home Assistant."
       }
     },
     "abort": {
