@@ -1,34 +1,47 @@
-# ha-home-camera-card
+# ha-camera
 
 [![Marketplace](https://img.shields.io/badge/Marketplace-Custom-41BDF5.svg)](https://www.home-assistant.io/integrations/marketplace/)
-[![HACS Validation](https://github.com/juju35/ha-home-camera-card/actions/workflows/hacs.yml/badge.svg)](https://github.com/juju35/ha-home-camera-card/actions/workflows/hacs.yml)
-[![Validate](https://github.com/juju35/ha-home-camera-card/actions/workflows/validate.yml/badge.svg)](https://github.com/juju35/ha-home-camera-card/actions/workflows/validate.yml)
-[![Lint](https://github.com/juju35/ha-home-camera-card/actions/workflows/lint.yml/badge.svg)](https://github.com/juju35/ha-home-camera-card/actions/workflows/lint.yml)
-[![Release](https://img.shields.io/github/v/release/juju35/ha-home-camera-card)](https://github.com/juju35/ha-home-camera-card/releases/latest)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/juju35/ha-home-camera-card/blob/main/LICENSE)
+[![HACS Validation](https://github.com/juju35/ha-camera/actions/workflows/hacs.yml/badge.svg)](https://github.com/juju35/ha-camera/actions/workflows/hacs.yml)
+[![Validate](https://github.com/juju35/ha-camera/actions/workflows/validate.yml/badge.svg)](https://github.com/juju35/ha-camera/actions/workflows/validate.yml)
+[![Lint](https://github.com/juju35/ha-camera/actions/workflows/lint.yml/badge.svg)](https://github.com/juju35/ha-camera/actions/workflows/lint.yml)
+[![Release](https://img.shields.io/github/v/release/juju35/ha-camera)](https://github.com/juju35/ha-camera/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/juju35/ha-camera/blob/main/LICENSE)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/julienstep9)
 
-Custom Lovelace card for Home Assistant showing **every home camera in one grid**, with a **privacy badge per camera**, an **HD / SD switch** and **PTZ controls**.
+Home Assistant integration with a **Cameras sidebar panel for every user** — not only administrators — and the Lovelace cards behind it: **every home camera in one grid**, with a **privacy badge per camera**, an **HD / SD switch** and **PTZ controls**.
 
-List the cameras, the card finds their privacy switch, SD stream and PTZ buttons by itself.
+List the cameras, the cards find their privacy switch, SD stream and PTZ buttons by themselves.
 
-[![Open your Home Assistant instance and open a repository inside the Marketplace.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=juju35&repository=ha-home-camera-card&category=plugin)
+> **Upgrading from ha-home-camera-card 3.x** (a Marketplace *Dashboard* repository): the repository is now an *Integration*. Remove the old Dashboard entry from the Marketplace, add this repository as an **Integration**, then add **Home Camera** in **Settings → Devices & services**. Your dashboards keep working: the cards keep their names (`custom:home-camera-card`, `custom:home-camera-mini-card`) and the integration replaces the old dashboard resource with its own.
 
-| Light | Dark |
+[![Open your Home Assistant instance and open a repository inside the Marketplace.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=juju35&repository=ha-camera&category=integration)
+
+| **Cameras panel** | **Cameras panel, dark** |
 |---|---|
-| <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card.png" alt="Camera card" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-dark.png" alt="Camera card, dark theme" width="400"> |
+| <img src="https://raw.githubusercontent.com/juju35/ha-camera/main/screenshots/panel.png" alt="Cameras sidebar panel with the camera grid full page" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-camera/main/screenshots/panel-dark.png" alt="Cameras sidebar panel with the camera grid full page, dark theme" width="400"> |
+| **Light** | **Dark** |
+| <img src="https://raw.githubusercontent.com/juju35/ha-camera/main/screenshots/card.png" alt="Camera card" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-camera/main/screenshots/card-dark.png" alt="Camera card, dark theme" width="400"> |
 | **Pan & tilt** | **Pan & tilt, dark** |
-| <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-ptz.png" alt="Camera card with the pan and tilt arrows" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-ptz-dark.png" alt="Camera card with the pan and tilt arrows, dark theme" width="400"> |
+| <img src="https://raw.githubusercontent.com/juju35/ha-camera/main/screenshots/card-ptz.png" alt="Camera card with the pan and tilt arrows" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-camera/main/screenshots/card-ptz-dark.png" alt="Camera card with the pan and tilt arrows, dark theme" width="400"> |
 | **Single camera** | **Single camera, dark** |
-| <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-single.png" alt="Camera card with a single camera" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-single-dark.png" alt="Camera card with a single camera, dark theme" width="400"> |
+| <img src="https://raw.githubusercontent.com/juju35/ha-camera/main/screenshots/card-single.png" alt="Camera card with a single camera" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-camera/main/screenshots/card-single-dark.png" alt="Camera card with a single camera, dark theme" width="400"> |
 | **Every camera hidden** | **Every camera hidden, dark** |
-| <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-hidden-light.png" alt="Camera card with every camera hidden" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-hidden.png" alt="Camera card with every camera hidden, dark theme" width="400"> |
+| <img src="https://raw.githubusercontent.com/juju35/ha-camera/main/screenshots/card-hidden-light.png" alt="Camera card with every camera hidden" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-camera/main/screenshots/card-hidden.png" alt="Camera card with every camera hidden, dark theme" width="400"> |
 | **Mini card** | **Mini card, dark** |
-| <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-mini.png" alt="Camera mini card with a snapshot per camera" width="300"> | <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-mini-dark.png" alt="Camera mini card with a snapshot per camera, dark theme" width="300"> |
+| <img src="https://raw.githubusercontent.com/juju35/ha-camera/main/screenshots/card-mini.png" alt="Camera mini card with a snapshot per camera" width="300"> | <img src="https://raw.githubusercontent.com/juju35/ha-camera/main/screenshots/card-mini-dark.png" alt="Camera mini card with a snapshot per camera, dark theme" width="300"> |
 | **Fullscreen, pan & tilt** | **Fullscreen, pan & tilt, dark** |
-| <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-fullscreen-light.png" alt="Fullscreen camera with the round pan and tilt pad" width="700"> | <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/card-fullscreen.png" alt="Fullscreen camera with the round pan and tilt pad, dark theme" width="700"> |
+| <img src="https://raw.githubusercontent.com/juju35/ha-camera/main/screenshots/card-fullscreen-light.png" alt="Fullscreen camera with the round pan and tilt pad" width="700"> | <img src="https://raw.githubusercontent.com/juju35/ha-camera/main/screenshots/card-fullscreen.png" alt="Fullscreen camera with the round pan and tilt pad, dark theme" width="700"> |
 
 ## Features
+
+### Cameras panel
+
+- **Cameras** in the sidebar for **every user** — family members without administrator rights included: the camera grid full page, with everything the card does (live streams, privacy badges, HD / SD, PTZ, fullscreen)
+- **Settings** tab, for administrators only: the cameras and their options with the card's own visual editor, and the sidebar title (left empty: *Cameras* in the server's language)
+- **Copy from a dashboard**: takes the first camera card found on your dashboards, to move a cameras dashboard to the panel in one click
+- Saved settings reach every open panel at once, on every device; the tab is in the address (`/cameras/settings`)
+
+### Cards
 
 - Header with the number of cameras live and hidden, and an **HD / SD** switch
 - One badge per camera: a red live dot while it films, a green lock while it is hidden; tap to toggle its privacy switch (or its smart plug); greyed out, and ignoring taps, while that switch is unavailable (camera offline)
@@ -50,11 +63,11 @@ List the cameras, the card finds their privacy switch, SD stream and PTZ buttons
 - Visual editor in the dashboard UI (no YAML needed)
 - English, French, German, Spanish, Serbian (Cyrillic and Latin), Italian, Dutch, European Portuguese, Polish, Romanian, Danish, Swedish, Bulgarian, Russian, Ukrainian, Hungarian, Slovak, Czech, Slovenian, Latvian and Greek, follows the Home Assistant language
 - Light and dark theme compatible
-- Ready for the Marketplace, a single file with no dependency
+- Served by the integration and added to the dashboard resources by itself (loaded on every page when the resources are in YAML mode); each language other than English is a small file fetched when needed
 
 ## Prerequisites
 
-- Home Assistant 2024.8 or later with `camera` entities (on older Home Assistant versions, the **Cameras** list of the visual editor falls back to a YAML editor — the card itself works the same)
+- Home Assistant 2024.12 or later with `camera` entities (on older Home Assistant versions, the **Cameras** list of the visual editor falls back to a YAML editor — the card itself works the same)
 - Optional: an `input_select` with the options `HD` and `SD` to share the quality between dashboards and devices
 
 ## Installation
@@ -63,27 +76,30 @@ List the cameras, the card finds their privacy switch, SD stream and PTZ buttons
 
 Click the button below to add the repository directly:
 
-[![Add to the Marketplace](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=juju35&repository=ha-home-camera-card&category=plugin)
+[![Add to the Marketplace](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=juju35&repository=ha-camera&category=integration)
 
 Or manually:
 
 1. Open **Settings → Marketplace → Add from link** (top right; this needs a GitHub account connected)
-2. Add `https://github.com/juju35/ha-home-camera-card` — Type: **Dashboard**
-3. Open **Home Camera Card** and click **Install**
-4. Clear your browser cache and refresh
+2. Add `https://github.com/juju35/ha-camera` — Type: **Integration**
+3. Open **Home Camera** and click **Install**, then restart Home Assistant
+4. **Settings → Devices & services → Add integration → Home Camera**
 
-The Marketplace registers the dashboard resource for you.
+[![Add the integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=home_camera)
 
 ### Manual
 
-1. Download `home-camera-card.js` and the `home-camera-card.i18n.*.js` translation files from the [latest release](https://github.com/juju35/ha-home-camera-card/releases/latest)
-2. Copy them all to `/config/www/` (without the translation files, the cards show in English)
-3. Go to **Settings → Dashboards → Resources** → Add resource:
-   - URL: `/local/home-camera-card.js`
-   - Type: **JavaScript Module**
-4. Clear your browser cache and refresh
+1. Download `home_camera.zip` from the [latest release](https://github.com/juju35/ha-camera/releases/latest)
+2. Unzip it into `/config/custom_components/home_camera/`
+3. Restart Home Assistant and add **Home Camera** in **Settings → Devices & services**
+
+The integration adds the **Cameras** panel to the sidebar and the cards to the dashboard resources: nothing to add by hand.
 
 ## Configuration
+
+### Cameras panel
+
+Open **Cameras** in the sidebar, then its **Settings** tab (administrators): add the cameras in the **Cameras** list — or **Copy from a dashboard** — and **Save**. The panel takes the same options as the card below; every user then sees the cameras in the panel.
 
 ### Visual editor
 
@@ -176,15 +192,15 @@ The card animates in three places (all honour `prefers-reduced-motion`): the two
 
 | Light | Dark |
 |---|---|
-| <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/live.gif" alt="live" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/live-dark.gif" alt="live dark" width="400"> |
+| <img src="https://raw.githubusercontent.com/juju35/ha-camera/main/screenshots/live.gif" alt="live" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-camera/main/screenshots/live-dark.gif" alt="live dark" width="400"> |
 
 While a tile is waiting for its first frame, a spinner turns over the stream.
 
 | Light | Dark |
 |---|---|
-| <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/loading.gif" alt="loading" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-home-camera-card/main/screenshots/loading-dark.gif" alt="loading dark" width="400"> |
+| <img src="https://raw.githubusercontent.com/juju35/ha-camera/main/screenshots/loading.gif" alt="loading" width="400"> | <img src="https://raw.githubusercontent.com/juju35/ha-camera/main/screenshots/loading-dark.gif" alt="loading dark" width="400"> |
 
-The still states (the grid; pan & tilt; a single camera; every camera hidden; the mini card; fullscreen), each in light and dark, are shown at the [top of this page](#ha-home-camera-card).
+The still states (the grid; pan & tilt; a single camera; every camera hidden; the mini card; fullscreen), each in light and dark, are shown at the [top of this page](#ha-camera).
 
 ## How it works
 
@@ -196,24 +212,25 @@ Discovery looks at the entities of the camera's device in the entity registry. A
 
 ```bash
 npm install
-npm run build        # stamps the version of package.json into dist/home-camera-card.js
-npm run check        # builds and checks the card (run in CI)
+npm run build        # copies the card and the panel into dist/ and splits the card's translations, as the release does
+npm run check        # builds and checks the card and the panel (run in CI)
 npm test             # unit tests
-npm run test:browser # builds the card and runs it in Chromium with a stand-in player (run in CI)
-npm run screenshots  # renders the card with mock cameras into screenshots/ (and the live/loading gifs in light and dark, needs ffmpeg)
+npm run test:browser # runs the built card and panel in Chromium with stand-ins for Home Assistant (run in CI)
+npm run screenshots  # renders the card and the panel with mock cameras into screenshots/ (and the live/loading gifs, needs ffmpeg)
+pip install -r requirements_test.txt && pytest  # the integration's tests
 ```
 
-`dist/` is not committed: `npm run build` creates it locally, CI builds it on every push, and the release workflow attaches the built file to the release, which is where the Marketplace installs it from.
+The sources of the card and the panel live in `custom_components/home_camera/frontend/` with every language; `dist/` is not committed.
 
 ### Releasing
 
-1. Bump `version` in `package.json`
-2. Add a `## <version>` section at the top of [CHANGELOG.md](https://github.com/juju35/ha-home-camera-card/blob/main/CHANGELOG.md)
-3. Push to `main`: the **Release** workflow builds the card, creates the tag and the GitHub release with the changelog section as notes, and attaches `home-camera-card.js`
+1. Bump the version in `manifest.json`, `const.py`, the card (`HOME_CAMERA_CARD_VERSION`), the panel (`HOME_CAMERA_PANEL_VERSION`) and `package.json`
+2. Add a `## <version>` section at the top of [CHANGELOG.md](https://github.com/juju35/ha-camera/blob/main/CHANGELOG.md)
+3. Push to `main`: the **Release** workflow splits the card's translations, builds `home_camera.zip`, creates the tag and the GitHub release with the changelog section as notes
 
 ## Translations
 
-The card auto-detects the language from your Home Assistant settings. Currently supported:
+The cards and the panel auto-detect the language from your Home Assistant settings. Currently supported:
 
 | Language | Code |
 |---|---|
@@ -244,7 +261,7 @@ Contributions for additional languages are welcome!
 
 ## License
 
-[MIT](https://github.com/juju35/ha-home-camera-card/blob/main/LICENSE)
+[MIT](https://github.com/juju35/ha-camera/blob/main/LICENSE)
 
 ## Support
 

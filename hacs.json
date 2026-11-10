@@ -1,7 +1,8 @@
 {
-  "name": "Home Camera Card",
-  "render_readme": true,
+  "name": "Home Camera",
   "content_in_root": false,
-  "filename": "home-camera-card.js",
-  "homeassistant": "2024.8.0"
+  "render_readme": true,
+  "zip_release": true,
+  "filename": "home_camera.zip",
+  "homeassistant": "2024.12.0"
 }

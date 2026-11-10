@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Home Camera",
+        "description": "Tilføjer panelet Kameraer til sidepanelet for alle brugere (administratorer vælger kameraerne under fanen Indstillinger) og kamerakortene til dine dashboards."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Home Camera er allerede sat op."
+    }
+  }
+}

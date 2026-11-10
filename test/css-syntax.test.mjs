@@ -6,7 +6,7 @@ import { test } from "node:test";
 import * as acorn from "acorn";
 import * as csstree from "css-tree";
 
-const SRC = new URL("../src/", import.meta.url);
+const SRC = new URL("../custom_components/home_camera/frontend/", import.meta.url);
 const files = readdirSync(SRC)
   .filter((f) => f.endsWith(".js"))
   .map((f) => new URL(f, SRC));

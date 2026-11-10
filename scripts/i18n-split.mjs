@@ -3,7 +3,7 @@
 // Home Assistant loads every dashboard resource on every dashboard, so a bundle carrying all its languages
 // made each page download and parse them all to use one.
 //
-// It works on the built code; src/ keeps every language, so editing and testing translations is unchanged:
+// It works on the built code; the sources keep every language, so editing and testing translations is unchanged:
 // - a translation table is an object literal with an `en` key and at least four other language keys;
 // - each non-English value is cut out to the language's file and replaced by `{}`, so the language still exists
 //   (`lang in TABLE`, `Object.keys(TABLE)` and the cards' language resolution are unchanged) and falls back to

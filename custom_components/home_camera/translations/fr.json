@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Home Camera",
+        "description": "Ajoute le panneau Caméras à la barre latérale, pour tous les utilisateurs (les administrateurs choisissent les caméras dans son onglet Réglages), et les cartes caméras à vos tableaux de bord."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Home Camera est déjà configuré."
+    }
+  }
+}

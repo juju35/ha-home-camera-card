@@ -1,20 +1,28 @@
-// Builds src/home-camera-card.js into the single HACS file dist/home-camera-card.js, stamping the package version.
-// Usage: node scripts/build.mjs  (dist/ is not committed: CI and the release workflow build it)
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+// Builds the integration's frontend files as the release ships them: the card and the panel are copied from
+// custom_components/home_camera/frontend/ to dist/, and the card's translations are split out (English stays in
+// the bundle, every other language goes to dist/home-camera-card.i18n.<lang>.js, scripts/i18n-split.mjs).
+// The panel keeps every language: Home Assistant does not wait for a panel's language file as it does for a card.
+// Usage: node scripts/build.mjs          → dist/ (browser tests, screenshots; not committed)
+//        node scripts/build.mjs --into  → the same, then copied into custom_components/home_camera/frontend/ (release zip)
+import { copyFileSync, mkdirSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { splitDist } from "./i18n-split.mjs";
 
-const FILE = "home-camera-card.js";
 const root = fileURLToPath(new URL("..", import.meta.url));
-const pkg = JSON.parse(readFileSync(`${root}package.json`, "utf8"));
+const source = `${root}custom_components/home_camera/frontend`;
+const dist = `${root}dist`;
+const { version } = JSON.parse(readFileSync(`${root}custom_components/home_camera/manifest.json`, "utf8"));
 
-const out = readFileSync(`${root}src/${FILE}`, "utf8").replace("__VERSION__", pkg.version);
+rmSync(dist, { recursive: true, force: true });
+mkdirSync(dist, { recursive: true });
+for (const file of readdirSync(source).filter((f) => f.endsWith(".js") && !f.includes(".i18n."))) {
+  copyFileSync(`${source}/${file}`, `${dist}/${file}`);
+}
+splitDist(dist, "home-camera-card.js", { version });
+const kb = (f) => `${(readFileSync(`${dist}/${f}`).length / 1024).toFixed(1)} KB`;
+console.log(`Built dist/: ${readdirSync(dist).length} files, home-camera-card.js ${kb("home-camera-card.js")}`);
 
-const target = `${root}dist/${FILE}`;
-mkdirSync(`${root}dist`, { recursive: true });
-writeFileSync(target, out);
-console.log(`Built dist/${FILE} (${(out.length / 1024).toFixed(1)} KB)`);
-
-// Translations: English stays in the bundle, each other language goes to dist/home-camera-card.i18n.<lang>.js,
-// fetched when a card needs it (scripts/i18n-split.mjs).
-if (process.argv[1] === fileURLToPath(import.meta.url)) splitDist(`${root}dist`, "home-camera-card.js", { version: pkg.version });
+if (process.argv.includes("--into")) {
+  for (const file of readdirSync(dist)) copyFileSync(`${dist}/${file}`, `${source}/${file}`);
+  console.log("Copied into custom_components/home_camera/frontend/");
+}

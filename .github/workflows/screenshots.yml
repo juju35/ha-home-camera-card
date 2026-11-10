@@ -5,7 +5,7 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - "src/**"
+      - "custom_components/**"
       - "scripts/**"
 
 # Protected main is never pushed to: on same-repo pull requests the job commits the

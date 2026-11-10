@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Home Camera",
+        "description": "Pievieno paneli Kameras sānjoslai visiem lietotājiem (administratori izvēlas kameras cilnē Iestatījumi) un kameru kartītes jūsu informācijas paneļiem."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Home Camera jau ir iestatīts."
+    }
+  }
+}

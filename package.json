@@ -1,17 +1,17 @@
 {
-  "name": "ha-home-camera-card",
-  "version": "3.8.1",
-  "description": "Lovelace card for Home Assistant showing every home camera in one grid, with privacy toggles, HD/SD switching and PTZ.",
+  "name": "ha-camera",
+  "version": "4.0.0",
+  "description": "Home Assistant integration with a Cameras sidebar panel for every user, and the home camera Lovelace cards.",
   "private": true,
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/juju35/ha-home-camera-card.git"
+    "url": "git+https://github.com/juju35/ha-camera.git"
   },
   "author": "Julien Stéphan (https://github.com/juju35)",
   "scripts": {
     "build": "node scripts/build.mjs",
-    "check": "node scripts/build.mjs && node --check dist/home-camera-card.js",
+    "check": "node scripts/build.mjs && node --check dist/home-camera-card.js && node --check dist/home-camera-panel.js",
     "screenshots": "node scripts/screenshots.mjs",
     "test": "node --test \"test/*.test.mjs\"",
     "test:browser": "node scripts/build.mjs && node --test \"test/browser/*.test.mjs\""

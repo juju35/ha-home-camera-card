@@ -1,5 +1,22 @@
 # Changelog
 
+## 4.0.0 - 2026-11-10
+
+The repository becomes **ha-camera**, a Home Assistant integration (`home_camera`) carrying the cards and a sidebar panel.
+
+### What's new
+- **Cameras panel** in the sidebar, open to **every user**, not only administrators: the camera grid full page, as the cameras dashboard showed it, with live streams, privacy badges, HD / SD, PTZ and fullscreen.
+- **Settings** tab for administrators: the cameras with the card's visual editor, the sidebar title (empty: *Cameras* in the server's language), and **Copy from a dashboard** to take over an existing camera card. Saved settings reach every open panel at once.
+- The integration serves the cards and adds them to the dashboard resources by itself (on every page when the resources are in YAML mode), replacing the resource of the former Marketplace dashboard card.
+
+### Breaking changes
+- The Marketplace repository type is now **Integration** (it was **Dashboard**): remove the old entry, add `https://github.com/juju35/ha-camera` as an Integration, restart and add **Home Camera** in **Settings → Devices & services**. Dashboards keep their `custom:home-camera-card` and `custom:home-camera-mini-card` cards unchanged.
+- The release ships `home_camera.zip` instead of the card's `.js` files.
+
+### Maintenance
+- The card's source moves from `src/` to `custom_components/home_camera/frontend/`; `scripts/build.mjs` builds the card and the panel into `dist/` as the release ships them.
+- CI: Hassfest, the integration's pytest suite, Ruff and Vulture join the existing checks; HACS validation as an integration.
+
 ## 3.8.1 - 2026-11-09
 
 ### Fixes
