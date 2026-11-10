@@ -11,7 +11,7 @@
  *
  * https://github.com/juju35/ha-camera
  */
-var HOME_CAMERA_PANEL_VERSION = '4.3.0';
+var HOME_CAMERA_PANEL_VERSION = '4.3.1';
 
 var HomeCameraPanelI18n = {
   en: {
@@ -664,6 +664,16 @@ function hcpFindCard(node) {
   return null;
 }
 
+// A found camera as a camera entry of the card, with the controls found on its device (privacy switch, pan and tilt
+// buttons, motion sensors), so they show in the editor; the same entry as the server's discovery.card_entry
+function hcpFoundEntry(cam) {
+  var entry = { camera: cam.camera, name: cam.name };
+  if (cam.privacy) entry.privacy = cam.privacy;
+  if (cam.ptz) entry.ptz = cam.ptz;
+  if (cam.motion?.length) entry.motion = cam.motion.length === 1 ? cam.motion[0] : cam.motion;
+  return entry;
+}
+
 // The card configuration the panel stores: no type, no layout options of the dashboard it came from.
 function hcpCardConfig(card) {
   var out = Object.assign({}, card);
@@ -1101,13 +1111,14 @@ class HomeCameraPanel extends HTMLElement {
     </div>`;
   }
 
-  // Adds the given found cameras (all the new ones when `ids` is null) to the edited list, named after their device
+  // Adds the given found cameras (all the new ones when `ids` is null) to the edited list, named after their device,
+  // with their controls
   _addFound(ids) {
     var add = this._newFound().filter((cam) => !ids || ids.includes(cam.camera));
     if (!add.length) return;
     var values = this._formValues();
     values.card = Object.assign({}, values.card, {
-      cameras: (values.card.cameras || []).concat(add.map((cam) => ({ camera: cam.camera, name: cam.name }))),
+      cameras: (values.card.cameras || []).concat(add.map(hcpFoundEntry)),
     });
     this._status = { tone: 'good', text: this._t('added', { n: add.length }) };
     this._renderSettings();

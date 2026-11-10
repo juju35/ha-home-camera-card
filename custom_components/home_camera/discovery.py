@@ -5,6 +5,11 @@ One entry per camera, not per stream: Tapo has no quality selector but two camer
 (its HD / SD switch, or a shared ``quality_entity``), so only the HD one is listed. Disabled and hidden cameras
 are left out. Each entry is named after its device (the entity's own name when it has one), and the list is
 sorted by area, then by name.
+
+Each entry also carries the controls found on the camera's device — privacy switch, pan and tilt buttons, motion
+sensors — matched by their translation key (Tapo Cameras names its entities in the user's language:
+``button.salon_gauche`` is ``move_left``) or by the end of their entity id (Tapo: Cameras Control), so they show in
+the panel's editor instead of being guessed by the card.
 """
 
 from __future__ import annotations
@@ -18,10 +23,20 @@ from homeassistant.helpers import entity_registry as er
 
 CAMERA = "camera"
 HD, SD = "_hd_stream", "_sd_stream"
+PRIVACY_KEYS = ("privacy_mode", "privacy")
+PTZ_DIRECTIONS = ("left", "right", "up", "down")
+# Detections shown as the camera's motion badge: by translation key when the integration gives them (Tapo Cameras:
+# motion and person, not vehicles or pets), else by device class
+MOTION_KEYS = ("motion", "person")
+MOTION_CLASSES = ("motion", "occupancy", "presence")
 
 
 def discover(hass: HomeAssistant) -> list[dict[str, Any]]:
-    """The cameras: ``{"camera", "name", "area", "sd"}`` (``sd``, the SD stream it carries, or None)."""
+    """The cameras: ``{"camera", "name", "area", "sd", "privacy", "ptz", "motion"}``.
+
+    ``sd``: the SD stream it carries; ``privacy``: switch; ``ptz``: ``{direction: button}``; ``motion``: binary sensors.
+    Each is None (or empty) when not found.
+    """
     entities = er.async_get(hass)
     devices = dr.async_get(hass)
     areas = ar.async_get(hass)
@@ -48,9 +63,42 @@ def discover(hass: HomeAssistant) -> list[dict[str, Any]]:
                 "name": _name(hass, eid, entry, device),
                 "area": area.name if area else None,
                 "sd": sd if sd in ids else None,
+                **_controls(hass, entities, entry.device_id if entry else None),
             }
         )
     return sorted(found, key=lambda cam: (cam["area"] is None, (cam["area"] or "").casefold(), cam["name"].casefold()))
+
+
+def _controls(hass: HomeAssistant, entities: er.EntityRegistry, device_id: str | None) -> dict[str, Any]:
+    """Privacy switch, pan and tilt buttons and motion sensors of the camera's device."""
+    if not device_id:
+        return {"privacy": None, "ptz": None, "motion": []}
+    siblings = [e for e in er.async_entries_for_device(entities, device_id) if not e.disabled_by and not e.hidden_by]
+
+    def find(domain: str, key: str) -> str | None:
+        own = [e for e in siblings if e.domain == domain]
+        match = next((e for e in own if e.translation_key == key), None) or next(
+            (e for e in own if e.entity_id.endswith(f"_{key}")), None
+        )
+        return match.entity_id if match else None
+
+    privacy = next((found for key in PRIVACY_KEYS if (found := find("switch", key))), None)
+    ptz = {d: found for d in PTZ_DIRECTIONS if (found := find("button", f"move_{d}"))}
+    sensors = [e for e in siblings if e.domain == "binary_sensor"]
+    motion = [e.entity_id for e in sensors if e.translation_key in MOTION_KEYS]
+    if not motion:
+        motion = [
+            e.entity_id
+            for e in sensors
+            if (e.device_class or e.original_device_class) in MOTION_CLASSES
+            or (not (e.device_class or e.original_device_class) and _state_class(hass, e.entity_id) in MOTION_CLASSES)
+        ]
+    return {"privacy": privacy, "ptz": ptz or None, "motion": sorted(motion)}
+
+
+def _state_class(hass: HomeAssistant, entity_id: str) -> str | None:
+    state = hass.states.get(entity_id)
+    return state.attributes.get("device_class") if state else None
 
 
 def _name(hass: HomeAssistant, entity_id: str, entry: er.RegistryEntry | None, device: dr.DeviceEntry | None) -> str:
@@ -65,6 +113,17 @@ def _name(hass: HomeAssistant, entity_id: str, entry: er.RegistryEntry | None, d
     return entity_id.split(".", 1)[1].replace("_", " ").capitalize()
 
 
-def card_entries(cameras: list[dict[str, Any]]) -> list[dict[str, str]]:
+def card_entry(cam: dict[str, Any]) -> dict[str, Any]:
+    """A discovered camera as a camera entry of the card, with the controls found."""
+    entry: dict[str, Any] = {"camera": cam["camera"], "name": cam["name"]}
+    for key in ("privacy", "ptz"):
+        if cam.get(key):
+            entry[key] = cam[key]
+    if cam.get("motion"):
+        entry["motion"] = cam["motion"][0] if len(cam["motion"]) == 1 else cam["motion"]
+    return entry
+
+
+def card_entries(cameras: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """The discovered cameras as camera entries of the card."""
-    return [{"camera": cam["camera"], "name": cam["name"]} for cam in cameras]
+    return [card_entry(cam) for cam in cameras]

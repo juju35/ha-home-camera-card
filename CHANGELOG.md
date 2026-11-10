@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.3.1 - 2026-11-11
+
+### Fixes
+- Tapo Cameras (ha-tapo): pan and tilt, the privacy badge and the HD / SD switch now work when its entities are named in another language than English (`button.salon_gauche` for the move_left button, for instance). The card looks for them by translation key on the camera's device, not only by the end of their entity id, and finds each pan and tilt direction on its own. Its motion badge follows the camera's motion and person detections only (not its vehicle, pet or line-crossing ones).
+- Camera discovery fills in the controls found on each camera's device — privacy switch, pan and tilt buttons, motion and person sensors — so a camera added from **Cameras found** (or a new entry) shows them in the editor.
+
 ## 4.3.0 - 2026-11-11
 
 ### What's new

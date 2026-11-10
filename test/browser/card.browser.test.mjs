@@ -1226,3 +1226,50 @@ test("Tapo Cameras (ha-tapo): privacy_mode switch, and HD / SD through the camer
   assert.equal(r.reloaded, true);
   assert.equal(r.entity, "camera.garage");
 });
+
+test("Tapo Cameras with entity ids in the user's language: found by their translation keys", async () => {
+  const r = await page.evaluate(() => {
+    document.body.replaceChildren();
+    const ids = {
+      "button.salon_gauche": "move_left",
+      "button.salon_droite": "move_right",
+      "button.salon_monter": "move_up",
+      "button.salon_descendre": "move_down",
+      "switch.salon_mode_prive": "privacy_mode",
+      "select.salon_qualite_du_flux": "stream_quality",
+      "binary_sensor.salon_mouvement": "motion",
+      "binary_sensor.salon_personne": "person",
+      "binary_sensor.salon_vehicule": "vehicle",
+    };
+    const states = { "camera.salon": { entity_id: "camera.salon", state: "idle", attributes: { stream_quality: "hd" } } };
+    const entities = { "camera.salon": { entity_id: "camera.salon", device_id: "s" } };
+    for (const [id, key] of Object.entries(ids)) {
+      states[id] = st(id, id.startsWith("switch.") ? "off" : id.startsWith("select.") ? "hd" : "unknown");
+      if (id.startsWith("binary_sensor.")) states[id].attributes = { device_class: "motion" };
+      entities[id] = { entity_id: id, device_id: "s", translation_key: key };
+    }
+    const el = document.createElement("home-camera-card");
+    el.setConfig({ cameras: ["camera.salon", "camera.c"] });
+    document.body.appendChild(el);
+    el.hass = { ...makeHass({ ...baseStates(), ...states }), entities };
+    const cam = el._cameras()[0];
+    const tile = el.shadowRoot.querySelector('.tile[data-cam="salon"]');
+    return {
+      ptz: cam.ptz,
+      privacy: cam.privacy,
+      quality: cam.quality,
+      motion: cam.motion,
+      arrows: [...tile.querySelectorAll(".move")].map((b) => b.dataset.entity),
+    };
+  });
+  assert.deepEqual(r.ptz, {
+    left: "button.salon_gauche",
+    right: "button.salon_droite",
+    up: "button.salon_monter",
+    down: "button.salon_descendre",
+  });
+  assert.equal(r.privacy, "switch.salon_mode_prive");
+  assert.equal(r.quality, "select.salon_qualite_du_flux");
+  assert.deepEqual(r.motion, ["binary_sensor.salon_mouvement", "binary_sensor.salon_personne"]);
+  assert.equal(r.arrows.length, 4);
+});
