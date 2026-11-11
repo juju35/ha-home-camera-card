@@ -130,6 +130,8 @@ jobs:
         run: |
           node scripts/build.mjs --into
           (cd custom_components/home_camera && zip -qr ../../home_camera.zip . -x "__pycache__/*")
-          unzip -l home_camera.zip | grep -q " manifest.json$"
-          unzip -l home_camera.zip | grep -q " frontend/home-camera-panel.js$"
-          unzip -l home_camera.zip | grep -q " frontend/home-camera-card.i18n.fr.js$"
+          # Listed once into a file: with pipefail, `unzip -l | grep -q` fails (SIGPIPE) as soon as grep has its match.
+          unzip -Z1 home_camera.zip > "$RUNNER_TEMP/zip.list"
+          grep -qx "manifest.json" "$RUNNER_TEMP/zip.list"
+          grep -qx "frontend/home-camera-panel.js" "$RUNNER_TEMP/zip.list"
+          grep -qx "frontend/home-camera-card.i18n.fr.js" "$RUNNER_TEMP/zip.list"
