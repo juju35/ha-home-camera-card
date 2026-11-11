@@ -1,4 +1,4 @@
-const HOME_CAMERA_CARD_VERSION = '4.3.2';
+const HOME_CAMERA_CARD_VERSION = '4.3.3';
 
 // ── i18n ─────────────────────────────────────────────────────────────────────
 const HcI18n = {
@@ -2185,14 +2185,20 @@ class HomeCameraCard extends HTMLElement {
     });
     // Home Assistant's WebRTC player drops the sound of a muted session (it never adds its audio track), so
     // a muted WebRTC stream always says it has none: G.711 cameras (Tapo C2xx…), whose sound only WebRTC
-    // plays, never got the button. A WebRTC stream gets it; unmuting it plays the stream again (_replay)
-    // so that the new session keeps its sound.
-    tile.addEventListener('stream-type-changed', (ev) => {
-      tile._type = ev.detail?.type;
-      if (tile._type !== 'web_rtc' || tile._audio) return;
+    // plays, never got the button. A camera that can play WebRTC gets it, as soon as its capabilities are
+    // known (whichever player is shown first); unmuting it plays the stream again (_replay) so that the
+    // new session keeps its sound.
+    const webRtc = (on) => {
+      if (!on || tile._webrtc) return;
+      tile._webrtc = true;
+      if (tile._audio) return;
       tile._audio = true;
       this._renderTools(tile);
-    });
+    };
+    tile.addEventListener('camera-capabilities-changed', (ev) =>
+      webRtc(!!ev.detail?.capabilities?.frontend_stream_types?.includes('web_rtc')),
+    );
+    tile.addEventListener('stream-type-changed', (ev) => webRtc(ev.detail?.type === 'web_rtc'));
     return tile;
   }
 
@@ -2266,6 +2272,7 @@ class HomeCameraCard extends HTMLElement {
       // (Not while a replay has emptied the player on purpose.)
       if (!tile._replaying && obj?.entity_id !== stream.stateObj?.entity_id) {
         tile.classList.toggle('loading', !!obj);
+        tile._webrtc = false;
         if (tile._audio) {
           tile._audio = false;
           stream.muted = true;
@@ -2360,7 +2367,7 @@ class HomeCameraCard extends HTMLElement {
     tile._stream.muted = !on;
     this._soundIcon(tile);
     // A WebRTC session started muted has no sound at all: a new one, unmuted, has.
-    if (on && tile._type === 'web_rtc') this._replay(tile);
+    if (on && tile._webrtc) this._replay(tile);
   }
 
   // Plays a tile's stream again with a new session. The player only restarts when its camera changes, and

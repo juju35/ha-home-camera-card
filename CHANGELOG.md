@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.3.3 - 2026-11-11
+
+### Fixes
+- Sound button on cameras whose audio only WebRTC plays (G.711, such as Tapo C2xx cameras), now for good: it shows as soon as Home Assistant says the camera can play WebRTC, whichever player is shown first, instead of waiting for the WebRTC player to be the one shown. Turning the sound on starts a new session, in which the player picks WebRTC with its sound.
+
 ## 4.3.2 - 2026-11-11
 
 ### Fixes

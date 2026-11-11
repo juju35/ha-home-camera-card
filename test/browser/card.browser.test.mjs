@@ -408,6 +408,27 @@ test("a WebRTC stream gets the sound button, and unmuting plays it again so that
   assert.deepEqual(r.afterOff.history, []);
 });
 
+test("a camera that can play WebRTC gets the sound button as soon as its capabilities are known", async () => {
+  const r = await page.evaluate(async () => {
+    mount(CAMS);
+    const sound = (i) => tiles()[i].querySelector('[data-action="sound"]');
+    // HLS shown first, without sound (G.711 is not in HLS); the camera also offers WebRTC.
+    emit(0, "stream-type-changed", { type: "hls" });
+    emit(0, "camera-capabilities-changed", { capabilities: { frontend_stream_types: ["hls", "web_rtc"] } });
+    emit(1, "camera-capabilities-changed", { capabilities: { frontend_stream_types: ["hls"] } });
+    const shown = [!!sound(0), !!sound(1)];
+    const s = streams()[0];
+    s.history = [];
+    sound(0).click();
+    await frames();
+    return { shown, history: s.history, muted: s.muted };
+  });
+  assert.deepEqual(r.shown, [true, false]);
+  // Unmuting plays it again, so the player can pick WebRTC with its sound.
+  assert.equal(r.muted, false);
+  assert.deepEqual(r.history, [undefined, "camera.a_hd_stream"]);
+});
+
 test("a camera switching its stream (Tapo stream_quality) plays again", async () => {
   const r = await page.evaluate(async () => {
     mount(CAMS);
