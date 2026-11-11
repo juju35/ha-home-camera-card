@@ -34,16 +34,27 @@ jobs:
   release:
     needs: [lint, validate, hacs]
     runs-on: ubuntu-latest
+    # Debian 12 container (Node 22 included): apt goes to the Debian mirrors, not the runner's Ubuntu ones,
+    # which kept failing. The job runs as root, hence no sudo below.
+    container: node:22-bookworm
+    # In a container, run steps default to sh (dash, no pipefail): keep bash.
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
+      # The workspace is owned by another user than the container's root: let git work in it.
+      - name: Trust the checkout
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
       - name: Read version
         id: version
         run: |
-          VERSION="$(jq -r .version custom_components/home_camera/manifest.json)"
+          VERSION="$(node -p "require('./custom_components/home_camera/manifest.json').version")"
           grep -q "VERSION = \"$VERSION\"" custom_components/home_camera/const.py
           grep -q "HOME_CAMERA_CARD_VERSION = '$VERSION'" custom_components/home_camera/frontend/home-camera-card.js
           grep -q "HOME_CAMERA_PANEL_VERSION = '$VERSION'" custom_components/home_camera/frontend/home-camera-panel.js
@@ -55,12 +66,6 @@ jobs:
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Setup Node
-        if: steps.version.outputs.exists == 'false'
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 22
-
       - name: Install dependencies
         if: steps.version.outputs.exists == 'false'
         run: npm ci
@@ -71,12 +76,13 @@ jobs:
         if: steps.version.outputs.exists == 'false'
         run: npx playwright install chromium
 
-      - name: Install Chromium system deps
+      - name: Install Chromium system deps and zip
         if: steps.version.outputs.exists == 'false'
         timeout-minutes: 12
         run: |
           for i in 1 2 3; do
-            timeout 150 sudo apt-get update \
+            timeout 150 apt-get update \
+              && timeout 300 env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends zip \
               && timeout 300 npx playwright install-deps chromium \
               && ok=1 && break
             echo "release: apt attempt $i failed or timed out, retrying in 15s"; sleep 15

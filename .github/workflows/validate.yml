@@ -82,14 +82,20 @@ jobs:
   build:
     name: Build & check
     runs-on: ubuntu-latest
+    # Debian 12 container (Node 22 included): apt goes to the Debian mirrors, not the runner's Ubuntu ones,
+    # which kept failing. The job runs as root, hence no sudo below.
+    container: node:22-bookworm
+    # In a container, run steps default to sh (dash, no pipefail): keep bash.
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Setup Node
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 22
+      # The workspace is owned by another user than the container's root: let git work in it.
+      - name: Trust the checkout
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Install dependencies
         run: npm ci
@@ -105,11 +111,12 @@ jobs:
       - name: Install Chromium for the browser tests
         run: npx playwright install chromium
 
-      - name: Install Chromium system deps
+      - name: Install Chromium system deps and zip
         timeout-minutes: 12
         run: |
           for i in 1 2 3; do
-            timeout 150 sudo apt-get update \
+            timeout 150 apt-get update \
+              && timeout 300 env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends zip unzip \
               && timeout 300 npx playwright install-deps chromium \
               && ok=1 && break
             echo "apt attempt $i failed or timed out, retrying in 15s"; sleep 15
@@ -123,6 +130,8 @@ jobs:
         run: |
           node scripts/build.mjs --into
           (cd custom_components/home_camera && zip -qr ../../home_camera.zip . -x "__pycache__/*")
-          unzip -l home_camera.zip | grep -q " manifest.json$"
-          unzip -l home_camera.zip | grep -q " frontend/home-camera-panel.js$"
-          unzip -l home_camera.zip | grep -q " frontend/home-camera-card.i18n.fr.js$"
+          # Listed once into a file: with pipefail, `unzip -l | grep -q` fails (SIGPIPE) as soon as grep has its match.
+          unzip -Z1 home_camera.zip > "$RUNNER_TEMP/zip.list"
+          grep -qx "manifest.json" "$RUNNER_TEMP/zip.list"
+          grep -qx "frontend/home-camera-panel.js" "$RUNNER_TEMP/zip.list"
+          grep -qx "frontend/home-camera-card.i18n.fr.js" "$RUNNER_TEMP/zip.list"
