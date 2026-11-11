@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.4.1 - 2026-11-11
+
+### Improvements
+- WebRTC tiles show the camera's last still at once, while the session starts (connection to the camera, then its first keyframe), instead of a black frame.
+
 ## 4.4.0 - 2026-11-11
 
 ### Improvements
