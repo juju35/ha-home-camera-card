@@ -1,4 +1,4 @@
-const HOME_CAMERA_CARD_VERSION = '4.3.3';
+const HOME_CAMERA_CARD_VERSION = '4.4.0';
 
 // ── i18n ─────────────────────────────────────────────────────────────────────
 const HcI18n = {
@@ -1581,6 +1581,146 @@ const HC_QUALITY_KEY = 'home-camera-card-quality';
 const HC_QUALITY_EVENT = 'home-camera-card-quality';
 
 // ── home-camera-card ─────────────────────────────────────────────────────────
+// A tile's player. Home Assistant's own (ha-camera-stream) starts HLS and WebRTC side by side and keeps the
+// one that loads: two RTSP sessions per camera, while Tapo cameras and many others allow very few and drop
+// one (go2rtc reconnecting, the image lagging, the player falling back to the slow HLS). A camera that
+// offers WebRTC plays it alone here (ha-web-rtc-player: one session in go2rtc, under a second of latency);
+// Home Assistant's player is the fallback, for the other cameras, the ones without a live stream (privacy
+// mode: their still) and a WebRTC session that brings no video.
+const HC_STREAM_FEATURE = 2;
+class HcCameraStream extends HTMLElement {
+  // The card gives hass only to a player that declares it; passed on to the inner one if it asks.
+  static elementProperties = new Map([['hass', {}]]);
+
+  constructor() {
+    super();
+    this._muted = false;
+    this._caps = new Map(); // entity → true (WebRTC), false, or the pending request
+    this._failed = new Set(); // entities whose WebRTC session brought no video
+    this._player = null;
+    this.addEventListener('streams', (ev) => {
+      if (ev.target !== this._player || this._player.localName !== 'ha-web-rtc-player' || ev.detail?.hasVideo !== false)
+        return;
+      this._failed.add(this._player.entityid);
+      this._sync();
+    });
+  }
+
+  get stateObj() {
+    return this._obj;
+  }
+  set stateObj(v) {
+    // Emptied (a camera going away, or played again on purpose): its WebRTC gets another chance.
+    if (!v && this._obj) this._failed.delete(this._obj.entity_id);
+    this._obj = v;
+    this._sync();
+  }
+  get hass() {
+    return this._hass;
+  }
+  set hass(v) {
+    this._hass = v;
+    this._pass('hass', v);
+  }
+  get muted() {
+    return this._muted;
+  }
+  set muted(v) {
+    this._muted = !!v;
+    this._pass('muted', this._muted);
+  }
+  get fitMode() {
+    return this._fit;
+  }
+  set fitMode(v) {
+    this._fit = v;
+    this._pass('fitMode', v);
+  }
+  get aspectRatio() {
+    return this._ratio;
+  }
+  set aspectRatio(v) {
+    this._ratio = v;
+    this._pass('aspectRatio', v);
+  }
+  get updateComplete() {
+    return this._player?.updateComplete ?? Promise.resolve(true);
+  }
+
+  _pass(key, v) {
+    const p = this._player;
+    if (!p || (key === 'hass' && !p.constructor.elementProperties?.has?.('hass'))) return;
+    p[key] = v;
+  }
+
+  // WebRTC alone when the camera offers it; asked once per camera.
+  _webRtc(id) {
+    const known = this._caps.get(id);
+    if (typeof known === 'boolean') return known;
+    if (known) return undefined; // asking
+    if (!this._hass?.callWS || !customElements.get('ha-web-rtc-player')) return false;
+    const ask = this._hass
+      .callWS({ type: 'camera/capabilities', entity_id: id })
+      .then(
+        (caps) => {
+          this._caps.set(id, !!caps?.frontend_stream_types?.includes('web_rtc'));
+          // As Home Assistant's player does: the card shows the sound button from it.
+          this.dispatchEvent(
+            new CustomEvent('camera-capabilities-changed', { detail: { capabilities: caps }, bubbles: true, composed: true }),
+          );
+        },
+        () => this._caps.set(id, false),
+      )
+      .then(() => {
+        if (this._obj?.entity_id === id) this._sync();
+      });
+    this._caps.set(id, ask);
+    return undefined;
+  }
+
+  _sync() {
+    const obj = this._obj;
+    const id = obj?.entity_id;
+    const live = !!id && (obj.attributes?.supported_features & HC_STREAM_FEATURE) !== 0;
+    const rtc = live && !this._failed.has(id) ? this._webRtc(id) : false;
+    if (rtc === undefined) {
+      this._use(null); // nothing until the camera says what it offers: no HLS session for nothing
+      return;
+    }
+    if (rtc) {
+      const p = this._player;
+      if (p?.localName !== 'ha-web-rtc-player' || p.entityid !== id) {
+        const player = document.createElement('ha-web-rtc-player');
+        player.entityid = id;
+        player.setAttribute('autoplay', '');
+        player.setAttribute('playsinline', '');
+        player.autoplay = true;
+        player.playsinline = true;
+        this._use(player);
+      }
+      return;
+    }
+    if (!id && this._player?.localName === 'ha-web-rtc-player') {
+      this._use(null);
+      return;
+    }
+    if (this._player?.localName !== 'ha-camera-stream') this._use(document.createElement('ha-camera-stream'));
+    this._player.stateObj = obj;
+  }
+
+  _use(player) {
+    this._player?.remove();
+    this._player = player;
+    if (!player) return;
+    player.muted = this._muted;
+    player.fitMode = this._fit;
+    player.aspectRatio = this._ratio;
+    this._pass('hass', this._hass);
+    this.append(player);
+  }
+}
+if (!customElements.get('hc-camera-stream')) customElements.define('hc-camera-stream', HcCameraStream);
+
 class HomeCameraCard extends HTMLElement {
   static getConfigElement() {
     return document.createElement('home-camera-card-editor');
@@ -2168,7 +2308,7 @@ class HomeCameraCard extends HTMLElement {
       '<div class="label"><span class="dot"></span><span class="text"></span><span class="mot" role="img"><ha-icon icon="mdi:motion-sensor"></ha-icon></span></div>' +
       '<span class="open" data-action="open" role="button" tabindex="0"></span>' +
       '<div class="tools"></div><div class="pad"></div>';
-    const stream = document.createElement('ha-camera-stream');
+    const stream = document.createElement('hc-camera-stream');
     stream.muted = true;
     stream.fitMode = 'cover';
     tile.prepend(stream);
@@ -2566,11 +2706,11 @@ class HomeCameraCard extends HTMLElement {
       // A tap on the image puts it fullscreen, a second tap brings it back.
       '.open { cursor: zoom-in; }' +
       ':is(.tile:fullscreen, .tile.pseudo) .open { cursor: zoom-out; }' +
-      '.tile ha-camera-stream { display: block; width: 100%; height: 100%; --video-max-height: 100%; }' +
+      '.tile :is(hc-camera-stream, ha-camera-stream, ha-web-rtc-player) { display: block; width: 100%; height: 100%; --video-max-height: 100%; }' +
       ':is(.tile:fullscreen, .tile.pseudo) { display: flex; align-items: center; justify-content: center; border-radius: 0; background: #000; }' +
       '.tile.pseudo { position: fixed; inset: 0; z-index: 10000; aspect-ratio: auto; }' +
-      ':is(.tile:fullscreen, .tile.pseudo) ha-camera-stream { height: auto; --video-max-height: 100vh; }' +
-      '.tile.off ha-camera-stream { display: none; }' +
+      ':is(.tile:fullscreen, .tile.pseudo) :is(hc-camera-stream, ha-camera-stream, ha-web-rtc-player) { height: auto; --video-max-height: 100vh; }' +
+      '.tile.off hc-camera-stream { display: none; }' +
       '.na { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-size: 12px;' +
       ' color: rgba(255,255,255,0.62); background: radial-gradient(circle at 50% 42%, #2a2e35, #121418 72%); }' +
       '.na ha-icon { --mdc-icon-size: 20px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%;' +

@@ -53,7 +53,7 @@ List the cameras, the cards find their privacy switch, SD stream and PTZ buttons
 - A single camera: its name is the title, a round *Disable* / *Enable* icon button sits on the right and the HD / SD badge under the title
 - Hidden cameras are removed from the grid: a camera is hidden when its **privacy switch is on** or its **power switch is off**
 - **HD / SD** switch: from an `input_select` shared by every dashboard, or from the card itself (remembered by the browser); with [Tapo Cameras](https://github.com/juju35/ha-tapo), it sets each camera's own **Stream quality** select, and the player picks the new stream up
-- Live grid on Home Assistant's own player: WebRTC through go2rtc when available, else HLS or MJPEG — no other card to install
+- Live grid with low latency: a camera that offers WebRTC (go2rtc) plays it alone, one RTSP session per camera; Home Assistant's own player (HLS or MJPEG) for the others — no other card to install
 - **Tap a camera to put it fullscreen**, with a round pan & tilt pad at the bottom right; tap again or press Escape to come back (on iPhone, the card covers the screen itself)
 - *Details* button on every tile for Home Assistant's camera dialog; **sound** button on streams that carry sound, for one camera at a time (the grid starts muted)
 - **PTZ**: a button on the tile shows a round pad of four arrows in the corner of the image, light enough to see through; hold an arrow to keep moving, or use the arrow keys; arrows whose button is unavailable are greyed out
@@ -219,7 +219,7 @@ The still states (the grid; pan & tilt; a single camera; every camera hidden; th
 
 ## How it works
 
-The card draws its own header, badges and tiles, and plays each camera with Home Assistant's `ha-camera-stream`, the player of the built-in camera cards and dialog: it picks WebRTC, HLS or MJPEG by itself, so go2rtc and the camera's own settings apply as everywhere else in Home Assistant. Tiles are kept between updates and only added or removed when a camera is shown or hidden, so the other streams keep playing. When the quality is SD, every camera that has an SD stream uses it.
+The card draws its own header, badges and tiles. A camera that offers WebRTC (go2rtc) plays it with Home Assistant's `ha-web-rtc-player` alone: Home Assistant's `ha-camera-stream` starts HLS and WebRTC side by side, two RTSP sessions per camera, which cameras that allow few of them (Tapo…) answer by dropping one, and the image lags. The other cameras, the ones without a live stream and a WebRTC session that brings no video use `ha-camera-stream`, the player of the built-in camera cards and dialog (HLS or MJPEG). go2rtc and the camera's own settings apply as everywhere else in Home Assistant. Tiles are kept between updates and only added or removed when a camera is shown or hidden, so the other streams keep playing. When the quality is SD, every camera that has an SD stream uses it.
 
 Discovery looks at the entities of the camera's device in the entity registry. Anything set in the configuration wins over what is found.
 

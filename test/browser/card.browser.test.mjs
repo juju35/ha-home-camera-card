@@ -21,6 +21,10 @@ customElements.define("ha-camera-stream", class extends HTMLElement {
   set stateObj(v) { this._obj = v; (this.history ||= []).push(v?.entity_id); }
   get updateComplete() { return Promise.resolve(true); }
 });
+customElements.define("ha-web-rtc-player", class extends HTMLElement {
+  connectedCallback() { window.__connects++; }
+  get updateComplete() { return Promise.resolve(true); }
+});
 window.st = (id, state) => ({ entity_id: id, state, attributes: {} });
 window.baseStates = () => {
   const out = {};
@@ -427,6 +431,43 @@ test("a camera that can play WebRTC gets the sound button as soon as its capabil
   // Unmuting plays it again, so the player can pick WebRTC with its sound.
   assert.equal(r.muted, false);
   assert.deepEqual(r.history, [undefined, "camera.a_hd_stream"]);
+});
+
+test("a camera offering WebRTC plays it alone, with Home Assistant's player as the fallback", async () => {
+  const r = await page.evaluate(async () => {
+    mount(CAMS);
+    const states = baseStates();
+    for (const id of Object.keys(states)) states[id].attributes = { supported_features: 2 };
+    const hass = makeHass(states);
+    hass.callWS = async ({ entity_id }) => ({
+      frontend_stream_types: entity_id === "camera.a_hd_stream" ? ["hls", "web_rtc"] : ["hls"],
+    });
+    mount(CAMS);
+    el.hass = hass;
+    await frames();
+    const t = tiles();
+    const rtc = () => t[0].querySelector("ha-web-rtc-player");
+    const first = {
+      rtc: rtc()?.entityid,
+      hls0: !!t[0].querySelector("ha-camera-stream"),
+      hls1: t[1].querySelector("ha-camera-stream")?.stateObj?.entity_id,
+      sound: !!t[0].querySelector('[data-action="sound"]'),
+      muted: rtc()?.muted,
+    };
+    // Turning the sound on starts a new WebRTC session, unmuted.
+    const before = rtc();
+    t[0].querySelector('[data-action="sound"]').click();
+    await frames();
+    const replay = { fresh: rtc() !== before && !!rtc(), muted: rtc()?.muted };
+    // A session without video: Home Assistant's player takes over.
+    rtc().dispatchEvent(new CustomEvent("streams", { detail: { hasAudio: false, hasVideo: false }, bubbles: true, composed: true }));
+    await frames();
+    const fallback = { rtc: !!rtc(), hls: t[0].querySelector("ha-camera-stream")?.stateObj?.entity_id };
+    return { first, replay, fallback };
+  });
+  assert.deepEqual(r.first, { rtc: "camera.a_hd_stream", hls0: false, hls1: "camera.b_hd_stream", sound: true, muted: true });
+  assert.deepEqual(r.replay, { fresh: true, muted: false });
+  assert.deepEqual(r.fallback, { rtc: false, hls: "camera.a_hd_stream" });
 });
 
 test("a camera switching its stream (Tapo stream_quality) plays again", async () => {
