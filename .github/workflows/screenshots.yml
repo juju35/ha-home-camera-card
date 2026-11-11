@@ -7,6 +7,7 @@ on:
     paths:
       - "custom_components/**"
       - "scripts/**"
+      - ".github/workflows/screenshots.yml"
 
 # Protected main is never pushed to: on same-repo pull requests the job commits the
 # refreshed screenshots back onto the pull request's own branch, so they land through
