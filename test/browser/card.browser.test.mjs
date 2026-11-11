@@ -437,7 +437,7 @@ test("a camera offering WebRTC plays it alone, with Home Assistant's player as t
   const r = await page.evaluate(async () => {
     mount(CAMS);
     const states = baseStates();
-    for (const id of Object.keys(states)) states[id].attributes = { supported_features: 2 };
+    for (const id of Object.keys(states)) states[id].attributes = { supported_features: 2, entity_picture: `/api/camera_proxy/${id}?token=t` };
     const hass = makeHass(states);
     hass.callWS = async ({ entity_id }) => ({
       frontend_stream_types: entity_id === "camera.a_hd_stream" ? ["hls", "web_rtc"] : ["hls"],
@@ -453,6 +453,7 @@ test("a camera offering WebRTC plays it alone, with Home Assistant's player as t
       hls1: t[1].querySelector("ha-camera-stream")?.stateObj?.entity_id,
       sound: !!t[0].querySelector('[data-action="sound"]'),
       muted: rtc()?.muted,
+      poster: rtc()?.posterUrl,
     };
     // Turning the sound on starts a new WebRTC session, unmuted.
     const before = rtc();
@@ -465,7 +466,7 @@ test("a camera offering WebRTC plays it alone, with Home Assistant's player as t
     const fallback = { rtc: !!rtc(), hls: t[0].querySelector("ha-camera-stream")?.stateObj?.entity_id };
     return { first, replay, fallback };
   });
-  assert.deepEqual(r.first, { rtc: "camera.a_hd_stream", hls0: false, hls1: "camera.b_hd_stream", sound: true, muted: true });
+  assert.deepEqual(r.first, { rtc: "camera.a_hd_stream", hls0: false, hls1: "camera.b_hd_stream", sound: true, muted: true, poster: "/api/camera_proxy/camera.a_hd_stream?token=t" });
   assert.deepEqual(r.replay, { fresh: true, muted: false });
   assert.deepEqual(r.fallback, { rtc: false, hls: "camera.a_hd_stream" });
 });

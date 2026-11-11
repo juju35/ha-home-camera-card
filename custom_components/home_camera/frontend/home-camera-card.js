@@ -1,4 +1,4 @@
-const HOME_CAMERA_CARD_VERSION = '4.4.0';
+const HOME_CAMERA_CARD_VERSION = '4.4.1';
 
 // ── i18n ─────────────────────────────────────────────────────────────────────
 const HcI18n = {
@@ -1692,6 +1692,10 @@ class HcCameraStream extends HTMLElement {
       if (p?.localName !== 'ha-web-rtc-player' || p.entityid !== id) {
         const player = document.createElement('ha-web-rtc-player');
         player.entityid = id;
+        // The camera's last still while the session starts (connection, then the first keyframe):
+        // the tile shows a picture at once instead of a black frame.
+        const still = obj.attributes?.entity_picture;
+        if (still) player.posterUrl = this._hass?.hassUrl ? this._hass.hassUrl(still) : still;
         player.setAttribute('autoplay', '');
         player.setAttribute('playsinline', '');
         player.autoplay = true;
