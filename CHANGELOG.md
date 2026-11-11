@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.3.2 - 2026-11-11
+
+### Fixes
+- Sound on cameras whose audio only WebRTC plays (G.711, such as Tapo C2xx cameras): Home Assistant's WebRTC player drops the sound of a muted session, so their stream always said it had none and the sound button never showed. A WebRTC stream now gets the button, and turning the sound on starts a new session that keeps it.
+- A camera switching its stream itself (Tapo Cameras' HD / SD) really plays the new stream: the player is emptied, then given the camera again once it has rendered without it, which is what makes it start a new session.
+
 ## 4.3.1 - 2026-11-11
 
 ### Fixes

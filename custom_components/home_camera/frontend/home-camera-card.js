@@ -1,4 +1,4 @@
-const HOME_CAMERA_CARD_VERSION = '4.3.1';
+const HOME_CAMERA_CARD_VERSION = '4.3.2';
 
 // ── i18n ─────────────────────────────────────────────────────────────────────
 const HcI18n = {
@@ -2183,6 +2183,16 @@ class HomeCameraCard extends HTMLElement {
       tile._audio = true;
       this._renderTools(tile);
     });
+    // Home Assistant's WebRTC player drops the sound of a muted session (it never adds its audio track), so
+    // a muted WebRTC stream always says it has none: G.711 cameras (Tapo C2xx…), whose sound only WebRTC
+    // plays, never got the button. A WebRTC stream gets it; unmuting it plays the stream again (_replay)
+    // so that the new session keeps its sound.
+    tile.addEventListener('stream-type-changed', (ev) => {
+      tile._type = ev.detail?.type;
+      if (tile._type !== 'web_rtc' || tile._audio) return;
+      tile._audio = true;
+      this._renderTools(tile);
+    });
     return tile;
   }
 
@@ -2253,7 +2263,8 @@ class HomeCameraCard extends HTMLElement {
       const obj = ok && !paused ? st : undefined;
       // A new camera (or the same one coming back) loads again: spinner until its first frame, and
       // its sound is unknown until its player says. A mere state update keeps both.
-      if (obj?.entity_id !== stream.stateObj?.entity_id) {
+      // (Not while a replay has emptied the player on purpose.)
+      if (!tile._replaying && obj?.entity_id !== stream.stateObj?.entity_id) {
         tile.classList.toggle('loading', !!obj);
         if (tile._audio) {
           tile._audio = false;
@@ -2264,12 +2275,10 @@ class HomeCameraCard extends HTMLElement {
       // A camera that switched its stream itself (Tapo Cameras: the stream_quality attribute) plays again,
       // so the player negotiates the new stream instead of keeping the old one.
       const q = obj?.attributes?.stream_quality;
-      if (obj && stream.stateObj && tile._q !== undefined && q !== tile._q) {
-        stream.stateObj = undefined;
-        tile.classList.add('loading');
-      }
+      const replay = obj && stream.stateObj && tile._q !== undefined && q !== tile._q;
       if (obj) tile._q = q;
-      if (stream.stateObj !== obj) stream.stateObj = obj;
+      if (replay) this._replay(tile);
+      else if (stream.stateObj !== obj && !tile._replaying) stream.stateObj = obj;
       this._syncPtz(tile);
     }
   }
@@ -2350,6 +2359,26 @@ class HomeCameraCard extends HTMLElement {
     }
     tile._stream.muted = !on;
     this._soundIcon(tile);
+    // A WebRTC session started muted has no sound at all: a new one, unmuted, has.
+    if (on && tile._type === 'web_rtc') this._replay(tile);
+  }
+
+  // Plays a tile's stream again with a new session. The player only restarts when its camera changes, and
+  // within one update a cleared then restored camera is no change at all: the empty camera is rendered first.
+  async _replay(tile) {
+    const stream = tile._stream;
+    if (!stream.stateObj || tile._replaying) return;
+    tile._replaying = true;
+    tile.classList.add('loading');
+    stream.stateObj = undefined;
+    try {
+      await stream.updateComplete;
+    } finally {
+      tile._replaying = false;
+      const st = this._hass?.states[tile._entity];
+      if (st && st.state !== 'unavailable' && !this._paused(tile)) stream.stateObj = st;
+      else tile.classList.remove('loading');
+    }
   }
 
   _soundIcon(tile) {

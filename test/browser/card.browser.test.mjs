@@ -16,6 +16,10 @@ window.__connects = 0;
 customElements.define("ha-camera-stream", class extends HTMLElement {
   static elementProperties = new Map([["hass", {}]]);
   connectedCallback() { window.__connects++; }
+  // Like a Lit element: the cameras it was given, and updateComplete after a change.
+  get stateObj() { return this._obj; }
+  set stateObj(v) { this._obj = v; (this.history ||= []).push(v?.entity_id); }
+  get updateComplete() { return Promise.resolve(true); }
 });
 window.st = (id, state) => ({ entity_id: id, state, attributes: {} });
 window.baseStates = () => {
@@ -371,6 +375,58 @@ test("the sound button shows on streams with sound, for one camera at a time", a
   assert.deepEqual(r.second, [true, false, true]);
   assert.deepEqual(r.third, [true, true, true]);
   assert.equal(r.icon, "mdi:volume-off");
+});
+
+test("a WebRTC stream gets the sound button, and unmuting plays it again so that it keeps its sound", async () => {
+  const r = await page.evaluate(async () => {
+    mount(CAMS);
+    const sound = (i) => tiles()[i].querySelector('[data-action="sound"]');
+    const before = !!sound(0);
+    // Muted, Home Assistant's WebRTC player has no audio track: it says so.
+    emit(0, "streams", { hasAudio: false, hasVideo: true });
+    emit(0, "stream-type-changed", { type: "web_rtc" });
+    emit(1, "stream-type-changed", { type: "hls" });
+    const shown = [!!sound(0), !!sound(1)];
+    const s = streams()[0];
+    s.history = [];
+    sound(0).click();
+    await frames();
+    const afterOn = { muted: s.muted, history: s.history, entity: s.stateObj?.entity_id };
+    s.history = [];
+    sound(0).click();
+    await frames();
+    return { before, shown, afterOn, afterOff: { muted: s.muted, history: s.history } };
+  });
+  assert.equal(r.before, false);
+  assert.deepEqual(r.shown, [true, false]);
+  // Unmuted, then emptied and given its camera again: a new session, with sound.
+  assert.equal(r.afterOn.muted, false);
+  assert.deepEqual(r.afterOn.history, [undefined, "camera.a_hd_stream"]);
+  assert.equal(r.afterOn.entity, "camera.a_hd_stream");
+  // Muting again just mutes.
+  assert.equal(r.afterOff.muted, true);
+  assert.deepEqual(r.afterOff.history, []);
+});
+
+test("a camera switching its stream (Tapo stream_quality) plays again", async () => {
+  const r = await page.evaluate(async () => {
+    mount(CAMS);
+    const s = streams()[2];
+    s.history = [];
+    const states = { ...baseStates() };
+    states["camera.c"] = { ...states["camera.c"], attributes: { stream_quality: "hd" } };
+    el.hass = makeHass(states);
+    await frames();
+    s.history = [];
+    const next = { ...states, "camera.c": { ...states["camera.c"], attributes: { stream_quality: "sd" } } };
+    el.hass = makeHass(next);
+    await frames();
+    return { history: s.history, entity: s.stateObj?.entity_id, quality: s.stateObj?.attributes?.stream_quality };
+  });
+  // Emptied, then given the camera again after the player rendered: the player starts a new session.
+  assert.deepEqual(r.history.slice(0, 2), [undefined, "camera.c"]);
+  assert.equal(r.entity, "camera.c");
+  assert.equal(r.quality, "sd");
 });
 
 test("players are emptied while the page is hidden and filled again when it comes back", async () => {
@@ -1210,12 +1266,15 @@ test("Tapo Cameras (ha-tapo): privacy_mode switch, and HD / SD through the camer
       "camera.garage": { entity_id: "camera.garage", state: "idle", attributes: { stream_quality: "sd" } },
       "select.garage_stream_quality": st("select.garage_stream_quality", "sd"),
     });
+    const reloaded = tile.classList.contains("loading");
+    // The player gets its camera back once it has rendered without it (a new session).
+    await frames();
     return {
       badge,
       hdBefore,
       sent,
       hdAfter: el._hd(),
-      reloaded: tile.classList.contains("loading"),
+      reloaded,
       entity: tile.querySelector("ha-camera-stream").stateObj?.entity_id,
     };
   });
