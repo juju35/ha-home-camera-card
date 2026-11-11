@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.4.0 - 2026-11-11
+
+### Improvements
+- Lower latency and steadier streams: a camera that offers WebRTC (go2rtc) plays it alone, one RTSP session per camera, instead of Home Assistant's player starting HLS next to it. Cameras that allow few sessions (Tapo…) dropped one, go2rtc kept reconnecting and the player could fall back to HLS, seconds behind. Home Assistant's player stays for the other cameras, for privacy mode (its still) and when a WebRTC session brings no video.
+
 ## 4.3.3 - 2026-11-11
 
 ### Fixes
