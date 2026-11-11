@@ -1,6 +1,6 @@
 {
   "name": "ha-camera",
-  "version": "4.3.1",
+  "version": "4.3.2",
   "description": "Home Assistant integration with a Cameras sidebar panel for every user, and the home camera Lovelace cards.",
   "private": true,
   "type": "module",
