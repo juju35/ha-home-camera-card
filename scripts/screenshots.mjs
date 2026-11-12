@@ -139,14 +139,15 @@ const add = (entity_id, state, device_id, attributes = {}) => {
   entities[entity_id] = { entity_id, device_id };
 };
 for (const [key, name, , privacy] of CAMS) {
-  add(`camera.${key}_hd_stream`, "streaming", key, { friendly_name: name });
-  add(`camera.${key}_sd_stream`, "streaming", key, { friendly_name: name });
+  // supported_features 2 (stream): live cameras, played by Home Assistant's player.
+  add(`camera.${key}_hd_stream`, "streaming", key, { friendly_name: name, supported_features: 2 });
+  add(`camera.${key}_sd_stream`, "streaming", key, { friendly_name: name, supported_features: 2 });
   add(`switch.${key}_privacy`, privacy ? "on" : "off", key);
   for (const d of ["left", "right", "up", "down"]) add(`button.${key}_move_${d}`, "unknown", key);
 }
 // Someone walks through the living room: its motion badge shows.
 add("binary_sensor.living_room_motion", "on", "living_room", { device_class: "motion" });
-add("camera.terrace", "streaming", "terrace", { friendly_name: "Terrace" });
+add("camera.terrace", "streaming", "terrace", { friendly_name: "Terrace", supported_features: 2 });
 add("switch.terrace_camera_plug", "on", "plug");
 add("input_select.camera_quality", "HD", null, { options: ["HD", "SD"] });
 
