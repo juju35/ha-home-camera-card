@@ -25,7 +25,7 @@ customElements.define("ha-web-rtc-player", class extends HTMLElement {
   connectedCallback() { window.__connects++; }
   get updateComplete() { return Promise.resolve(true); }
 });
-window.st = (id, state) => ({ entity_id: id, state, attributes: {} });
+window.st = (id, state) => ({ entity_id: id, state, attributes: { supported_features: 2 } });
 window.baseStates = () => {
   const out = {};
   for (const [id, s] of [
@@ -477,11 +477,11 @@ test("a camera switching its stream (Tapo stream_quality) plays again", async ()
     const s = streams()[2];
     s.history = [];
     const states = { ...baseStates() };
-    states["camera.c"] = { ...states["camera.c"], attributes: { stream_quality: "hd" } };
+    states["camera.c"] = { ...states["camera.c"], attributes: { supported_features: 2, stream_quality: "hd" } };
     el.hass = makeHass(states);
     await frames();
     s.history = [];
-    const next = { ...states, "camera.c": { ...states["camera.c"], attributes: { stream_quality: "sd" } } };
+    const next = { ...states, "camera.c": { ...states["camera.c"], attributes: { supported_features: 2, stream_quality: "sd" } } };
     el.hass = makeHass(next);
     await frames();
     return { history: s.history, entity: s.stateObj?.entity_id, quality: s.stateObj?.attributes?.stream_quality };
@@ -1299,7 +1299,7 @@ test("Tapo Cameras (ha-tapo): privacy_mode switch, and HD / SD through the camer
   const r = await page.evaluate(async () => {
     document.body.replaceChildren();
     const states = {
-      "camera.garage": { entity_id: "camera.garage", state: "idle", attributes: { stream_quality: "hd" } },
+      "camera.garage": { entity_id: "camera.garage", state: "idle", attributes: { supported_features: 2, stream_quality: "hd" } },
       "switch.garage_privacy_mode": st("switch.garage_privacy_mode", "off"),
       "select.garage_stream_quality": st("select.garage_stream_quality", "hd"),
     };
@@ -1326,7 +1326,7 @@ test("Tapo Cameras (ha-tapo): privacy_mode switch, and HD / SD through the camer
     el.hass = hass({
       ...baseStates(),
       ...states,
-      "camera.garage": { entity_id: "camera.garage", state: "idle", attributes: { stream_quality: "sd" } },
+      "camera.garage": { entity_id: "camera.garage", state: "idle", attributes: { supported_features: 2, stream_quality: "sd" } },
       "select.garage_stream_quality": st("select.garage_stream_quality", "sd"),
     });
     const reloaded = tile.classList.contains("loading");
@@ -1394,4 +1394,50 @@ test("Tapo Cameras with entity ids in the user's language: found by their transl
   assert.equal(r.quality, "select.salon_qualite_du_flux");
   assert.deepEqual(r.motion, ["binary_sensor.salon_mouvement", "binary_sensor.salon_personne"]);
   assert.equal(r.arrows.length, 4);
+});
+
+test("a camera without a live stream shows its still, refreshed, instead of Home Assistant's MJPEG player", async () => {
+  const r = await page.evaluate(async () => {
+    // The stills asked for, whatever comes of them (there is no server here).
+    const desc = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, "src");
+    const asked = [];
+    Object.defineProperty(HTMLImageElement.prototype, "src", {
+      configurable: true,
+      get: desc.get,
+      set(v) { asked.push(v); desc.set.call(this, v); },
+    });
+    mount(["camera.c"]);
+    const states = baseStates();
+    states["camera.c"] = { entity_id: "camera.c", state: "idle", attributes: { supported_features: 0, entity_picture: "/api/camera_proxy/camera.c?token=t" } };
+    el.hass = makeHass(states);
+    await frames();
+    const tile = tiles()[0];
+    Object.defineProperty(HTMLImageElement.prototype, "src", desc);
+    return {
+      still: !!tile.querySelector("hc-camera-still"),
+      ha: !!tile.querySelector("ha-camera-stream"),
+      asks: asked.some((u) => u.startsWith("/api/camera_proxy/camera.c?token=t&_t=")),
+      loading: tile.classList.contains("loading"),
+    };
+  });
+  assert.deepEqual(r, { still: true, ha: false, asks: true, loading: true });
+  // Its first still shown: the spinner goes.
+  const loaded = await page.evaluate(async () => {
+    const tile = tiles()[0];
+    tile.querySelector("hc-camera-still").dispatchEvent(new Event("load", { bubbles: true, composed: true }));
+    return tile.classList.contains("loading");
+  });
+  assert.equal(loaded, false);
+  // Hidden page: the still player goes, and with it its refresh.
+  const hidden = await page.evaluate(async () => {
+    Object.defineProperty(document, "visibilityState", { value: "hidden", configurable: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+    await frames();
+    const out = !!tiles()[0].querySelector("hc-camera-still");
+    Object.defineProperty(document, "visibilityState", { value: "visible", configurable: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+    await frames();
+    return { out, back: !!tiles()[0].querySelector("hc-camera-still") };
+  });
+  assert.deepEqual(hidden, { out: false, back: true });
 });
