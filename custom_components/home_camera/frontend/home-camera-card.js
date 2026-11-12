@@ -1,4 +1,4 @@
-const HOME_CAMERA_CARD_VERSION = '4.4.1';
+const HOME_CAMERA_CARD_VERSION = '4.4.2';
 
 // ── i18n ─────────────────────────────────────────────────────────────────────
 const HcI18n = {
@@ -1588,6 +1588,108 @@ const HC_QUALITY_EVENT = 'home-camera-card-quality';
 // Home Assistant's player is the fallback, for the other cameras, the ones without a live stream (privacy
 // mode: their still) and a WebRTC session that brings no video.
 const HC_STREAM_FEATURE = 2;
+// A camera without a live stream (HomeKit, a Tapo in privacy mode…): Home Assistant's player shows it as
+// MJPEG, a multipart/x-mixed-replace <img> that Safari leaves broken. Its still is refreshed here instead,
+// the next one asked once the previous one has loaded, at most one every HC_STILL_MS.
+const HC_STILL_MS = 1000;
+const HC_STILL_RETRY_MS = 5000;
+class HcCameraStill extends HTMLElement {
+  constructor() {
+    super();
+    this._img = document.createElement('img');
+    this._img.alt = '';
+    this._img.style.cssText = 'display: block; width: 100%; height: 100%; max-height: var(--video-max-height, none);';
+    this._timer = null;
+    this._next = null;
+    this._shown = false;
+    this._apply();
+  }
+
+  get stateObj() {
+    return this._obj;
+  }
+  set stateObj(v) {
+    const was = this._obj?.entity_id;
+    this._obj = v;
+    if (v?.entity_id !== was) {
+      this._shown = false;
+      this._img.removeAttribute('src');
+      this._stop();
+    }
+    if (this.isConnected && !this._timer && !this._next) this._fetch();
+  }
+  get fitMode() {
+    return this._fit;
+  }
+  set fitMode(v) {
+    this._fit = v;
+    this._apply();
+  }
+  get aspectRatio() {
+    return this._ratio;
+  }
+  set aspectRatio(v) {
+    this._ratio = v;
+    this._apply();
+  }
+  get updateComplete() {
+    return Promise.resolve(true);
+  }
+
+  // Fullscreen (no ratio): the picture at its own height; in a tile: it fills it.
+  _apply() {
+    this._img.style.objectFit = this._fit || 'contain';
+    this._img.style.height = this._ratio ? '100%' : 'auto';
+  }
+
+  connectedCallback() {
+    if (!this._img.isConnected) this.append(this._img);
+    this._fetch();
+  }
+
+  disconnectedCallback() {
+    this._stop();
+  }
+
+  _stop() {
+    clearTimeout(this._timer);
+    this._timer = null;
+    if (this._next) {
+      this._next.onload = this._next.onerror = null;
+      this._next.src = '';
+      this._next = null;
+    }
+  }
+
+  // Loaded aside, then shown: the tile keeps the last still while the next one comes.
+  _fetch() {
+    this._timer = null;
+    const obj = this._obj;
+    if (!obj || !this.isConnected || this._next) return;
+    const id = obj.entity_id;
+    const pic = obj.attributes?.entity_picture || `/api/camera_proxy/${id}`;
+    const url = `${pic}${pic.includes('?') ? '&' : '?'}_t=${Date.now()}`;
+    const started = Date.now();
+    const next = new Image();
+    this._next = next;
+    next.onload = () => {
+      this._next = null;
+      this._img.src = url;
+      if (!this._shown) {
+        this._shown = true;
+        this.dispatchEvent(new Event('load', { bubbles: true, composed: true }));
+      }
+      this._timer = setTimeout(() => this._fetch(), Math.max(0, HC_STILL_MS - (Date.now() - started)));
+    };
+    next.onerror = () => {
+      this._next = null;
+      this._timer = setTimeout(() => this._fetch(), HC_STILL_RETRY_MS);
+    };
+    next.src = url;
+  }
+}
+if (!customElements.get('hc-camera-still')) customElements.define('hc-camera-still', HcCameraStill);
+
 class HcCameraStream extends HTMLElement {
   // The card gives hass only to a player that declares it; passed on to the inner one if it asks.
   static elementProperties = new Map([['hass', {}]]);
@@ -1704,8 +1806,13 @@ class HcCameraStream extends HTMLElement {
       }
       return;
     }
-    if (!id && this._player?.localName === 'ha-web-rtc-player') {
+    if (!id && ['ha-web-rtc-player', 'hc-camera-still'].includes(this._player?.localName)) {
       this._use(null);
+      return;
+    }
+    if (id && !live) {
+      if (this._player?.localName !== 'hc-camera-still') this._use(document.createElement('hc-camera-still'));
+      this._player.stateObj = obj;
       return;
     }
     if (this._player?.localName !== 'ha-camera-stream') this._use(document.createElement('ha-camera-stream'));
@@ -2710,10 +2817,10 @@ class HomeCameraCard extends HTMLElement {
       // A tap on the image puts it fullscreen, a second tap brings it back.
       '.open { cursor: zoom-in; }' +
       ':is(.tile:fullscreen, .tile.pseudo) .open { cursor: zoom-out; }' +
-      '.tile :is(hc-camera-stream, ha-camera-stream, ha-web-rtc-player) { display: block; width: 100%; height: 100%; --video-max-height: 100%; }' +
+      '.tile :is(hc-camera-stream, ha-camera-stream, ha-web-rtc-player, hc-camera-still) { display: block; width: 100%; height: 100%; --video-max-height: 100%; }' +
       ':is(.tile:fullscreen, .tile.pseudo) { display: flex; align-items: center; justify-content: center; border-radius: 0; background: #000; }' +
       '.tile.pseudo { position: fixed; inset: 0; z-index: 10000; aspect-ratio: auto; }' +
-      ':is(.tile:fullscreen, .tile.pseudo) :is(hc-camera-stream, ha-camera-stream, ha-web-rtc-player) { height: auto; --video-max-height: 100vh; }' +
+      ':is(.tile:fullscreen, .tile.pseudo) :is(hc-camera-stream, ha-camera-stream, ha-web-rtc-player, hc-camera-still) { height: auto; --video-max-height: 100vh; }' +
       '.tile.off hc-camera-stream { display: none; }' +
       '.na { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-size: 12px;' +
       ' color: rgba(255,255,255,0.62); background: radial-gradient(circle at 50% 42%, #2a2e35, #121418 72%); }' +

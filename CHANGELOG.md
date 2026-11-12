@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.4.2 - 2026-11-12
+
+### Fixes
+- Cameras without a live stream (HomeKit cameras, a Tapo in privacy mode…) show in Safari: Home Assistant's player gave them an MJPEG image that Safari left broken, with the spinner turning forever. The card now shows their still, refreshed about every second (the next one asked once the previous one has loaded), in every browser; it stops while the page is hidden or the card off screen.
+
 ## 4.4.1 - 2026-11-11
 
 ### Improvements
