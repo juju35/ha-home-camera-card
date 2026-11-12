@@ -1,4 +1,4 @@
-const HOME_CAMERA_CARD_VERSION = '4.4.3';
+const HOME_CAMERA_CARD_VERSION = '4.5.0';
 
 // ── i18n ─────────────────────────────────────────────────────────────────────
 const HcI18n = {
@@ -46,6 +46,7 @@ const HcI18n = {
     ed_aspect_ratio: 'Format des vignettes',
     ed_aspect_ratio_helper: 'Par exemple 16:9 (par défaut) ou 4:3',
     ed_show_summary: 'Résumé',
+    ed_show_title: 'Afficher le titre',
     ed_show_badges: 'Pastilles de confidentialité',
     ed_language: 'Langue',
     ed_language_helper: 'Laisser vide pour suivre la langue de Home Assistant',
@@ -109,6 +110,7 @@ const HcI18n = {
     ed_aspect_ratio: 'Tile aspect ratio',
     ed_aspect_ratio_helper: 'For example 16:9 (default) or 4:3',
     ed_show_summary: 'Summary',
+    ed_show_title: 'Show title',
     ed_show_badges: 'Privacy badges',
     ed_language: 'Language',
     ed_language_helper: 'Leave empty to follow the Home Assistant language',
@@ -172,6 +174,7 @@ const HcI18n = {
     ed_aspect_ratio: 'Seitenverhältnis der Kacheln',
     ed_aspect_ratio_helper: 'Zum Beispiel 16:9 (Standard) oder 4:3',
     ed_show_summary: 'Zusammenfassung',
+    ed_show_title: 'Titel anzeigen',
     ed_show_badges: 'Privatsphäre-Badges',
     ed_language: 'Sprache',
     ed_language_helper: 'Leer lassen, um der Sprache von Home Assistant zu folgen',
@@ -235,6 +238,7 @@ const HcI18n = {
     ed_aspect_ratio: 'Relación de aspecto de las miniaturas',
     ed_aspect_ratio_helper: 'Por ejemplo 16:9 (predeterminado) o 4:3',
     ed_show_summary: 'Resumen',
+    ed_show_title: 'Mostrar el título',
     ed_show_badges: 'Insignias de privacidad',
     ed_language: 'Idioma',
     ed_language_helper: 'Déjalo vacío para seguir el idioma de Home Assistant',
@@ -298,6 +302,7 @@ const HcI18n = {
     ed_aspect_ratio: 'Пропорција плочице (Aspect ratio)',
     ed_aspect_ratio_helper: 'На пример 16:9 (подразумевано) или 4:3',
     ed_show_summary: 'Садржај / Резиме',
+    ed_show_title: 'Прикажи наслов',
     ed_show_badges: 'Значке приватности',
     ed_language: 'Језик',
     ed_language_helper: 'Остави празно да прати језик Home Assistant-а',
@@ -361,6 +366,7 @@ const HcI18n = {
     ed_aspect_ratio: 'Proporcija pločice (Aspect ratio)',
     ed_aspect_ratio_helper: 'Na primer 16:9 (podrazumevano) ili 4:3',
     ed_show_summary: 'Sadržaj / Rezime',
+    ed_show_title: 'Prikaži naslov',
     ed_show_badges: 'Značke privatnosti',
     ed_language: 'Jezik',
     ed_language_helper: 'Ostavi prazno da prati jezik Home Assistant-a',
@@ -424,6 +430,7 @@ const HcI18n = {
     ed_aspect_ratio: 'Proporzioni dei riquadri',
     ed_aspect_ratio_helper: 'Ad esempio 16:9 (predefinito) o 4:3',
     ed_show_summary: 'Riepilogo',
+    ed_show_title: 'Mostra il titolo',
     ed_show_badges: 'Badge di privacy',
     ed_language: 'Lingua',
     ed_language_helper: 'Lascia vuoto per seguire la lingua di Home Assistant',
@@ -487,6 +494,7 @@ const HcI18n = {
     ed_aspect_ratio: 'Beeldverhouding van de tegels',
     ed_aspect_ratio_helper: 'Bijvoorbeeld 16:9 (standaard) of 4:3',
     ed_show_summary: 'Samenvatting',
+    ed_show_title: 'Titel tonen',
     ed_show_badges: 'Privacybadges',
     ed_language: 'Taal',
     ed_language_helper: 'Leeg laten om de taal van Home Assistant te volgen',
@@ -550,6 +558,7 @@ const HcI18n = {
     ed_aspect_ratio: 'Proporção das miniaturas',
     ed_aspect_ratio_helper: 'Por exemplo 16:9 (predefinição) ou 4:3',
     ed_show_summary: 'Resumo',
+    ed_show_title: 'Mostrar o título',
     ed_show_badges: 'Emblemas de privacidade',
     ed_language: 'Idioma',
     ed_language_helper: 'Deixar vazio para seguir o idioma do Home Assistant',
@@ -613,6 +622,7 @@ const HcI18n = {
     ed_aspect_ratio: 'Proporcje kafelków',
     ed_aspect_ratio_helper: 'Na przykład 16:9 (domyślnie) lub 4:3',
     ed_show_summary: 'Podsumowanie',
+    ed_show_title: 'Pokaż tytuł',
     ed_show_badges: 'Plakietki prywatności',
     ed_language: 'Język',
     ed_language_helper: 'Pozostaw puste, aby używać języka Home Assistanta',
@@ -676,6 +686,7 @@ const HcI18n = {
     ed_aspect_ratio: 'Raportul de aspect al plăcilor',
     ed_aspect_ratio_helper: 'De exemplu 16:9 (implicit) sau 4:3',
     ed_show_summary: 'Rezumat',
+    ed_show_title: 'Afișează titlul',
     ed_show_badges: 'Insigne de confidențialitate',
     ed_language: 'Limbă',
     ed_language_helper: 'Lăsați gol pentru a urma limba Home Assistant',
@@ -739,6 +750,7 @@ const HcI18n = {
     ed_aspect_ratio: 'Billedformat for felterne',
     ed_aspect_ratio_helper: 'For eksempel 16:9 (standard) eller 4:3',
     ed_show_summary: 'Oversigt',
+    ed_show_title: 'Vis titel',
     ed_show_badges: 'Privatlivsbadges',
     ed_language: 'Sprog',
     ed_language_helper: 'Lad stå tomt for at følge sproget i Home Assistant',
@@ -802,6 +814,7 @@ const HcI18n = {
     ed_aspect_ratio: 'Bildformat för rutorna',
     ed_aspect_ratio_helper: 'Till exempel 16:9 (standard) eller 4:3',
     ed_show_summary: 'Sammanfattning',
+    ed_show_title: 'Visa rubrik',
     ed_show_badges: 'Integritetsbrickor',
     ed_language: 'Språk',
     ed_language_helper: 'Lämna tomt för att följa språket i Home Assistant',
@@ -865,6 +878,7 @@ const HcI18n = {
     ed_aspect_ratio: 'Съотношение на плочките',
     ed_aspect_ratio_helper: 'Например 16:9 (по подразбиране) или 4:3',
     ed_show_summary: 'Обобщение',
+    ed_show_title: 'Показване на заглавието',
     ed_show_badges: 'Значки за поверителност',
     ed_language: 'Език',
     ed_language_helper: 'Оставете празно, за да се използва езикът на Home Assistant',
@@ -928,6 +942,7 @@ const HcI18n = {
     ed_aspect_ratio: 'Соотношение сторон плиток',
     ed_aspect_ratio_helper: 'Например, 16:9 (по умолчанию) или 4:3',
     ed_show_summary: 'Сводка',
+    ed_show_title: 'Показывать заголовок',
     ed_show_badges: 'Значки конфиденциальности',
     ed_language: 'Язык',
     ed_language_helper: 'Оставьте пустым, чтобы использовать язык Home Assistant',
@@ -991,6 +1006,7 @@ const HcI18n = {
     ed_aspect_ratio: 'Співвідношення сторін плиток',
     ed_aspect_ratio_helper: 'Наприклад, 16:9 (типово) або 4:3',
     ed_show_summary: 'Зведення',
+    ed_show_title: 'Показувати заголовок',
     ed_show_badges: 'Значки приватності',
     ed_language: 'Мова',
     ed_language_helper: 'Залиште порожнім, щоб використовувати мову Home Assistant',
@@ -1054,6 +1070,7 @@ const HcI18n = {
     ed_aspect_ratio: 'Csempék méretaránya',
     ed_aspect_ratio_helper: 'Például 16:9 (alapértelmezett) vagy 4:3',
     ed_show_summary: 'Összegzés',
+    ed_show_title: 'Cím megjelenítése',
     ed_show_badges: 'Adatvédelmi jelvények',
     ed_language: 'Nyelv',
     ed_language_helper: 'Hagyja üresen a Home Assistant nyelvének követéséhez',
@@ -1117,6 +1134,7 @@ const HcI18n = {
     ed_aspect_ratio: 'Pomer strán dlaždíc',
     ed_aspect_ratio_helper: 'Napríklad 16:9 (predvolené) alebo 4:3',
     ed_show_summary: 'Súhrn',
+    ed_show_title: 'Zobraziť názov',
     ed_show_badges: 'Odznaky súkromia',
     ed_language: 'Jazyk',
     ed_language_helper: 'Nechajte prázdne, ak chcete použiť jazyk Home Assistant',
@@ -1180,6 +1198,7 @@ const HcI18n = {
     ed_aspect_ratio: 'Poměr stran dlaždic',
     ed_aspect_ratio_helper: 'Například 16:9 (výchozí) nebo 4:3',
     ed_show_summary: 'Souhrn',
+    ed_show_title: 'Zobrazit název',
     ed_show_badges: 'Odznaky soukromí',
     ed_language: 'Jazyk',
     ed_language_helper: 'Ponechte prázdné pro použití jazyka Home Assistant',
@@ -1243,6 +1262,7 @@ const HcI18n = {
     ed_aspect_ratio: 'Razmerje stranic ploščic',
     ed_aspect_ratio_helper: 'Na primer 16:9 (privzeto) ali 4:3',
     ed_show_summary: 'Povzetek',
+    ed_show_title: 'Prikaži naslov',
     ed_show_badges: 'Značke zasebnosti',
     ed_language: 'Jezik',
     ed_language_helper: 'Pustite prazno, da sledi jeziku Home Assistanta',
@@ -1306,6 +1326,7 @@ const HcI18n = {
     ed_aspect_ratio: 'Flīžu malu attiecība',
     ed_aspect_ratio_helper: 'Piemēram, 16:9 (noklusējums) vai 4:3',
     ed_show_summary: 'Kopsavilkums',
+    ed_show_title: 'Rādīt virsrakstu',
     ed_show_badges: 'Privātuma žetoni',
     ed_language: 'Valoda',
     ed_language_helper: 'Atstājiet tukšu, lai izmantotu Home Assistant valodu',
@@ -1369,6 +1390,7 @@ const HcI18n = {
     ed_aspect_ratio: 'Αναλογία πλακιδίων',
     ed_aspect_ratio_helper: 'Για παράδειγμα 16:9 (προεπιλογή) ή 4:3',
     ed_show_summary: 'Σύνοψη',
+    ed_show_title: 'Εμφάνιση τίτλου',
     ed_show_badges: 'Σήματα απορρήτου',
     ed_language: 'Γλώσσα',
     ed_language_helper: 'Αφήστε κενό για να ακολουθεί τη γλώσσα του Home Assistant',
@@ -1411,6 +1433,7 @@ function hcEsc(s) {
 }
 
 const HC_DEFAULTS = {
+  show_title: true,
   hd_option: 'HD',
   sd_option: 'SD',
   columns: 2,
@@ -1848,6 +1871,8 @@ class HomeCameraCard extends HTMLElement {
     if (!config) throw new Error('Invalid configuration');
     if (config.cameras && !Array.isArray(config.cameras)) throw new Error('cameras must be a list');
     this._config = Object.assign({}, HC_DEFAULTS, config);
+    // show_title: the header's title, hidden by the stylesheet (HD / SD and the summary stay)
+    this.toggleAttribute?.('hide-title', config.show_title === false);
     // Video wall (the Cameras panel, or `layout: wall` on a dashboard): no card around the grid, a status bar
     // instead of the header, and as many columns as fit unless `columns` is set.
     this._wall = config.layout === 'wall' && !this.hasAttribute?.('mini');
@@ -2752,6 +2777,7 @@ class HomeCameraCard extends HTMLElement {
       // Narrow card (half a Sections view, or a narrow column): the title shrinks to an ellipsis but keeps a few letters,
       // the HD / SD switch goes under it rather than out of the card, and the round buttons never shrink.
       '.titles { flex: 1 1 auto; min-width: 0; align-self: center; }' +
+      ':host([hide-title]) .name-row > .name { display: none; }' +
       '.name-row { display: flex; flex-wrap: wrap; align-items: center; column-gap: 8px; row-gap: 4px; }' +
       '.name-row > .chips { flex: none; margin-left: auto; }' +
       '.chips:empty { display: none; }' +
@@ -3079,6 +3105,7 @@ class HomeCameraCardEditor extends HTMLElement {
         type: 'grid',
         name: '',
         schema: [
+          { name: 'show_title', selector: { boolean: {} } },
           { name: 'show_summary', selector: { boolean: {} } },
           { name: 'show_badges', selector: { boolean: {} } },
           { name: 'show_motion', selector: { boolean: {} } },

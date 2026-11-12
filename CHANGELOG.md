@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.5.0 - 2026-11-12
+
+### Features
+- `show_title` option (also in the visual editor) hides the card header's title (HD / SD and the summary stay; `show_summary` already hides the summary), for a card placed under a section heading of its own (asked in juju35/ha-vehicle-card#72).
+
 ## 4.4.3 - 2026-11-12
 
 ### Fixes

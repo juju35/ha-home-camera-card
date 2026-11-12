@@ -175,6 +175,7 @@ The mini card takes the same options as the full card, plus `zoom`. Its compact 
 |---|---|---|---|
 | `cameras` | ✅ | — | List of cameras, see below; a bare entity id is a camera with every option found automatically |
 | `title` | ❌ | `Cameras` | Card title; with a single camera, its name |
+| `show_title` | ❌ | `true` | Show the title in the header (e.g. `false` under a section heading of your own) |
 | `icon` | ❌ | `mdi:cctv` | Icon next to the title |
 | `quality_entity` | ❌ | — | `input_select` (or `select`) holding the quality; without it the card keeps its own choice in the browser |
 | `hd_option` | ❌ | `HD` | Option of `quality_entity` meaning HD |
