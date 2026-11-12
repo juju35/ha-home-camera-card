@@ -9,5 +9,11 @@
     "abort": {
       "single_instance_allowed": "Home Camera jau ir iestatīts."
     }
+  },
+  "issues": {
+    "legacy_dashboard_install": {
+      "title": "Vecais Home Camera Card informācijas paneļa ieraksts joprojām ir instalēts",
+      "description": "Kartīte joprojām ir instalēta kā **Informācijas panelis** ieraksts no laika pirms 4.0 (mape `{folder}`). Marketplace tagad tam lejupielādē `home_camera.zip`, tāpēc atjauninājumi neizdodas ar kļūdu “The installed content has no home_camera.zip”.\n\nSadaļā **Iestatījumi → Marketplace** atveriet Home Camera ierakstu ar tipu **Informācijas panelis** un noņemiet to. Paturiet ierakstu ar tipu **Integrācija**: tas jau nodrošina kartītes, un jūsu informācijas paneļi turpina darboties. Pēc tam restartējiet Home Assistant."
+    }
   }
 }

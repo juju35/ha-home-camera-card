@@ -9,5 +9,11 @@
     "abort": {
       "single_instance_allowed": "Home Camera je že nastavljen."
     }
+  },
+  "issues": {
+    "legacy_dashboard_install": {
+      "title": "Stari vnos nadzorne plošče Home Camera Card je še nameščen",
+      "description": "Kartica je še vedno nameščena kot vnos tipa **Nadzorna plošča** izpred različice 4.0 (mapa `{folder}`). Marketplace zanj zdaj prenaša `home_camera.zip`, zato posodobitve ne uspejo z napako »The installed content has no home_camera.zip«.\n\nV **Nastavitve → Marketplace** odprite vnos Home Camera tipa **Nadzorna plošča** in ga odstranite. Obdržite vnos tipa **Integracija**: ta že zagotavlja kartice in vaše nadzorne plošče delujejo še naprej. Nato znova zaženite Home Assistant."
+    }
   }
 }

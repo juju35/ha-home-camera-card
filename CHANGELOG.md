@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.4.3 - 2026-11-12
+
+### Fixes
+- Marketplace updates that failed with "The installed content has no home_camera.zip" (#69): they come from the card still installed as a **Dashboard** entry from before 4.0, which the Marketplace now tries to update with the integration's zip. Home Camera now raises a repair in **Settings → Repairs** while that old entry is there, saying to remove it from the Marketplace and keep the **Integration** one; the repair goes at the next start once it is removed.
+
 ## 4.4.2 - 2026-11-12
 
 ### Fixes

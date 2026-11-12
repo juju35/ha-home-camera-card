@@ -9,5 +9,11 @@
     "abort": {
       "single_instance_allowed": "Home Camera er allerede sat op."
     }
+  },
+  "issues": {
+    "legacy_dashboard_install": {
+      "title": "Gammel dashboardpost for Home Camera Card er stadig installeret",
+      "description": "Kortet er stadig installeret som en **Dashboard**-post fra før 4.0 (mappen `{folder}`). Marketplace henter nu `home_camera.zip` til den, så opdateringerne fejler med \"The installed content has no home_camera.zip\".\n\nÅbn Home Camera-posten af typen **Dashboard** under **Indstillinger → Marketplace**, og fjern den. Behold posten af typen **Integration**: den leverer allerede kortene, og dine dashboards virker fortsat. Genstart derefter Home Assistant."
+    }
   }
 }

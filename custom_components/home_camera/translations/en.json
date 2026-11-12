@@ -9,5 +9,11 @@
     "abort": {
       "single_instance_allowed": "Home Camera is already set up."
     }
+  },
+  "issues": {
+    "legacy_dashboard_install": {
+      "title": "Old Home Camera Card dashboard entry still installed",
+      "description": "The card is still installed as a **Dashboard** entry from before 4.0 (folder `{folder}`). The Marketplace now downloads `home_camera.zip` for it, so its updates fail with \"The installed content has no home_camera.zip\".\n\nIn **Settings → Marketplace**, open the Home Camera entry of type **Dashboard** and remove it. Keep the **Integration** entry: it already serves the cards, and your dashboards keep working. Then restart Home Assistant."
+    }
   }
 }

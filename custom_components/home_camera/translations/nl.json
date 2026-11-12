@@ -9,5 +9,11 @@
     "abort": {
       "single_instance_allowed": "Home Camera is al ingesteld."
     }
+  },
+  "issues": {
+    "legacy_dashboard_install": {
+      "title": "Oude dashboardvermelding van Home Camera Card nog geïnstalleerd",
+      "description": "De kaart is nog geïnstalleerd als **Dashboard**-vermelding van vóór 4.0 (map `{folder}`). De Marketplace downloadt er nu `home_camera.zip` voor, waardoor updates mislukken met \"The installed content has no home_camera.zip\".\n\nOpen in **Instellingen → Marketplace** de Home Camera-vermelding van het type **Dashboard** en verwijder deze. Houd de vermelding van het type **Integratie**: die levert de kaarten al en je dashboards blijven werken. Herstart daarna Home Assistant."
+    }
   }
 }

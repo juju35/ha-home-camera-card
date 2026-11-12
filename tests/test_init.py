@@ -1,14 +1,26 @@
 """Setup, config flow, the panel open to every user, the card resource and the panel's WebSocket commands."""
 
+import shutil
+from pathlib import Path
+
 import pytest
 from homeassistant.components.frontend import DATA_PANELS
 from homeassistant.config_entries import SOURCE_USER, ConfigEntryState
 from homeassistant.data_entry_flow import FlowResultType
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.home_camera.const import CARD_URL, DOMAIN, PANEL_PATH, PANEL_URL, SIGNAL_UPDATED, VERSION
+from custom_components.home_camera.const import (
+    CARD_URL,
+    DOMAIN,
+    ISSUE_LEGACY_DASHBOARD,
+    PANEL_PATH,
+    PANEL_URL,
+    SIGNAL_UPDATED,
+    VERSION,
+)
 
 CARD = {"quality_entity": "input_select.camera_quality", "cameras": ["camera.living_room", {"camera": "camera.garden"}]}
 
@@ -174,3 +186,24 @@ async def test_invalid_cards_are_refused(hass, entry, hass_ws_client, card):
     assert not msg["success"]
     assert msg["error"]["code"] == "invalid_format"
     assert entry.options["card"] == CARD
+
+
+@pytest.mark.parametrize("folder", ["ha-home-camera-card", "ha-camera"])
+async def test_repair_while_the_old_dashboard_entry_is_installed(hass, entry, folder):
+    plugin = Path(hass.config.path("www", "community", folder))
+    await hass.async_add_executor_job(lambda: plugin.mkdir(parents=True))
+    await hass.async_add_executor_job((plugin / "home-camera-card.js.gz").write_bytes, b"")
+    await _setup(hass, entry)
+    issue = ir.async_get(hass).async_get_issue(DOMAIN, ISSUE_LEGACY_DASHBOARD)
+    assert issue is not None
+    assert issue.translation_placeholders == {"folder": f"www/community/{folder}"}
+    # Removed from the Marketplace: the repair goes at the next start
+    await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_add_executor_job(shutil.rmtree, plugin)
+    await hass.config_entries.async_setup(entry.entry_id)
+    assert ir.async_get(hass).async_get_issue(DOMAIN, ISSUE_LEGACY_DASHBOARD) is None
+
+
+async def test_no_repair_without_the_old_dashboard_entry(hass, entry):
+    await _setup(hass, entry)
+    assert not [i for i in ir.async_get(hass).issues.values() if i.domain == DOMAIN]

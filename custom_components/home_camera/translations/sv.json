@@ -9,5 +9,11 @@
     "abort": {
       "single_instance_allowed": "Home Camera är redan konfigurerat."
     }
+  },
+  "issues": {
+    "legacy_dashboard_install": {
+      "title": "Gammal instrumentpanelspost för Home Camera Card är fortfarande installerad",
+      "description": "Kortet är fortfarande installerat som en **Instrumentpanel**-post från före 4.0 (mappen `{folder}`). Marketplace hämtar nu `home_camera.zip` för den, så uppdateringarna misslyckas med \"The installed content has no home_camera.zip\".\n\nÖppna Home Camera-posten av typen **Instrumentpanel** under **Inställningar → Marketplace** och ta bort den. Behåll posten av typen **Integration**: den tillhandahåller redan korten och dina instrumentpaneler fortsätter att fungera. Starta sedan om Home Assistant."
+    }
   }
 }

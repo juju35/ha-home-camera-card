@@ -9,5 +9,11 @@
     "abort": {
       "single_instance_allowed": "Home Camera вже налаштовано."
     }
+  },
+  "issues": {
+    "legacy_dashboard_install": {
+      "title": "Старий запис панелі Home Camera Card досі встановлено",
+      "description": "Картку досі встановлено як запис типу **Панель** версії до 4.0 (тека `{folder}`). Marketplace тепер завантажує для нього `home_camera.zip`, тому оновлення завершуються помилкою «The installed content has no home_camera.zip».\n\nУ розділі **Налаштування → Marketplace** відкрийте запис Home Camera типу **Панель** і видаліть його. Залиште запис типу **Інтеграція**: він уже надає картки, і ваші панелі й надалі працюватимуть. Потім перезапустіть Home Assistant."
+    }
   }
 }

@@ -9,5 +9,11 @@
     "abort": {
       "single_instance_allowed": "Home Camera est déjà configuré."
     }
+  },
+  "issues": {
+    "legacy_dashboard_install": {
+      "title": "Ancienne entrée tableau de bord Home Camera Card encore installée",
+      "description": "La carte est encore installée comme entrée **Tableau de bord** d'avant la 4.0 (dossier `{folder}`). Le Marketplace télécharge maintenant `home_camera.zip` pour elle, ses mises à jour échouent donc avec « The installed content has no home_camera.zip ».\n\nDans **Paramètres → Marketplace**, ouvrez l'entrée Home Camera de type **Tableau de bord** et supprimez-la. Gardez l'entrée **Intégration** : elle sert déjà les cartes et vos tableaux de bord continuent de fonctionner. Redémarrez ensuite Home Assistant."
+    }
   }
 }

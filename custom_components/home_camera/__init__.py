@@ -13,9 +13,20 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
 from homeassistant.core import CoreState, Event, HomeAssistant
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.typing import ConfigType
 
-from .const import CARD_URL, DOMAIN, LEGACY_CARD_PATH, PANEL_PATH, PANEL_URL, URL_BASE, VERSION
+from .const import (
+    CARD_URL,
+    DOMAIN,
+    ISSUE_LEGACY_DASHBOARD,
+    LEGACY_CARD_PATH,
+    LEGACY_PLUGIN_DIRS,
+    PANEL_PATH,
+    PANEL_URL,
+    URL_BASE,
+    VERSION,
+)
 from .panel import async_register_commands, async_register_panel
 
 _LOGGER = logging.getLogger(__name__)
@@ -42,6 +53,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Add the Cameras panel to the sidebar and load the cards on every dashboard."""
     await async_register_panel(hass, entry)
+    await _async_check_legacy_dashboard(hass)
 
     async def _load_card(_: Event | None = None) -> None:
         if not await _async_register_resource(hass):
@@ -69,6 +81,38 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     for item in list(resources.async_items()):
         if item.get("url", "").split("?")[0] == CARD_URL:
             await resources.async_delete_item(item["id"])
+
+
+async def _async_check_legacy_dashboard(hass: HomeAssistant) -> None:
+    """Raise a repair while the card installed as a Marketplace Dashboard entry before 4.0 is still there.
+
+    That entry downloads the integration's home_camera.zip as a dashboard plugin, so its updates fail
+    ("The installed content has no home_camera.zip"); removing it from the Marketplace fixes them.
+    """
+    found = await hass.async_add_executor_job(_legacy_plugin_dir, Path(hass.config.path("www", "community")))
+    if found is None:
+        ir.async_delete_issue(hass, DOMAIN, ISSUE_LEGACY_DASHBOARD)
+        return
+    ir.async_create_issue(
+        hass,
+        DOMAIN,
+        ISSUE_LEGACY_DASHBOARD,
+        is_fixable=False,
+        is_persistent=False,
+        severity=ir.IssueSeverity.WARNING,
+        translation_key=ISSUE_LEGACY_DASHBOARD,
+        translation_placeholders={"folder": f"www/community/{found}"},
+        learn_more_url="https://github.com/juju35/ha-camera#readme",
+    )
+
+
+def _legacy_plugin_dir(community: Path) -> str | None:
+    """The www/community/ folder of the old dashboard plugin, if it is still installed."""
+    for name in LEGACY_PLUGIN_DIRS:
+        folder = community / name
+        if any(folder.glob("home-camera-card.js*")):
+            return name
+    return None
 
 
 def _language_files(frontend_dir: Path) -> list[str]:
