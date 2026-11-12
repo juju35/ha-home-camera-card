@@ -9,5 +9,11 @@
     "abort": {
       "single_instance_allowed": "Home Camera jest już skonfigurowany."
     }
+  },
+  "issues": {
+    "legacy_dashboard_install": {
+      "title": "Stary wpis pulpitu Home Camera Card nadal zainstalowany",
+      "description": "Karta jest nadal zainstalowana jako wpis typu **Pulpit** sprzed wersji 4.0 (folder `{folder}`). Marketplace pobiera teraz dla niego `home_camera.zip`, więc aktualizacje kończą się błędem „The installed content has no home_camera.zip”.\n\nW **Ustawienia → Marketplace** otwórz wpis Home Camera typu **Pulpit** i usuń go. Zachowaj wpis typu **Integracja**: już udostępnia karty, a Twoje pulpity nadal działają. Następnie uruchom ponownie Home Assistant."
+    }
   }
 }

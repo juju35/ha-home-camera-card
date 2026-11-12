@@ -9,5 +9,11 @@
     "abort": {
       "single_instance_allowed": "Home Camera è già configurato."
     }
+  },
+  "issues": {
+    "legacy_dashboard_install": {
+      "title": "Vecchia voce dashboard di Home Camera Card ancora installata",
+      "description": "La scheda è ancora installata come voce **Dashboard** precedente alla 4.0 (cartella `{folder}`). Il Marketplace ora scarica `home_camera.zip` per essa, quindi i suoi aggiornamenti falliscono con «The installed content has no home_camera.zip».\n\nIn **Impostazioni → Marketplace**, apri la voce Home Camera di tipo **Dashboard** e rimuovila. Mantieni la voce di tipo **Integrazione**: fornisce già le schede e le tue dashboard continuano a funzionare. Poi riavvia Home Assistant."
+    }
   }
 }

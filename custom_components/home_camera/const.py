@@ -1,7 +1,7 @@
 """Constants for the Home Camera integration."""
 
 DOMAIN = "home_camera"
-VERSION = "4.4.2"
+VERSION = "4.4.3"
 
 # Files served by the integration (their own base, so the panel's route never shadows them)
 URL_BASE = f"/{DOMAIN}"
@@ -9,6 +9,10 @@ CARD_URL = f"{URL_BASE}/home-camera-card.js"
 PANEL_URL = f"{URL_BASE}/home-camera-panel.js"
 # Resource of the card installed as a Marketplace dashboard plugin before 4.0, replaced by the integration's
 LEGACY_CARD_PATH = "ha-home-camera-card/home-camera-card.js"
+# Folders under www/community/ where that dashboard plugin lives (before and after the repository was renamed):
+# while one is there, the Marketplace keeps a Dashboard entry whose updates fail, so a repair says to remove it
+LEGACY_PLUGIN_DIRS = ("ha-home-camera-card", "ha-camera")
+ISSUE_LEGACY_DASHBOARD = "legacy_dashboard_install"
 
 # The sidebar panel: every user sees it, only administrators get its Settings tab
 PANEL_PATH = "cameras"

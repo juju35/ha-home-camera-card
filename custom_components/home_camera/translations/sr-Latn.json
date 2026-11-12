@@ -9,5 +9,11 @@
     "abort": {
       "single_instance_allowed": "Home Camera je već podešen."
     }
+  },
+  "issues": {
+    "legacy_dashboard_install": {
+      "title": "Stari unos kontrolne table Home Camera Card je i dalje instaliran",
+      "description": "Kartica je i dalje instalirana kao unos tipa **Kontrolna tabla** od pre verzije 4.0 (fascikla `{folder}`). Marketplace sada za njega preuzima `home_camera.zip`, pa ažuriranja ne uspevaju uz grešku „The installed content has no home_camera.zip“.\n\nU **Podešavanja → Marketplace** otvorite unos Home Camera tipa **Kontrolna tabla** i uklonite ga. Zadržite unos tipa **Integracija**: on već pruža kartice i vaše kontrolne table nastavljaju da rade. Zatim ponovo pokrenite Home Assistant."
+    }
   }
 }

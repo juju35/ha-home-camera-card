@@ -9,5 +9,11 @@
     "abort": {
       "single_instance_allowed": "Home Camera je již nastaven."
     }
+  },
+  "issues": {
+    "legacy_dashboard_install": {
+      "title": "Starý záznam ovládacího panelu Home Camera Card je stále nainstalován",
+      "description": "Karta je stále nainstalována jako záznam typu **Ovládací panel** z doby před verzí 4.0 (složka `{folder}`). Marketplace pro něj nyní stahuje `home_camera.zip`, takže aktualizace selhávají s chybou „The installed content has no home_camera.zip“.\n\nV **Nastavení → Marketplace** otevřete záznam Home Camera typu **Ovládací panel** a odeberte jej. Ponechte záznam typu **Integrace**: ten už karty poskytuje a vaše ovládací panely dál fungují. Poté restartujte Home Assistant."
+    }
   }
 }

@@ -14,7 +14,7 @@ Home Assistant integration with a **Cameras sidebar panel for every user** — n
 
 List the cameras, the cards find their privacy switch, SD stream and PTZ buttons by themselves.
 
-> **Upgrading from ha-home-camera-card 3.x** (a Marketplace *Dashboard* repository): the repository is now an *Integration*. Remove the old Dashboard entry from the Marketplace, add this repository as an **Integration**, then add **Home Camera** in **Settings → Devices & services**. Your dashboards keep working: the cards keep their names (`custom:home-camera-card`, `custom:home-camera-mini-card`) and the integration replaces the old dashboard resource with its own.
+> **Upgrading from ha-home-camera-card 3.x** (a Marketplace *Dashboard* repository): the repository is now an *Integration*. Remove the old Dashboard entry from the Marketplace, add this repository as an **Integration**, then add **Home Camera** in **Settings → Devices & services**. Your dashboards keep working: the cards keep their names (`custom:home-camera-card`, `custom:home-camera-mini-card`) and the integration replaces the old dashboard resource with its own. While the old Dashboard entry is still installed, its updates fail with *"The installed content has no home_camera.zip"* and Home Camera shows a repair in **Settings → Repairs**.
 
 [![Open your Home Assistant instance and open a repository inside the Marketplace.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=juju35&repository=ha-camera&category=integration)
 

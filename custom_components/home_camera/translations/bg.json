@@ -9,5 +9,11 @@
     "abort": {
       "single_instance_allowed": "Home Camera вече е настроен."
     }
+  },
+  "issues": {
+    "legacy_dashboard_install": {
+      "title": "Стар запис за табло на Home Camera Card все още е инсталиран",
+      "description": "Картата все още е инсталирана като запис **Табло** отпреди 4.0 (папка `{folder}`). Marketplace вече изтегля `home_camera.zip` за него, затова актуализациите се провалят с „The installed content has no home_camera.zip“.\n\nВ **Настройки → Marketplace** отворете записа Home Camera от тип **Табло** и го премахнете. Запазете записа от тип **Интеграция**: той вече предоставя картите и таблата ви продължават да работят. След това рестартирайте Home Assistant."
+    }
   }
 }

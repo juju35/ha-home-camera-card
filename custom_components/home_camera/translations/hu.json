@@ -9,5 +9,11 @@
     "abort": {
       "single_instance_allowed": "A Home Camera már be van állítva."
     }
+  },
+  "issues": {
+    "legacy_dashboard_install": {
+      "title": "A Home Camera Card régi irányítópult-bejegyzése még telepítve van",
+      "description": "A kártya még mindig a 4.0 előtti **Irányítópult** bejegyzésként van telepítve (mappa: `{folder}`). A Marketplace most a `home_camera.zip` fájlt tölti le hozzá, ezért a frissítései a következő hibával meghiúsulnak: „The installed content has no home_camera.zip”.\n\nA **Beállítások → Marketplace** alatt nyisd meg az **Irányítópult** típusú Home Camera bejegyzést, és távolítsd el. Az **Integráció** típusú bejegyzést tartsd meg: az már kiszolgálja a kártyákat, és az irányítópultjaid tovább működnek. Ezután indítsd újra a Home Assistantot."
+    }
   }
 }

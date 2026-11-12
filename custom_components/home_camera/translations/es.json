@@ -9,5 +9,11 @@
     "abort": {
       "single_instance_allowed": "Home Camera ya está configurado."
     }
+  },
+  "issues": {
+    "legacy_dashboard_install": {
+      "title": "Entrada de panel antigua de Home Camera Card aún instalada",
+      "description": "La tarjeta sigue instalada como entrada de **Panel** anterior a la 4.0 (carpeta `{folder}`). El Marketplace ahora descarga `home_camera.zip` para ella, por lo que sus actualizaciones fallan con «The installed content has no home_camera.zip».\n\nEn **Ajustes → Marketplace**, abre la entrada Home Camera de tipo **Panel** y elimínala. Conserva la entrada de tipo **Integración**: ya sirve las tarjetas y tus paneles siguen funcionando. Después reinicia Home Assistant."
+    }
   }
 }

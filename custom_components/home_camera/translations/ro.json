@@ -9,5 +9,11 @@
     "abort": {
       "single_instance_allowed": "Home Camera este deja configurat."
     }
+  },
+  "issues": {
+    "legacy_dashboard_install": {
+      "title": "Intrare veche de tablou de bord Home Camera Card încă instalată",
+      "description": "Cardul este încă instalat ca intrare **Tablou de bord** de dinainte de 4.0 (dosarul `{folder}`). Marketplace descarcă acum `home_camera.zip` pentru ea, așa că actualizările eșuează cu „The installed content has no home_camera.zip”.\n\nÎn **Setări → Marketplace**, deschide intrarea Home Camera de tip **Tablou de bord** și elimin-o. Păstrează intrarea de tip **Integrare**: aceasta oferă deja cardurile, iar tablourile tale de bord continuă să funcționeze. Apoi repornește Home Assistant."
+    }
   }
 }
