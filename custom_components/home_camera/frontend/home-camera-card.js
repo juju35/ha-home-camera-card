@@ -1,4 +1,4 @@
-const HOME_CAMERA_CARD_VERSION = '4.5.0';
+const HOME_CAMERA_CARD_VERSION = '4.5.1';
 
 // ── i18n ─────────────────────────────────────────────────────────────────────
 const HcI18n = {
@@ -65,6 +65,10 @@ const HcI18n = {
     cam_hidden: '{c} : masquée',
     ed_show_motion: 'Pastille de mouvement',
     cf_motion: 'Capteur de mouvement (pastille sur l\'image)',
+    ed_layout: 'Disposition',
+    ed_layout_helper: 'Mur vidéo : pas de carte autour de la grille, une barre d\'état à la place de l\'en-tête',
+    ed_layout_card: 'Carte',
+    ed_layout_wall: 'Mur vidéo',
   },
   en: {
     title: 'Cameras',
@@ -129,6 +133,10 @@ const HcI18n = {
     cam_hidden: '{c}: hidden',
     ed_show_motion: 'Motion badge',
     cf_motion: 'Motion sensor (badge on the image)',
+    ed_layout: 'Layout',
+    ed_layout_helper: 'Video wall: no card around the grid, a status bar instead of the header',
+    ed_layout_card: 'Card',
+    ed_layout_wall: 'Video wall',
   },
   de: {
     title: 'Kameras',
@@ -193,6 +201,10 @@ const HcI18n = {
     cam_hidden: '{c}: ausgeblendet',
     ed_show_motion: 'Bewegungs-Badge',
     cf_motion: 'Bewegungssensor (Badge auf dem Bild)',
+    ed_layout: 'Layout',
+    ed_layout_helper: 'Videowand: keine Karte um das Raster, eine Statusleiste statt der Kopfzeile',
+    ed_layout_card: 'Karte',
+    ed_layout_wall: 'Videowand',
   },
   es: {
     title: 'Cámaras',
@@ -257,6 +269,10 @@ const HcI18n = {
     cam_hidden: '{c}: oculta',
     ed_show_motion: 'Insignia de movimiento',
     cf_motion: 'Sensor de movimiento (insignia en la imagen)',
+    ed_layout: 'Disposición',
+    ed_layout_helper: 'Videowall: sin tarjeta alrededor de la cuadrícula, una barra de estado en lugar del encabezado',
+    ed_layout_card: 'Tarjeta',
+    ed_layout_wall: 'Videowall',
   },
   sr: {
     title: 'Камере',
@@ -321,6 +337,10 @@ const HcI18n = {
     cam_hidden: '{c}: скривена',
     ed_show_motion: 'Значка покрета',
     cf_motion: 'Сензор покрета (значка на слици)',
+    ed_layout: 'Распоред',
+    ed_layout_helper: 'Видео зид: без картице око мреже, трака стања уместо заглавља',
+    ed_layout_card: 'Картица',
+    ed_layout_wall: 'Видео зид',
   },
   'sr-Latn': {
     title: 'Kamere',
@@ -385,6 +405,10 @@ const HcI18n = {
     cam_hidden: '{c}: skrivena',
     ed_show_motion: 'Značka pokreta',
     cf_motion: 'Senzor pokreta (značka na slici)',
+    ed_layout: 'Raspored',
+    ed_layout_helper: 'Video zid: bez kartice oko mreže, traka stanja umesto zaglavlja',
+    ed_layout_card: 'Kartica',
+    ed_layout_wall: 'Video zid',
   },
   it: {
     title: 'Telecamere',
@@ -449,6 +473,10 @@ const HcI18n = {
     cam_hidden: '{c}: nascosta',
     ed_show_motion: 'Badge di movimento',
     cf_motion: 'Sensore di movimento (badge sull\'immagine)',
+    ed_layout: 'Disposizione',
+    ed_layout_helper: 'Videowall: nessuna scheda attorno alla griglia, una barra di stato al posto dell\'intestazione',
+    ed_layout_card: 'Scheda',
+    ed_layout_wall: 'Videowall',
   },
   nl: {
     title: 'Camera\'s',
@@ -513,6 +541,10 @@ const HcI18n = {
     cam_hidden: '{c}: verborgen',
     ed_show_motion: 'Bewegingsbadge',
     cf_motion: 'Bewegingssensor (badge op het beeld)',
+    ed_layout: 'Indeling',
+    ed_layout_helper: 'Videowand: geen kaart rond het raster, een statusbalk in plaats van de koptekst',
+    ed_layout_card: 'Kaart',
+    ed_layout_wall: 'Videowand',
   },
   pt: {
     title: 'Câmaras',
@@ -577,6 +609,10 @@ const HcI18n = {
     cam_hidden: '{c}: oculta',
     ed_show_motion: 'Emblema de movimento',
     cf_motion: 'Sensor de movimento (emblema na imagem)',
+    ed_layout: 'Disposição',
+    ed_layout_helper: 'Videowall: sem cartão à volta da grelha, uma barra de estado em vez do cabeçalho',
+    ed_layout_card: 'Cartão',
+    ed_layout_wall: 'Videowall',
   },
   pl: {
     title: 'Kamery',
@@ -641,6 +677,10 @@ const HcI18n = {
     cam_hidden: '{c}: ukryta',
     ed_show_motion: 'Plakietka ruchu',
     cf_motion: 'Czujnik ruchu (plakietka na obrazie)',
+    ed_layout: 'Układ',
+    ed_layout_helper: 'Ściana wideo: bez karty wokół siatki, pasek stanu zamiast nagłówka',
+    ed_layout_card: 'Karta',
+    ed_layout_wall: 'Ściana wideo',
   },
   ro: {
     title: 'Camere',
@@ -705,6 +745,10 @@ const HcI18n = {
     cam_hidden: '{c}: ascunsă',
     ed_show_motion: 'Insignă de mișcare',
     cf_motion: 'Senzor de mișcare (insignă pe imagine)',
+    ed_layout: 'Aranjament',
+    ed_layout_helper: 'Perete video: fără card în jurul grilei, o bară de stare în locul antetului',
+    ed_layout_card: 'Card',
+    ed_layout_wall: 'Perete video',
   },
   da: {
     title: 'Kameraer',
@@ -769,6 +813,10 @@ const HcI18n = {
     cam_hidden: '{c}: skjult',
     ed_show_motion: 'Bevægelsesbadge',
     cf_motion: 'Bevægelsessensor (badge på billedet)',
+    ed_layout: 'Layout',
+    ed_layout_helper: 'Videovæg: intet kort om gitteret, en statuslinje i stedet for overskriften',
+    ed_layout_card: 'Kort',
+    ed_layout_wall: 'Videovæg',
   },
   sv: {
     title: 'Kameror',
@@ -833,6 +881,10 @@ const HcI18n = {
     cam_hidden: '{c}: dold',
     ed_show_motion: 'Rörelsebricka',
     cf_motion: 'Rörelsesensor (bricka på bilden)',
+    ed_layout: 'Layout',
+    ed_layout_helper: 'Videovägg: inget kort runt rutnätet, en statusrad i stället för rubriken',
+    ed_layout_card: 'Kort',
+    ed_layout_wall: 'Videovägg',
   },
   bg: {
     title: 'Камери',
@@ -897,6 +949,10 @@ const HcI18n = {
     cam_hidden: '{c}: скрита',
     ed_show_motion: 'Значка за движение',
     cf_motion: 'Сензор за движение (значка върху изображението)',
+    ed_layout: 'Оформление',
+    ed_layout_helper: 'Видеостена: без карта около мрежата, лента за състояние вместо заглавката',
+    ed_layout_card: 'Карта',
+    ed_layout_wall: 'Видеостена',
   },
   ru: {
     title: 'Камеры',
@@ -961,6 +1017,10 @@ const HcI18n = {
     cam_hidden: '{c}: скрыта',
     ed_show_motion: 'Значок движения',
     cf_motion: 'Датчик движения (значок на изображении)',
+    ed_layout: 'Макет',
+    ed_layout_helper: 'Видеостена: без карточки вокруг сетки, строка состояния вместо заголовка',
+    ed_layout_card: 'Карточка',
+    ed_layout_wall: 'Видеостена',
   },
   uk: {
     title: 'Камери',
@@ -1025,6 +1085,10 @@ const HcI18n = {
     cam_hidden: '{c}: прихована',
     ed_show_motion: 'Значок руху',
     cf_motion: 'Датчик руху (значок на зображенні)',
+    ed_layout: 'Макет',
+    ed_layout_helper: 'Відеостіна: без картки навколо сітки, рядок стану замість заголовка',
+    ed_layout_card: 'Картка',
+    ed_layout_wall: 'Відеостіна',
   },
   hu: {
     title: 'Kamerák',
@@ -1089,6 +1153,10 @@ const HcI18n = {
     cam_hidden: '{c}: rejtett',
     ed_show_motion: 'Mozgásjelvény',
     cf_motion: 'Mozgásérzékelő (jelvény a képen)',
+    ed_layout: 'Elrendezés',
+    ed_layout_helper: 'Videófal: nincs kártya a rács körül, állapotsor a fejléc helyett',
+    ed_layout_card: 'Kártya',
+    ed_layout_wall: 'Videófal',
   },
   sk: {
     title: 'Kamery',
@@ -1153,6 +1221,10 @@ const HcI18n = {
     cam_hidden: '{c}: skrytá',
     ed_show_motion: 'Odznak pohybu',
     cf_motion: 'Senzor pohybu (odznak na obraze)',
+    ed_layout: 'Rozloženie',
+    ed_layout_helper: 'Videostena: bez karty okolo mriežky, stavový riadok namiesto hlavičky',
+    ed_layout_card: 'Karta',
+    ed_layout_wall: 'Videostena',
   },
   cs: {
     title: 'Kamery',
@@ -1217,6 +1289,10 @@ const HcI18n = {
     cam_hidden: '{c}: skrytá',
     ed_show_motion: 'Odznak pohybu',
     cf_motion: 'Senzor pohybu (odznak na obraze)',
+    ed_layout: 'Rozložení',
+    ed_layout_helper: 'Videostěna: bez karty kolem mřížky, stavový řádek místo záhlaví',
+    ed_layout_card: 'Karta',
+    ed_layout_wall: 'Videostěna',
   },
   sl: {
     title: 'Kamere',
@@ -1281,6 +1357,10 @@ const HcI18n = {
     cam_hidden: '{c}: skrita',
     ed_show_motion: 'Značka gibanja',
     cf_motion: 'Senzor gibanja (značka na sliki)',
+    ed_layout: 'Postavitev',
+    ed_layout_helper: 'Video stena: brez kartice okoli mreže, vrstica stanja namesto glave',
+    ed_layout_card: 'Kartica',
+    ed_layout_wall: 'Video stena',
   },
   lv: {
     title: 'Kameras',
@@ -1345,6 +1425,10 @@ const HcI18n = {
     cam_hidden: '{c}: paslēpta',
     ed_show_motion: 'Kustības žetons',
     cf_motion: 'Kustības sensors (žetons attēlā)',
+    ed_layout: 'Izkārtojums',
+    ed_layout_helper: 'Video siena: bez kartītes ap režģi, statusa josla galvenes vietā',
+    ed_layout_card: 'Kartīte',
+    ed_layout_wall: 'Video siena',
   },
   el: {
     title: 'Κάμερες',
@@ -1409,6 +1493,10 @@ const HcI18n = {
     cam_hidden: '{c}: κρυφή',
     ed_show_motion: 'Σήμα κίνησης',
     cf_motion: 'Αισθητήρας κίνησης (σήμα στην εικόνα)',
+    ed_layout: 'Διάταξη',
+    ed_layout_helper: 'Τοίχος βίντεο: χωρίς κάρτα γύρω από το πλέγμα, γραμμή κατάστασης αντί για την κεφαλίδα',
+    ed_layout_card: 'Κάρτα',
+    ed_layout_wall: 'Τοίχος βίντεο',
   },
 };
 
@@ -3084,6 +3172,24 @@ class HomeCameraCardEditor extends HTMLElement {
           { name: 'icon', selector: { icon: {} } },
         ],
       },
+      // Full card only (the mini card ignores it): the video wall of the Cameras panel, which always shows it
+      // (its Settings tab sets `panel`).
+      ...(this.constructor.mini || this.panel
+        ? []
+        : [
+            {
+              name: 'layout',
+              selector: {
+                select: {
+                  mode: 'dropdown',
+                  options: [
+                    { value: '', label: t('ed_layout_card') },
+                    { value: 'wall', label: t('ed_layout_wall') },
+                  ],
+                },
+              },
+            },
+          ]),
       { name: 'quality_entity', selector: { entity: { domain: ['input_select', 'select'] } } },
       {
         type: 'grid',
@@ -3167,7 +3273,7 @@ class HomeCameraCardEditor extends HTMLElement {
     };
     // Video wall (the Cameras panel): no column count by default, the wall fits as many as the width takes
     const defaults = this._wall() ? Object.assign({}, HC_DEFAULTS, { columns: undefined }) : HC_DEFAULTS;
-    const data = Object.assign({}, defaults, this.constructor.mini ? { zoom: true } : {}, this._config);
+    const data = Object.assign({}, defaults, this.constructor.mini ? { zoom: true } : this.panel ? {} : { layout: '' }, this._config);
     // The object selector edits objects: a camera given as a bare entity id becomes { camera }.
     data.cameras = (data.cameras || []).map((cam) => (typeof cam === 'string' ? { camera: cam } : cam));
     this._form.data = data;
@@ -3197,8 +3303,10 @@ class HomeCameraCardEditor extends HTMLElement {
       if (!value.cameras.length) delete value.cameras;
     }
     if (this._config.type) value = Object.assign({ type: this._config.type }, value);
+    const wall = this._wall();
     this._config = value;
-    if (lang !== this._lang()) this._render();
+    // A new language relabels the form; the wall changes the columns' default and helper.
+    if (lang !== this._lang() || wall !== this._wall()) this._render();
     this.dispatchEvent(new CustomEvent('config-changed', { detail: { config: value }, bubbles: true, composed: true }));
   }
 }

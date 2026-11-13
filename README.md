@@ -167,7 +167,7 @@ cameras:
   - camera.bedroom_hd_stream
 ```
 
-The mini card takes the same options as the full card, plus `zoom`. Its compact view shows the title with its status and a snapshot of each camera (the SD stream's when there is one; a hidden camera's snapshot is never fetched), refreshed every 10 seconds while the card is on screen in a visible page. The detail button at the top right, or a tap on a snapshot, switches it to the full card (live streams, privacy badges, HD / SD); a click outside the card brings the compact view back.
+The mini card takes the same options as the full card except `layout`, plus `zoom`. Its compact view shows the title with its status and a snapshot of each camera (the SD stream's when there is one; a hidden camera's snapshot is never fetched), refreshed every 10 seconds while the card is on screen in a visible page. The detail button at the top right, or a tap on a snapshot, switches it to the full card (live streams, privacy badges, HD / SD); a click outside the card brings the compact view back.
 
 ### Options reference
 
@@ -180,7 +180,7 @@ The mini card takes the same options as the full card, plus `zoom`. Its compact 
 | `quality_entity` | ❌ | — | `input_select` (or `select`) holding the quality; without it the card keeps its own choice in the browser |
 | `hd_option` | ❌ | `HD` | Option of `quality_entity` meaning HD |
 | `sd_option` | ❌ | `SD` | Option of `quality_entity` meaning SD |
-| `layout` | ❌ | — | `wall`: the video wall of the Cameras panel — no card around the grid, a status bar instead of the header, as many columns as fit (unless `columns` is set) |
+| `layout` | ❌ | — | Full card only (also in its visual editor; the mini card ignores it). `wall`: the video wall of the Cameras panel — no card around the grid, a status bar instead of the header, as many columns as fit (unless `columns` is set) |
 | `columns` | ❌ | `2` | Columns of the grid |
 | `aspect_ratio` | ❌ | `16:9` | Shape of the tiles (`16:9`, `4:3`, `1:1`…); the image fills the tile |
 | `show_summary` | ❌ | `true` | Summary line under the title |
