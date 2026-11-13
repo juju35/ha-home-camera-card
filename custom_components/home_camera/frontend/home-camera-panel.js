@@ -11,7 +11,7 @@
  *
  * https://github.com/juju35/ha-camera
  */
-var HOME_CAMERA_PANEL_VERSION = '4.5.0';
+var HOME_CAMERA_PANEL_VERSION = '4.5.1';
 
 var HomeCameraPanelI18n = {
   en: {
@@ -1136,6 +1136,8 @@ class HomeCameraPanel extends HTMLElement {
     if (!customElements.get('home-camera-card-editor')) return;
     if (!this._editor?.isConnected) {
       this._editor = document.createElement('home-camera-card-editor');
+      // Always the wall here: no layout choice
+      this._editor.panel = true;
       this._editor.addEventListener('config-changed', (ev) => {
         ev.stopPropagation();
         this._formValues().card = hcpCardConfig(ev.detail.config);

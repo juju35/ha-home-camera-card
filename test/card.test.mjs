@@ -293,6 +293,24 @@ test("the editor language selector offers every dictionary language", () => {
   );
 });
 
+test("the editor offers layout (card or wall) on the full card only, not on the mini card nor in the panel", () => {
+  const { HcI18n, customElements } = loadCard("home-camera-card.js", ["HcI18n"]);
+  const names = (editor) => editor._schema().flatMap((f) => (f.type === "grid" ? f.schema : [f])).map((f) => f.name);
+  const full = new (customElements.get("home-camera-card-editor"))();
+  full._config = { cameras: [] };
+  const layout = full._schema().find((f) => f.name === "layout");
+  assert.deepEqual([...layout.selector.select.options.map((o) => o.value)], ["", "wall"]);
+  const mini = new (customElements.get("home-camera-mini-card-editor"))();
+  mini._config = { cameras: [] };
+  assert.ok(!names(mini).includes("layout"));
+  const panel = new (customElements.get("home-camera-card-editor"))();
+  panel.panel = true;
+  panel._config = { cameras: [], layout: "wall" };
+  assert.ok(!names(panel).includes("layout"));
+  for (const [code, strings] of Object.entries(HcI18n))
+    for (const key of ["ed_layout", "ed_layout_helper", "ed_layout_card", "ed_layout_wall"]) assert.ok(strings[key], `${code}: ${key}`);
+});
+
 // A card whose header renders into a stub, and whose taps reach a recorded callService.
 function headCard(cameras, states, config = {}) {
   const { customElements } = loadCard("home-camera-card.js", []);

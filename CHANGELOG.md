@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.5.1 - 2026-11-14
+
+### Fixes
+- The full card's visual editor offers `layout` (card or video wall), which could only be set in YAML; not on the mini card, which ignores it, nor in the Settings tab of the Cameras panel, which always shows the wall. Changing it updates the columns field's default and helper at once.
+
 ## 4.5.0 - 2026-11-12
 
 ### Features
